@@ -4,14 +4,14 @@ version = "0.1.0"
 description = "Home Assistant custom integration for Sugar Valley NeoPool pool controllers via Tasmota MQTT"
 readme = "README.md"
 license = "MIT"
-requires-python = ">=3.12"
+requires-python = ">=3.13"
 authors = [{ name = "alexdelprete" }]
 keywords = ["home-assistant", "neopool", "sugar-valley", "mqtt", "tasmota", "pool"]
 classifiers = [
     "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",
     "License :: OSI Approved :: MIT License",
-    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
 ]
 
 [project.urls]
@@ -20,7 +20,7 @@ classifiers = [
 
 [project.optional-dependencies]
 dev = [
-    "homeassistant>=2024.1.0",
+    "homeassistant>=2024.12.0",
     "homeassistant-stubs",
     "mdformat",
     "mdformat-gfm",
@@ -53,7 +53,7 @@ pytest = [
     "pytest-timeout",
 ]
 dev = [
-    "homeassistant>=2024.1.0",
+    "homeassistant>=2024.12.0",
     { include-group = "lint" },
     { include-group = "pytest" },
 ]
@@ -82,7 +82,7 @@ relative_files = true
 show_missing = true
 
 [tool.mypy]
-python_version = "3.12"
+python_version = "3.13"
 platform = "linux"
 show_error_codes = true
 follow_imports = "silent"
@@ -121,7 +121,7 @@ warn_unused_ignores = false
 line-length = 100
 indent-width = 4
 fix = true
-target-version = "py312"
+target-version = "py313"
 required-version = ">=0.8.0"
 
 [tool.ruff.format]
