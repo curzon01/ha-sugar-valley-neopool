@@ -221,7 +221,6 @@ ignore = [
     "TC003",    # Move standard library import into a type-checking block
 
     "TRY003",   # Avoid specifying long messages outside the exception class
-    "TRY300",   # Consider moving statement to else block
     "TRY400",   # Use logging.exception instead of logging.error
     "PGH003",   # Use specific rule codes when ignoring type issues
 

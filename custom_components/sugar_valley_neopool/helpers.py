@@ -26,9 +26,10 @@ def get_nested_value(data: dict[str, Any], path: str) -> Any | None:
                 value = value[int(key)]
             else:
                 return None
-        return value
     except (KeyError, IndexError, TypeError):
         return None
+    else:
+        return value
 
 
 def parse_runtime_duration(duration_str: str) -> float | None:
