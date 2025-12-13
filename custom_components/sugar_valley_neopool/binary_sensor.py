@@ -2,8 +2,8 @@
 
 from __future__ import annotations
 
-import logging
 from dataclasses import dataclass
+import logging
 from typing import TYPE_CHECKING, Any
 
 from homeassistant.components.binary_sensor import (
@@ -183,8 +183,7 @@ async def async_setup_entry(
     _LOGGER.debug("Setting up NeoPool binary sensors")
 
     sensors = [
-        NeoPoolBinarySensor(entry, description)
-        for description in BINARY_SENSOR_DESCRIPTIONS
+        NeoPoolBinarySensor(entry, description) for description in BINARY_SENSOR_DESCRIPTIONS
     ]
 
     async_add_entities(sensors)

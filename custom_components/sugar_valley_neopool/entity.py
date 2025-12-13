@@ -66,9 +66,7 @@ class NeoPoolMQTTEntity(NeoPoolEntity):
             self._attr_available = msg.payload == PAYLOAD_ONLINE
             self.async_write_ha_state()
 
-        unsubscribe = await mqtt.async_subscribe(
-            self.hass, lwt_topic, availability_received, qos=1
-        )
+        unsubscribe = await mqtt.async_subscribe(self.hass, lwt_topic, availability_received, qos=1)
         self._unsubscribe_callbacks.append(unsubscribe)
 
         _LOGGER.debug(
@@ -92,9 +90,7 @@ class NeoPoolMQTTEntity(NeoPoolEntity):
         qos: int = 1,
     ) -> None:
         """Subscribe to an MQTT topic."""
-        unsubscribe = await mqtt.async_subscribe(
-            self.hass, topic, msg_callback, qos=qos
-        )
+        unsubscribe = await mqtt.async_subscribe(self.hass, topic, msg_callback, qos=qos)
         self._unsubscribe_callbacks.append(unsubscribe)
         _LOGGER.debug("Subscribed to topic: %s for %s", topic, self.entity_id)
 

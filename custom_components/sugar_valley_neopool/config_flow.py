@@ -7,16 +7,12 @@ import logging
 from typing import Any
 
 import voluptuous as vol
+
 from homeassistant.components.mqtt import ReceiveMessage, valid_subscribe_topic
 from homeassistant.config_entries import ConfigFlow, ConfigFlowResult
 from homeassistant.helpers import config_validation as cv
 
-from .const import (
-    CONF_DEVICE_NAME,
-    CONF_DISCOVERY_PREFIX,
-    DEFAULT_DEVICE_NAME,
-    DOMAIN,
-)
+from .const import CONF_DEVICE_NAME, CONF_DISCOVERY_PREFIX, DEFAULT_DEVICE_NAME, DOMAIN
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -39,9 +35,7 @@ class NeoPoolConfigFlow(ConfigFlow, domain=DOMAIN):  # type: ignore
         self._discovery_prefix: str | None = None
         self._device_name: str | None = None
 
-    async def async_step_user(
-        self, user_input: dict[str, Any] | None = None
-    ) -> ConfigFlowResult:
+    async def async_step_user(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
         """Handle the initial step."""
         errors: dict[str, str] = {}
 
@@ -72,9 +66,7 @@ class NeoPoolConfigFlow(ConfigFlow, domain=DOMAIN):  # type: ignore
             step_id="user",
             data_schema=STEP_USER_DATA_SCHEMA,
             errors=errors,
-            description_placeholders={
-                "docs_url": "https://tasmota.github.io/docs/NeoPool/"
-            },
+            description_placeholders={"docs_url": "https://tasmota.github.io/docs/NeoPool/"},
         )
 
     async def async_step_mqtt(self, discovery_info: ReceiveMessage) -> ConfigFlowResult:
@@ -130,9 +122,7 @@ class NeoPoolConfigFlow(ConfigFlow, domain=DOMAIN):  # type: ignore
             step_id="mqtt_confirm",
             data_schema=vol.Schema(
                 {
-                    vol.Required(
-                        CONF_DEVICE_NAME, default=self._device_name
-                    ): cv.string,
+                    vol.Required(CONF_DEVICE_NAME, default=self._device_name): cv.string,
                 }
             ),
             description_placeholders={

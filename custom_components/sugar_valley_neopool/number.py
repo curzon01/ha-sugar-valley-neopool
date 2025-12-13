@@ -2,8 +2,8 @@
 
 from __future__ import annotations
 
-import logging
 from dataclasses import dataclass
+import logging
 from typing import TYPE_CHECKING, Any
 
 from homeassistant.components.number import (
@@ -15,12 +15,7 @@ from homeassistant.components.number import (
 from homeassistant.const import PERCENTAGE, UnitOfElectricPotential
 from homeassistant.core import HomeAssistant, callback
 
-from .const import (
-    CMD_HYDROLYSIS,
-    CMD_PH_MAX,
-    CMD_PH_MIN,
-    CMD_REDOX,
-)
+from .const import CMD_HYDROLYSIS, CMD_PH_MAX, CMD_PH_MIN, CMD_REDOX
 from .entity import NeoPoolMQTTEntity
 from .helpers import get_nested_value, parse_json_payload, safe_float
 
@@ -161,10 +156,7 @@ class NeoPoolNumber(NeoPoolMQTTEntity, NumberEntity):
         if self.entity_description.command_template:
             payload = self.entity_description.command_template.format(value=int(value))
         # Check if the value should be int or float
-        elif (
-            self.entity_description.native_step
-            and self.entity_description.native_step >= 1
-        ):
+        elif self.entity_description.native_step and self.entity_description.native_step >= 1:
             payload = str(int(value))
         else:
             payload = str(value)

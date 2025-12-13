@@ -2,21 +2,14 @@
 
 from __future__ import annotations
 
-import logging
 from dataclasses import dataclass
+import logging
 from typing import TYPE_CHECKING, Any
 
 from homeassistant.components.switch import SwitchEntity, SwitchEntityDescription
 from homeassistant.core import HomeAssistant, callback
 
-from .const import (
-    CMD_AUX1,
-    CMD_AUX2,
-    CMD_AUX3,
-    CMD_AUX4,
-    CMD_FILTRATION,
-    CMD_LIGHT,
-)
+from .const import CMD_AUX1, CMD_AUX2, CMD_AUX3, CMD_AUX4, CMD_FILTRATION, CMD_LIGHT
 from .entity import NeoPoolMQTTEntity
 from .helpers import bit_to_bool, get_nested_value, parse_json_payload
 
@@ -102,9 +95,7 @@ async def async_setup_entry(
     """Set up NeoPool switches based on a config entry."""
     _LOGGER.debug("Setting up NeoPool switches")
 
-    switches = [
-        NeoPoolSwitch(entry, description) for description in SWITCH_DESCRIPTIONS
-    ]
+    switches = [NeoPoolSwitch(entry, description) for description in SWITCH_DESCRIPTIONS]
 
     async_add_entities(switches)
     _LOGGER.info("Added %d NeoPool switches", len(switches))

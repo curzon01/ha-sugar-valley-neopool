@@ -2,8 +2,8 @@
 
 from __future__ import annotations
 
-import logging
 from dataclasses import dataclass
+import logging
 from typing import TYPE_CHECKING, Any
 
 from homeassistant.components.select import SelectEntity, SelectEntityDescription
@@ -158,9 +158,7 @@ class NeoPoolSelect(NeoPoolMQTTEntity, SelectEntity):
         int_value = lookup_by_value(self.entity_description.options_map, option)
 
         if int_value is None:
-            _LOGGER.warning(
-                "Invalid option %s for %s", option, self.entity_description.key
-            )
+            _LOGGER.warning("Invalid option %s for %s", option, self.entity_description.key)
             return
 
         await self._publish_command(
