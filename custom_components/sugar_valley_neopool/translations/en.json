@@ -1,0 +1,208 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Sugar Valley NeoPool Configuration",
+        "description": "Configure your NeoPool device connected via Tasmota MQTT.\n\nFor more information, see the [Tasmota NeoPool documentation]({docs_url}).",
+        "data": {
+          "device_name": "Device Name",
+          "discovery_prefix": "Tasmota Device Topic (e.g., SmartPool)"
+        },
+        "data_description": {
+          "device_name": "A friendly name for your pool controller",
+          "discovery_prefix": "The MQTT topic used by your Tasmota device (found in Tasmota web UI under MQTT settings)"
+        }
+      },
+      "mqtt_confirm": {
+        "title": "NeoPool Device Discovered",
+        "description": "A NeoPool device was discovered on MQTT topic: **{device}**",
+        "data": {
+          "device_name": "Device Name"
+        }
+      }
+    },
+    "error": {
+      "invalid_topic": "Invalid MQTT topic format",
+      "cannot_connect": "Cannot connect to MQTT broker",
+      "already_configured": "This device is already configured"
+    },
+    "abort": {
+      "already_configured": "This device is already configured",
+      "invalid_discovery_info": "Invalid discovery information received",
+      "not_neopool_device": "The discovered device is not a NeoPool controller"
+    }
+  },
+  "entity": {
+    "sensor": {
+      "system_model": {
+        "name": "System Model"
+      },
+      "water_temperature": {
+        "name": "Water Temperature"
+      },
+      "ph_data": {
+        "name": "pH"
+      },
+      "ph_state": {
+        "name": "pH State"
+      },
+      "ph_pump": {
+        "name": "pH Pump"
+      },
+      "redox_data": {
+        "name": "Redox (ORP)"
+      },
+      "hydrolysis_percent": {
+        "name": "Hydrolysis"
+      },
+      "hydrolysis_data": {
+        "name": "Hydrolysis (g/h)"
+      },
+      "hydrolysis_state": {
+        "name": "Hydrolysis State"
+      },
+      "hydrolysis_runtime_total": {
+        "name": "Hydrolysis Runtime Total"
+      },
+      "hydrolysis_runtime_part": {
+        "name": "Hydrolysis Runtime Part"
+      },
+      "hydrolysis_polarity_changes": {
+        "name": "Hydrolysis Polarity Changes"
+      },
+      "filtration_mode": {
+        "name": "Filtration Mode"
+      },
+      "filtration_speed": {
+        "name": "Filtration Speed"
+      },
+      "powerunit_version": {
+        "name": "Powerunit Version"
+      },
+      "powerunit_5v": {
+        "name": "Powerunit 5V"
+      },
+      "powerunit_12v": {
+        "name": "Powerunit 12V"
+      },
+      "powerunit_24v": {
+        "name": "Powerunit 24-30V"
+      },
+      "powerunit_4ma": {
+        "name": "Powerunit 4-20mA"
+      },
+      "connection_requests": {
+        "name": "Connection Requests"
+      },
+      "connection_responses": {
+        "name": "Connection Responses"
+      },
+      "connection_no_response": {
+        "name": "Connection No Response"
+      }
+    },
+    "binary_sensor": {
+      "modules_ph": {
+        "name": "pH Module"
+      },
+      "modules_redox": {
+        "name": "Redox Module"
+      },
+      "modules_hydrolysis": {
+        "name": "Hydrolysis Module"
+      },
+      "modules_chlorine": {
+        "name": "Chlorine Module"
+      },
+      "modules_conductivity": {
+        "name": "Conductivity Module"
+      },
+      "modules_ionization": {
+        "name": "Ionization Module"
+      },
+      "relay_ph_state": {
+        "name": "Relay pH State"
+      },
+      "relay_filtration_state": {
+        "name": "Relay Filtration State"
+      },
+      "relay_light_state": {
+        "name": "Relay Light State"
+      },
+      "relay_acid_state": {
+        "name": "Relay Acid State"
+      },
+      "ph_fl1": {
+        "name": "pH FL1"
+      },
+      "hydrolysis_fl1": {
+        "name": "Hydrolysis FL1"
+      },
+      "hydrolysis_water_flow": {
+        "name": "Water Flow"
+      },
+      "ph_tank_level": {
+        "name": "pH Tank Level Low"
+      },
+      "redox_tank_level": {
+        "name": "Redox Tank Level Low"
+      },
+      "hydrolysis_cover": {
+        "name": "Hydrolysis Cover"
+      },
+      "hydrolysis_low_production": {
+        "name": "Hydrolysis Low Production"
+      }
+    },
+    "switch": {
+      "filtration": {
+        "name": "Filtration"
+      },
+      "light": {
+        "name": "Light"
+      },
+      "aux1": {
+        "name": "AUX1"
+      },
+      "aux2": {
+        "name": "AUX2"
+      },
+      "aux3": {
+        "name": "AUX3"
+      },
+      "aux4": {
+        "name": "AUX4"
+      }
+    },
+    "select": {
+      "filtration_mode": {
+        "name": "Filtration Mode"
+      },
+      "filtration_speed": {
+        "name": "Filtration Speed"
+      },
+      "boost_mode": {
+        "name": "Boost Mode"
+      }
+    },
+    "number": {
+      "ph_min": {
+        "name": "pH Min"
+      },
+      "ph_max": {
+        "name": "pH Max"
+      },
+      "redox_setpoint": {
+        "name": "Redox Setpoint"
+      },
+      "hydrolysis_setpoint": {
+        "name": "Hydrolysis Setpoint"
+      }
+    },
+    "button": {
+      "clear_error": {
+        "name": "Clear Error State"
+      }
+    }
+  }
+}
