@@ -316,12 +316,32 @@ lwt_topic = f"tele/{mqtt_topic}/LWT"
 # Payloads: "Online" or "Offline"
 ```
 
+## Pre-Commit Checklist (MUST DO)
+
+**Before committing and pushing**, always run formatting and linting tools on the whole codebase:
+
+```bash
+# Python formatting and linting
+ruff format .
+ruff check . --fix
+
+# Markdown formatting
+mdformat .
+
+# Type checking
+mypy custom_components/sugar_valley_neopool --ignore-missing-imports
+```
+
+All commands must pass without errors before committing.
+
 ## Testing Checklist
 
 Before committing:
 
 - [ ] Run `ruff check .` - no errors
 - [ ] Run `ruff format .` - code formatted
+- [ ] Run `mdformat .` - markdown formatted
+- [ ] Run `mypy` - no type errors
 - [ ] Test with real device or MQTT simulator
 - [ ] Verify entities appear in Home Assistant
 - [ ] Test commands actually control the device
