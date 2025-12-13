@@ -1,23 +1,25 @@
 # Tasmota NeoPool MQTT Complete Reference
 
 ## Table of Contents
-1. [Overview](#overview)
-2. [MQTT Topic Structure](#mqtt-topic-structure)
-3. [Telemetry JSON Structure](#telemetry-json-structure)
-4. [Sensor Readings Reference](#sensor-readings-reference)
-5. [Commands Reference](#commands-reference)
-6. [Configuration Commands](#configuration-commands)
-7. [Low-Level Register Access](#low-level-register-access)
-8. [Data Types and Value Ranges](#data-types-and-value-ranges)
-9. [Special Modes and Features](#special-modes-and-features)
 
----
+1. [Overview](#overview)
+1. [MQTT Topic Structure](#mqtt-topic-structure)
+1. [Telemetry JSON Structure](#telemetry-json-structure)
+1. [Sensor Readings Reference](#sensor-readings-reference)
+1. [Commands Reference](#commands-reference)
+1. [Configuration Commands](#configuration-commands)
+1. [Low-Level Register Access](#low-level-register-access)
+1. [Data Types and Value Ranges](#data-types-and-value-ranges)
+1. [Special Modes and Features](#special-modes-and-features)
+
+______________________________________________________________________
 
 ## Overview
 
 ### What is NeoPool?
 
 Sugar Valley NeoPool is a water treatment system for swimming pools distributed under various brand names:
+
 - **Hidrolife**
 - **Aquascenic**
 - **Oxilife**
@@ -31,6 +33,7 @@ Sugar Valley NeoPool is a water treatment system for swimming pools distributed 
 ### How Tasmota Integration Works
 
 The NeoPool controller uses an RS485 interface with the Modbus protocol for communication. Tasmota provides:
+
 - A dedicated sensor module for NeoPool devices
 - Bi-directional communication via MQTT
 - Complete monitoring of all sensors and states
@@ -40,17 +43,19 @@ The NeoPool controller uses an RS485 interface with the Modbus protocol for comm
 ### Hardware Requirements
 
 **Connection:**
+
 - RS485 interface (requires TTL-UART to RS485 converter for ESP devices)
 - Recommended: M5Stack Atom Lite with Tail485 addon (no separate power supply needed)
 - GPIO: GPIO1 (RX) and GPIO3 (TX) recommended
 - Voltage: 3.3V only
 - Connectors: Use WIFI or EXTERN ports (avoid DISPLAY port if displays are connected)
 
----
+______________________________________________________________________
 
 ## MQTT Topic Structure
 
 ### Topic Pattern
+
 ```
 %topic% = Device topic configured in Tasmota (default: "tasmota")
 ```
@@ -58,26 +63,32 @@ The NeoPool controller uses an RS485 interface with the Modbus protocol for comm
 ### Topic Types
 
 #### 1. Telemetry Topic (Sensor Data)
+
 ```
 tele/%topic%/SENSOR
 ```
+
 - **Direction:** Published by device
 - **Frequency:** Every TelePeriod seconds (configurable)
 - **Content:** Complete sensor readings in JSON format
 - **Special:** Can be triggered on value changes with NPTelePeriod command
 
 #### 2. Command Topic
+
 ```
 cmnd/%topic%/<command>
 ```
+
 - **Direction:** Subscribe to receive commands
 - **Format:** `cmnd/%topic%/NPFiltration` (example)
 - **Payload:** Command-specific value or JSON
 
 #### 3. Status/Result Topic
+
 ```
 stat/%topic%/RESULT
 ```
+
 - **Direction:** Published by device
 - **Content:** Response to commands, status updates
 - **Format:** JSON with command results
@@ -85,6 +96,7 @@ stat/%topic%/RESULT
 ### Example Topics
 
 For a device with topic "poolcontroller":
+
 ```
 tele/poolcontroller/SENSOR          # Sensor telemetry
 cmnd/poolcontroller/NPFiltration    # Filtration control command
@@ -93,7 +105,7 @@ cmnd/poolcontroller/NPpHMin         # pH minimum setting
 stat/poolcontroller/RESULT          # Command responses
 ```
 
----
+______________________________________________________________________
 
 ## Telemetry JSON Structure
 
@@ -200,6 +212,7 @@ Published to: `tele/%topic%/SENSOR`
 ### Module Object
 
 Indicates which hardware modules are installed:
+
 ```json
 "Module": {
   "pH": 0,              // 0 = not installed, 1 = installed
@@ -214,6 +227,7 @@ Indicates which hardware modules are installed:
 ### Powerunit Object
 
 System voltage and version information:
+
 ```json
 "Powerunit": {
   "Version": "V1.2.3",    // Firmware version string
@@ -240,6 +254,7 @@ System voltage and version information:
 ```
 
 **pH.State Values:**
+
 - `0` = No alarm
 - `1` = pH too high (exceeds +0.8 from setpoint)
 - `2` = pH too low (exceeds -0.8 from setpoint)
@@ -301,6 +316,7 @@ System voltage and version information:
 ```
 
 **Hydrolysis.State Values:**
+
 - `OFF` = Hydrolysis off
 - `FLOW` = Water flow alarm (no flow detected)
 - `POL1` = Polarity 1 active
@@ -317,6 +333,7 @@ System voltage and version information:
 ```
 
 **Filtration.Mode Values:**
+
 - `0` = Manual
 - `1` = Auto (timer-based)
 - `2` = Heating
@@ -344,6 +361,7 @@ System voltage and version information:
 ### Connection Object (ESP32 Only)
 
 Requires `NPSetOption1 1` to enable:
+
 ```json
 "Connection": {
   "Time": "2025-01-15T14:30:00",  // Last successful communication
@@ -356,11 +374,12 @@ Requires `NPSetOption1 1` to enable:
 }
 ```
 
----
+______________________________________________________________________
 
 ## Sensor Readings Reference
 
 ### Temperature
+
 - **JSON Path:** `NeoPool.Temperature`
 - **Type:** Float
 - **Unit:** °C (Celsius)
@@ -368,6 +387,7 @@ Requires `NPSetOption1 1` to enable:
 - **Example:** `23.5`
 
 ### pH Readings
+
 - **Current pH:** `NeoPool.pH.Data`
   - Type: Float
   - Range: 0.0-14.0 (typical pool range: 6.8-8.0)
@@ -390,6 +410,7 @@ Requires `NPSetOption1 1` to enable:
   - Type: Binary (0/1, 0=empty warning)
 
 ### Redox (ORP) Readings
+
 - **Current Redox:** `NeoPool.Redox.Data`
   - Type: Integer
   - Unit: mV (millivolts)
@@ -401,6 +422,7 @@ Requires `NPSetOption1 1` to enable:
   - Range: 0-1000 mV
 
 ### Chlorine Readings
+
 - **Current Chlorine:** `NeoPool.Chlorine.Data`
   - Type: Float
   - Unit: ppm (parts per million)
@@ -413,12 +435,14 @@ Requires `NPSetOption1 1` to enable:
   - Range: 0.0-10.0 ppm
 
 ### Conductivity
+
 - **Reading:** `NeoPool.Conductivity`
 - **Type:** Integer
 - **Unit:** Percentage (%)
 - **Range:** 0-100%
 
 ### Ionization Readings
+
 - **Current Level:** `NeoPool.Ionization.Data`
   - Type: Integer
   - Range: 0-max (device-specific)
@@ -431,6 +455,7 @@ Requires `NPSetOption1 1` to enable:
   - Device-specific maximum value
 
 ### Hydrolysis (Chlorine Production)
+
 - **Production Level:** `NeoPool.Hydrolysis.Data`
   - Type: Float or Integer
   - Unit: % or g/h (depends on unit setting)
@@ -455,6 +480,7 @@ Requires `NPSetOption1 1` to enable:
   - Type: Binary (0=open, 1=covered)
 
 ### Filtration
+
 - **Pump State:** `NeoPool.Filtration.State`
   - Type: Binary (0=off, 1=on)
 - **Pump Speed:** `NeoPool.Filtration.Speed`
@@ -465,16 +491,18 @@ Requires `NPSetOption1 1` to enable:
   - Values: 0=Manual, 1=Auto, 2=Heating, 3=Smart, 4=Intelligent, 13=Backwash
 
 ### Light
+
 - **State:** `NeoPool.Light`
 - **Type:** Binary (0=off, 1=on)
 
 ### Power Supply Voltages
+
 - **5V Rail:** `NeoPool.Powerunit.5V` (Float, typical: 4.9-5.2V)
 - **12V Rail:** `NeoPool.Powerunit.12V` (Float, typical: 11.8-12.5V)
 - **24-30V Rail:** `NeoPool.Powerunit.24-30V` (Float, typical: 24-30V)
 - **4-20mA Current:** `NeoPool.Powerunit.4-20mA` (Float, typical: 4-20mA)
 
----
+______________________________________________________________________
 
 ## Commands Reference
 
@@ -483,6 +511,7 @@ Requires `NPSetOption1 1` to enable:
 Commands are sent to: `cmnd/%topic%/<command>`
 
 **Example:**
+
 ```
 Topic: cmnd/poolcontroller/NPFiltration
 Payload: 1
@@ -490,16 +519,18 @@ Payload: 1
 
 The device responds on: `stat/%topic%/RESULT`
 
----
+______________________________________________________________________
 
 ### Core Control Commands
 
 #### NPFiltration
+
 **Control filtration pump on/off and speed**
 
 **Topic:** `cmnd/%topic%/NPFiltration`
 
 **Payload:**
+
 - `0` = Turn pump off
 - `1` = Turn pump on
 - `1 1` = Turn pump on, speed 1 (low)
@@ -509,20 +540,23 @@ The device responds on: `stat/%topic%/RESULT`
 **Format:** `<state>` or `<state> <speed>`
 
 **Examples:**
+
 ```
 NPFiltration 0        # Turn off
 NPFiltration 1        # Turn on (last speed)
 NPFiltration 1 2      # Turn on at medium speed
 ```
 
----
+______________________________________________________________________
 
 #### NPFiltrationmode
+
 **Set filtration operating mode**
 
 **Topic:** `cmnd/%topic%/NPFiltrationmode`
 
 **Payload:**
+
 - `0` = Manual mode
 - `1` = Auto mode (timer-based)
 - `2` = Heating mode
@@ -531,6 +565,7 @@ NPFiltration 1 2      # Turn on at medium speed
 - `13` = Backwash mode
 
 **Mode Descriptions:**
+
 - **Manual (0):** Direct on/off control via NPFiltration command
 - **Auto (1):** Timer-based scheduling (requires timer configuration)
 - **Heating (2):** Temperature-dependent with heating integration
@@ -539,55 +574,64 @@ NPFiltration 1 2      # Turn on at medium speed
 - **Backwash (13):** Specialized filter maintenance mode
 
 **Examples:**
+
 ```
 NPFiltrationmode 1    # Set to Auto mode
 NPFiltrationmode 3    # Set to Smart mode
 ```
 
----
+______________________________________________________________________
 
 #### NPFiltrationspeed
+
 **Set filtration pump speed**
 
 **Topic:** `cmnd/%topic%/NPFiltrationspeed`
 
 **Payload:**
+
 - `1` = Low speed
 - `2` = Medium speed
 - `3` = High speed
 
 **Examples:**
+
 ```
 NPFiltrationspeed 2   # Set to medium speed
 ```
 
----
+______________________________________________________________________
 
 #### NPBoost
+
 **Control hydrolysis boost mode**
 
 **Topic:** `cmnd/%topic%/NPBoost`
 
 **Payload:**
+
 - `0` or `OFF` = Boost off
 - `1` or `ON` = Boost on (independent of redox)
 - `2` or `REDOX` = Boost on (respects redox settings)
 
 **Examples:**
+
 ```
 NPBoost 0             # Disable boost
 NPBoost ON            # Enable boost (ignore redox)
 NPBoost REDOX         # Enable boost (respect redox limits)
 ```
 
----
+______________________________________________________________________
 
 #### NPLight
+
 **Control pool light**
 
 **Topic:** `cmnd/%topic%/NPLight`
 
 **Payload:**
+
 - `0` = Off
 - `1` = On
 - `2` = Toggle
@@ -596,6 +640,7 @@ NPBoost REDOX         # Enable boost (respect redox limits)
 - `<state> <delay>` = Optional delay parameter
 
 **Examples:**
+
 ```
 NPLight 0             # Turn off
 NPLight 1             # Turn on
@@ -603,28 +648,32 @@ NPLight 2             # Toggle current state
 NPLight 1 300         # Turn on with 300s delay
 ```
 
----
+______________________________________________________________________
 
 #### NPTime
+
 **Synchronize device time**
 
 **Topic:** `cmnd/%topic%/NPTime`
 
 **Payload:**
+
 - `0` = Sync with Tasmota local time
 - `1` = Sync with Tasmota UTC time
 - `<epoch>` = Set specific Unix timestamp
 
 **Examples:**
+
 ```
 NPTime 0              # Sync to local time
 NPTime 1              # Sync to UTC
 NPTime 1673784000     # Set specific timestamp
 ```
 
----
+______________________________________________________________________
 
 #### NPpHMin
+
 **Set pH minimum threshold**
 
 **Topic:** `cmnd/%topic%/NPpHMin`
@@ -632,14 +681,16 @@ NPTime 1673784000     # Set specific timestamp
 **Payload:** Float value (0.0-14.0)
 
 **Examples:**
+
 ```
 NPpHMin 7.0           # Set minimum pH to 7.0
 NPpHMin 6.8           # Set minimum pH to 6.8
 ```
 
----
+______________________________________________________________________
 
 #### NPpHMax
+
 **Set pH maximum threshold**
 
 **Topic:** `cmnd/%topic%/NPpHMax`
@@ -647,14 +698,16 @@ NPpHMin 6.8           # Set minimum pH to 6.8
 **Payload:** Float value (0.0-14.0)
 
 **Examples:**
+
 ```
 NPpHMax 7.4           # Set maximum pH to 7.4
 NPpHMax 7.6           # Set maximum pH to 7.6
 ```
 
----
+______________________________________________________________________
 
 #### NPRedox
+
 **Set redox (ORP) setpoint**
 
 **Topic:** `cmnd/%topic%/NPRedox`
@@ -662,32 +715,37 @@ NPpHMax 7.6           # Set maximum pH to 7.6
 **Payload:** Integer value (0-1000 mV)
 
 **Examples:**
+
 ```
 NPRedox 700           # Set redox target to 700 mV
 NPRedox 750           # Set redox target to 750 mV
 ```
 
----
+______________________________________________________________________
 
 #### NPHydrolysis
+
 **Set hydrolysis production level**
 
 **Topic:** `cmnd/%topic%/NPHydrolysis`
 
 **Payload:**
+
 - `0-100` = Percentage (when unit is %)
 - `0-max` = g/h (when unit is g/h, device-specific max)
 
 **Examples:**
+
 ```
 NPHydrolysis 75       # Set to 75% or 75 g/h
 NPHydrolysis 100      # Set to maximum
 NPHydrolysis 0        # Disable production
 ```
 
----
+______________________________________________________________________
 
 #### NPChlorine
+
 **Set free chlorine setpoint**
 
 **Topic:** `cmnd/%topic%/NPChlorine`
@@ -695,14 +753,16 @@ NPHydrolysis 0        # Disable production
 **Payload:** Float value (0.0-10.0 ppm)
 
 **Examples:**
+
 ```
 NPChlorine 1.5        # Set chlorine target to 1.5 ppm
 NPChlorine 2.0        # Set chlorine target to 2.0 ppm
 ```
 
----
+______________________________________________________________________
 
 #### NPIonization
+
 **Set ionization level**
 
 **Topic:** `cmnd/%topic%/NPIonization`
@@ -710,14 +770,16 @@ NPChlorine 2.0        # Set chlorine target to 2.0 ppm
 **Payload:** Integer value (0-max, device-specific)
 
 **Examples:**
+
 ```
 NPIonization 5        # Set ionization to level 5
 NPIonization 0        # Disable ionization
 ```
 
----
+______________________________________________________________________
 
 #### NPControl
+
 **Display module and relay configuration**
 
 **Topic:** `cmnd/%topic%/NPControl`
@@ -727,33 +789,38 @@ NPIonization 0        # Disable ionization
 **Response:** Shows which modules are installed and relay assignments
 
 **Examples:**
+
 ```
 NPControl             # Display current configuration
 ```
 
----
+______________________________________________________________________
 
 ## Configuration Commands
 
 ### NPTelePeriod
+
 **Configure telemetry reporting**
 
 **Topic:** `cmnd/%topic%/NPTelePeriod`
 
 **Payload:**
+
 - `0` = Automatic telemetry on value changes only
 - `5-3600` = Report every N seconds (overrides Tasmota TelePeriod)
 
 **Examples:**
+
 ```
 NPTelePeriod 0        # Report only on changes
 NPTelePeriod 60       # Report every 60 seconds
 NPTelePeriod 300      # Report every 5 minutes
 ```
 
----
+______________________________________________________________________
 
 ### NPOnError
+
 **Set Modbus error retry attempts**
 
 **Topic:** `cmnd/%topic%/NPOnError`
@@ -761,31 +828,36 @@ NPTelePeriod 300      # Report every 5 minutes
 **Payload:** Integer (0-10 retry attempts)
 
 **Examples:**
+
 ```
 NPOnError 3           # Retry 3 times on error
 NPOnError 0           # No retries
 ```
 
----
+______________________________________________________________________
 
 ### NPResult
+
 **Set numeric output format**
 
 **Topic:** `cmnd/%topic%/NPResult`
 
 **Payload:**
+
 - `0` = Decimal format
 - `1` = Hexadecimal format
 
 **Examples:**
+
 ```
 NPResult 0            # Use decimal format
 NPResult 1            # Use hexadecimal format
 ```
 
----
+______________________________________________________________________
 
 ### NPPHRes
+
 **Set pH decimal precision**
 
 **Topic:** `cmnd/%topic%/NPPHRes`
@@ -793,14 +865,16 @@ NPResult 1            # Use hexadecimal format
 **Payload:** Integer (0-3 decimal places)
 
 **Examples:**
+
 ```
 NPPHRes 1             # pH with 1 decimal place (7.2)
 NPPHRes 2             # pH with 2 decimal places (7.25)
 ```
 
----
+______________________________________________________________________
 
 ### NPCLRes
+
 **Set chlorine decimal precision**
 
 **Topic:** `cmnd/%topic%/NPCLRes`
@@ -808,14 +882,16 @@ NPPHRes 2             # pH with 2 decimal places (7.25)
 **Payload:** Integer (0-3 decimal places)
 
 **Examples:**
+
 ```
 NPCLRes 1             # Chlorine with 1 decimal place (1.5)
 NPCLRes 2             # Chlorine with 2 decimal places (1.52)
 ```
 
----
+______________________________________________________________________
 
 ### NPIONRes
+
 **Set ionization decimal precision**
 
 **Topic:** `cmnd/%topic%/NPIONRes`
@@ -823,60 +899,69 @@ NPCLRes 2             # Chlorine with 2 decimal places (1.52)
 **Payload:** Integer (0-3 decimal places)
 
 **Examples:**
+
 ```
 NPIONRes 0            # Ionization as integer
 NPIONRes 1            # Ionization with 1 decimal place
 ```
 
----
+______________________________________________________________________
 
 ### NPSetOption0
+
 **Enable data validation and correction**
 
 **Topic:** `cmnd/%topic%/NPSetOption0`
 
 **Payload:**
+
 - `0` = Disable automatic correction
 - `1` = Enable automatic correction of out-of-range values
 
 **Examples:**
+
 ```
 NPSetOption0 1        # Enable validation
 NPSetOption0 0        # Disable validation
 ```
 
----
+______________________________________________________________________
 
 ### NPSetOption1
+
 **Enable connection statistics (ESP32 only)**
 
 **Topic:** `cmnd/%topic%/NPSetOption1`
 
 **Payload:**
+
 - `0` = Disable statistics
 - `1` = Enable Modbus connection statistics in telemetry
 
 **Examples:**
+
 ```
 NPSetOption1 1        # Enable statistics
 NPSetOption1 0        # Disable statistics
 ```
 
----
+______________________________________________________________________
 
 ## Low-Level Register Access
 
 These commands provide direct Modbus register access for advanced users.
 
 ### Address Ranges
+
 - **0x0000-0x03FF:** Read-only status registers
 - **0x0400-0x04EE:** Installer parameters
 - **0x0500-0x05FF:** User settings
 - **0x0600-0x06FF:** Miscellaneous registers
 
----
+______________________________________________________________________
 
 ### NPRead
+
 **Read 16-bit register(s)**
 
 **Topic:** `cmnd/%topic%/NPRead`
@@ -884,14 +969,16 @@ These commands provide direct Modbus register access for advanced users.
 **Payload:** `<address>` or `<address> <count>`
 
 **Examples:**
+
 ```
 NPRead 0x0500         # Read single register at 0x0500
 NPRead 0x0500 5       # Read 5 consecutive registers starting at 0x0500
 ```
 
----
+______________________________________________________________________
 
 ### NPReadL
+
 **Read 32-bit register(s)**
 
 **Topic:** `cmnd/%topic%/NPReadL`
@@ -899,14 +986,16 @@ NPRead 0x0500 5       # Read 5 consecutive registers starting at 0x0500
 **Payload:** `<address>` or `<address> <count>`
 
 **Examples:**
+
 ```
 NPReadL 0x0500        # Read 32-bit value at 0x0500
 NPReadL 0x0500 3      # Read 3 consecutive 32-bit values
 ```
 
----
+______________________________________________________________________
 
 ### NPReadLSB
+
 **Read register LSB (Least Significant Byte) only**
 
 **Topic:** `cmnd/%topic%/NPReadLSB`
@@ -914,13 +1003,15 @@ NPReadL 0x0500 3      # Read 3 consecutive 32-bit values
 **Payload:** `<address>` or `<address> <count>`
 
 **Examples:**
+
 ```
 NPReadLSB 0x0500      # Read LSB of register at 0x0500
 ```
 
----
+______________________________________________________________________
 
 ### NPReadMSB
+
 **Read register MSB (Most Significant Byte) only**
 
 **Topic:** `cmnd/%topic%/NPReadMSB`
@@ -928,13 +1019,15 @@ NPReadLSB 0x0500      # Read LSB of register at 0x0500
 **Payload:** `<address>` or `<address> <count>`
 
 **Examples:**
+
 ```
 NPReadMSB 0x0500      # Read MSB of register at 0x0500
 ```
 
----
+______________________________________________________________________
 
 ### NPWrite
+
 **Write 16-bit value(s) to register(s)**
 
 **Topic:** `cmnd/%topic%/NPWrite`
@@ -942,14 +1035,16 @@ NPReadMSB 0x0500      # Read MSB of register at 0x0500
 **Payload:** `<address> <data>` or `<address> <data1> <data2> ...`
 
 **Examples:**
+
 ```
 NPWrite 0x0500 1234   # Write 1234 to register 0x0500
 NPWrite 0x0500 100 200 300  # Write multiple values
 ```
 
----
+______________________________________________________________________
 
 ### NPWriteL
+
 **Write 32-bit value(s) to register(s)**
 
 **Topic:** `cmnd/%topic%/NPWriteL`
@@ -957,13 +1052,15 @@ NPWrite 0x0500 100 200 300  # Write multiple values
 **Payload:** `<address> <data>` or `<address> <data1> <data2> ...`
 
 **Examples:**
+
 ```
 NPWriteL 0x0500 123456  # Write 32-bit value to 0x0500
 ```
 
----
+______________________________________________________________________
 
 ### NPWriteLSB
+
 **Write LSB byte only**
 
 **Topic:** `cmnd/%topic%/NPWriteLSB`
@@ -971,13 +1068,15 @@ NPWriteL 0x0500 123456  # Write 32-bit value to 0x0500
 **Payload:** `<address> <data>` or `<address> <data1> <data2> ...`
 
 **Examples:**
+
 ```
 NPWriteLSB 0x0500 0xFF  # Write 0xFF to LSB of register
 ```
 
----
+______________________________________________________________________
 
 ### NPWriteMSB
+
 **Write MSB byte only**
 
 **Topic:** `cmnd/%topic%/NPWriteMSB`
@@ -985,48 +1084,56 @@ NPWriteLSB 0x0500 0xFF  # Write 0xFF to LSB of register
 **Payload:** `<address> <data>` or `<address> <data1> <data2> ...`
 
 **Examples:**
+
 ```
 NPWriteMSB 0x0500 0xFF  # Write 0xFF to MSB of register
 ```
 
----
+______________________________________________________________________
 
 ### NPBit
+
 **Read/Write single bit in 16-bit register**
 
 **Topic:** `cmnd/%topic%/NPBit`
 
 **Payload:**
+
 - `<address> <bit>` = Read bit
 - `<address> <bit> <data>` = Write bit (data: 0 or 1)
 
 **Examples:**
+
 ```
 NPBit 0x0500 5        # Read bit 5 of register 0x0500
 NPBit 0x0500 5 1      # Set bit 5 to 1
 NPBit 0x0500 5 0      # Clear bit 5
 ```
 
----
+______________________________________________________________________
 
 ### NPBitL
+
 **Read/Write single bit in 32-bit register**
 
 **Topic:** `cmnd/%topic%/NPBitL`
 
 **Payload:**
+
 - `<address> <bit>` = Read bit
 - `<address> <bit> <data>` = Write bit (data: 0 or 1)
 
 **Examples:**
+
 ```
 NPBitL 0x0500 20      # Read bit 20 of 32-bit register
 NPBitL 0x0500 20 1    # Set bit 20 to 1
 ```
 
----
+______________________________________________________________________
 
 ### NPEscape
+
 **Clear error states**
 
 **Topic:** `cmnd/%topic%/NPEscape`
@@ -1034,13 +1141,15 @@ NPBitL 0x0500 20 1    # Set bit 20 to 1
 **Payload:** None
 
 **Examples:**
+
 ```
 NPEscape              # Clear all error states
 ```
 
----
+______________________________________________________________________
 
 ### NPExec
+
 **Apply register changes without EEPROM save**
 
 **Topic:** `cmnd/%topic%/NPExec`
@@ -1050,13 +1159,15 @@ NPEscape              # Clear all error states
 **Description:** Applies pending register changes to active configuration without persisting to EEPROM. Changes will be lost on device reboot.
 
 **Examples:**
+
 ```
 NPExec                # Apply changes (temporary)
 ```
 
----
+______________________________________________________________________
 
 ### NPSave
+
 **Save changes to EEPROM**
 
 **Topic:** `cmnd/%topic%/NPSave`
@@ -1066,52 +1177,54 @@ NPExec                # Apply changes (temporary)
 **Description:** Persists current configuration to device EEPROM. Changes survive device reboot.
 
 **Examples:**
+
 ```
 NPSave                # Save configuration permanently
 ```
 
----
+______________________________________________________________________
 
 ## Data Types and Value Ranges
 
 ### Complete Type Reference
 
-| Data Field | JSON Path | Type | Range | Unit | Precision |
-|------------|-----------|------|-------|------|-----------|
-| Temperature | `NeoPool.Temperature` | Float | 0-40 | °C | 0.1°C |
-| pH Current | `NeoPool.pH.Data` | Float | 0-14 | pH | Configurable (0-3) |
-| pH Min | `NeoPool.pH.Min` | Float | 0-14 | pH | Configurable (0-3) |
-| pH Max | `NeoPool.pH.Max` | Float | 0-14 | pH | Configurable (0-3) |
-| pH State | `NeoPool.pH.State` | Integer | 0-6 | enum | N/A |
-| pH Pump | `NeoPool.pH.Pump` | Integer | 0-2 | enum | N/A |
-| pH Flow | `NeoPool.pH.FL1` | Binary | 0-1 | boolean | N/A |
-| pH Tank | `NeoPool.pH.Tank` | Binary | 0-1 | boolean | N/A |
-| Redox Current | `NeoPool.Redox.Data` | Integer | 0-1000 | mV | 1 mV |
-| Redox Setpoint | `NeoPool.Redox.Setpoint` | Integer | 0-1000 | mV | 1 mV |
-| Chlorine Current | `NeoPool.Chlorine.Data` | Float | 0-10 | ppm | Configurable (0-3) |
-| Chlorine Setpoint | `NeoPool.Chlorine.Setpoint` | Float | 0-10 | ppm | Configurable (0-3) |
-| Conductivity | `NeoPool.Conductivity` | Integer | 0-100 | % | 1% |
-| Ionization Current | `NeoPool.Ionization.Data` | Integer | 0-max | level | Configurable (0-3) |
-| Ionization Setpoint | `NeoPool.Ionization.Setpoint` | Integer | 0-max | level | Configurable (0-3) |
-| Ionization Max | `NeoPool.Ionization.Max` | Integer | device | level | N/A |
-| Hydrolysis Current | `NeoPool.Hydrolysis.Data` | Float/Int | 0-100 or 0-max | % or g/h | 0.1 or 1 |
-| Hydrolysis Setpoint | `NeoPool.Hydrolysis.Setpoint` | Float/Int | 0-100 or 0-max | % or g/h | 0.1 or 1 |
-| Hydrolysis State | `NeoPool.Hydrolysis.State` | String | enum | N/A | N/A |
-| Hydrolysis Boost | `NeoPool.Hydrolysis.Boost` | Integer | 0-2 | enum | N/A |
-| Hydrolysis Cover | `NeoPool.Hydrolysis.Cover` | Binary | 0-1 | boolean | N/A |
-| Filtration State | `NeoPool.Filtration.State` | Binary | 0-1 | boolean | N/A |
-| Filtration Speed | `NeoPool.Filtration.Speed` | Integer | 1-3 | enum | N/A |
-| Filtration Mode | `NeoPool.Filtration.Mode` | Integer | 0-4, 13 | enum | N/A |
-| Light | `NeoPool.Light` | Binary | 0-1 | boolean | N/A |
-| Relay State | `NeoPool.Relay.State[n]` | Binary | 0-1 | boolean | N/A |
-| Voltage 5V | `NeoPool.Powerunit.5V` | Float | 4.5-5.5 | V | 0.1V |
-| Voltage 12V | `NeoPool.Powerunit.12V` | Float | 11-13 | V | 0.1V |
-| Voltage 24-30V | `NeoPool.Powerunit.24-30V` | Float | 24-30 | V | 0.1V |
-| Current 4-20mA | `NeoPool.Powerunit.4-20mA` | Float | 4-20 | mA | 0.1mA |
+| Data Field          | JSON Path                     | Type      | Range          | Unit     | Precision          |
+| ------------------- | ----------------------------- | --------- | -------------- | -------- | ------------------ |
+| Temperature         | `NeoPool.Temperature`         | Float     | 0-40           | °C       | 0.1°C              |
+| pH Current          | `NeoPool.pH.Data`             | Float     | 0-14           | pH       | Configurable (0-3) |
+| pH Min              | `NeoPool.pH.Min`              | Float     | 0-14           | pH       | Configurable (0-3) |
+| pH Max              | `NeoPool.pH.Max`              | Float     | 0-14           | pH       | Configurable (0-3) |
+| pH State            | `NeoPool.pH.State`            | Integer   | 0-6            | enum     | N/A                |
+| pH Pump             | `NeoPool.pH.Pump`             | Integer   | 0-2            | enum     | N/A                |
+| pH Flow             | `NeoPool.pH.FL1`              | Binary    | 0-1            | boolean  | N/A                |
+| pH Tank             | `NeoPool.pH.Tank`             | Binary    | 0-1            | boolean  | N/A                |
+| Redox Current       | `NeoPool.Redox.Data`          | Integer   | 0-1000         | mV       | 1 mV               |
+| Redox Setpoint      | `NeoPool.Redox.Setpoint`      | Integer   | 0-1000         | mV       | 1 mV               |
+| Chlorine Current    | `NeoPool.Chlorine.Data`       | Float     | 0-10           | ppm      | Configurable (0-3) |
+| Chlorine Setpoint   | `NeoPool.Chlorine.Setpoint`   | Float     | 0-10           | ppm      | Configurable (0-3) |
+| Conductivity        | `NeoPool.Conductivity`        | Integer   | 0-100          | %        | 1%                 |
+| Ionization Current  | `NeoPool.Ionization.Data`     | Integer   | 0-max          | level    | Configurable (0-3) |
+| Ionization Setpoint | `NeoPool.Ionization.Setpoint` | Integer   | 0-max          | level    | Configurable (0-3) |
+| Ionization Max      | `NeoPool.Ionization.Max`      | Integer   | device         | level    | N/A                |
+| Hydrolysis Current  | `NeoPool.Hydrolysis.Data`     | Float/Int | 0-100 or 0-max | % or g/h | 0.1 or 1           |
+| Hydrolysis Setpoint | `NeoPool.Hydrolysis.Setpoint` | Float/Int | 0-100 or 0-max | % or g/h | 0.1 or 1           |
+| Hydrolysis State    | `NeoPool.Hydrolysis.State`    | String    | enum           | N/A      | N/A                |
+| Hydrolysis Boost    | `NeoPool.Hydrolysis.Boost`    | Integer   | 0-2            | enum     | N/A                |
+| Hydrolysis Cover    | `NeoPool.Hydrolysis.Cover`    | Binary    | 0-1            | boolean  | N/A                |
+| Filtration State    | `NeoPool.Filtration.State`    | Binary    | 0-1            | boolean  | N/A                |
+| Filtration Speed    | `NeoPool.Filtration.Speed`    | Integer   | 1-3            | enum     | N/A                |
+| Filtration Mode     | `NeoPool.Filtration.Mode`     | Integer   | 0-4, 13        | enum     | N/A                |
+| Light               | `NeoPool.Light`               | Binary    | 0-1            | boolean  | N/A                |
+| Relay State         | `NeoPool.Relay.State[n]`      | Binary    | 0-1            | boolean  | N/A                |
+| Voltage 5V          | `NeoPool.Powerunit.5V`        | Float     | 4.5-5.5        | V        | 0.1V               |
+| Voltage 12V         | `NeoPool.Powerunit.12V`       | Float     | 11-13          | V        | 0.1V               |
+| Voltage 24-30V      | `NeoPool.Powerunit.24-30V`    | Float     | 24-30          | V        | 0.1V               |
+| Current 4-20mA      | `NeoPool.Powerunit.4-20mA`    | Float     | 4-20           | mA       | 0.1mA              |
 
 ### Enumeration Details
 
 **pH.State (Integer 0-6):**
+
 ```
 0 = OK (no alarm)
 1 = pH high alarm (>setpoint + 0.8)
@@ -1123,6 +1236,7 @@ NPSave                # Save configuration permanently
 ```
 
 **pH.Pump (Integer 0-2):**
+
 ```
 0 = Inactive
 1 = Dosing (pump on)
@@ -1130,6 +1244,7 @@ NPSave                # Save configuration permanently
 ```
 
 **Hydrolysis.State (String):**
+
 ```
 "OFF"   = Hydrolysis disabled
 "FLOW"  = Flow alarm (no water flow detected)
@@ -1138,6 +1253,7 @@ NPSave                # Save configuration permanently
 ```
 
 **Hydrolysis.Boost (Integer 0-2):**
+
 ```
 0 = Boost off
 1 = Boost on (independent mode)
@@ -1145,6 +1261,7 @@ NPSave                # Save configuration permanently
 ```
 
 **Filtration.Speed (Integer 1-3):**
+
 ```
 1 = Low speed
 2 = Medium speed
@@ -1152,6 +1269,7 @@ NPSave                # Save configuration permanently
 ```
 
 **Filtration.Mode (Integer):**
+
 ```
 0  = Manual
 1  = Auto (timer-based)
@@ -1161,120 +1279,137 @@ NPSave                # Save configuration permanently
 13 = Backwash
 ```
 
----
+______________________________________________________________________
 
 ## Special Modes and Features
 
 ### Filtration Modes Explained
 
 #### Manual Mode (0)
+
 - Direct control via NPFiltration command
 - No automatic scheduling
 - User must manually turn pump on/off
 - Suitable for manual pool maintenance
 
 #### Auto Mode (1)
+
 - Timer-based scheduling
 - Requires configuration of timer blocks via Modbus registers
 - Pump runs according to programmed schedule
 - Register: MBF_PAR_TIMER_BLOCK_FILT_INT
 
 #### Heating Mode (2)
+
 - Temperature-dependent operation
 - Integrates with pool heating system
 - Adjusts filtration based on heating requirements
 - Ensures proper circulation during heating cycles
 
 #### Smart Mode (3)
+
 - Dynamic scheduling based on water temperature
 - Automatically adjusts filtration duration
 - Higher temperatures = longer filtration times
 - Energy-efficient operation
 
 #### Intelligent Mode (4)
+
 - Advanced optimization combining heating and filtration
 - Learns pool behavior patterns
 - Optimizes energy consumption
 - Best for automated pool management
 
 #### Backwash Mode (13)
+
 - Specialized filter cleaning mode
 - Reverses flow direction
 - Used for filter maintenance
 - Typically manual activation
 
----
+______________________________________________________________________
 
 ### Hydrolysis Features
 
 #### Polarity Switching
+
 - Automatic electrode polarity reversal
 - Prevents calcium buildup on electrodes
 - Runtime tracked separately for POL1 and POL2
 - Polarity changes counted in `Runtime.Changes`
 
 #### Boost Mode
+
 Three boost operating modes:
 
 1. **Off (0):** Normal production following setpoint
-2. **On (1):** Maximum production independent of redox readings
-3. **Redox (2):** Boost production while respecting redox limits
+1. **On (1):** Maximum production independent of redox readings
+1. **Redox (2):** Boost production while respecting redox limits
 
 #### Cover Detection
+
 - Pool cover sensor input: `Hydrolysis.Cover`
 - Reduces chlorine production when covered
 - Saves chemical and energy costs
 - Prevents over-chlorination
 
 #### Flow Detection
+
 - `Hydrolysis.FL1` monitors water flow
 - State changes to "FLOW" when no flow detected
 - Safety feature to prevent dry running
 - Protects electrode cell
 
----
+______________________________________________________________________
 
 ### pH Control Features
 
 #### Dual Threshold System
+
 - **Min threshold:** Lower acceptable pH limit
 - **Max threshold:** Upper acceptable pH limit
 - Alarm states triggered when outside range
 - Automatic dosing between thresholds
 
 #### Multi-Level Alarms
+
 Six distinct alarm states provide graduated warnings:
+
 1. **State 0:** Normal operation
-2. **State 1:** Critical high (>0.8 above setpoint)
-3. **State 2:** Critical low (<0.8 below setpoint)
-4. **State 3:** Pump timeout (dosing failure)
-5. **State 4:** Warning high (>0.1 above setpoint)
-6. **State 5:** Warning low (<0.3 below setpoint)
-7. **State 6:** Tank empty (chemical reservoir)
+1. **State 1:** Critical high (>0.8 above setpoint)
+1. **State 2:** Critical low (\<0.8 below setpoint)
+1. **State 3:** Pump timeout (dosing failure)
+1. **State 4:** Warning high (>0.1 above setpoint)
+1. **State 5:** Warning low (\<0.3 below setpoint)
+1. **State 6:** Tank empty (chemical reservoir)
 
 #### Tank Level Monitoring
+
 - `pH.Tank` binary sensor
 - Prevents dry running of dosing pump
 - Alerts when chemical reservoir needs refilling
 
----
+______________________________________________________________________
 
 ### Relay System
 
 #### Relay Types
 
 **General Relays (1-7):**
+
 - Configurable for various functions
 - Array index 0-6 in `Relay.State`
 - Binary on/off control
 
 **Auxiliary Relays (Aux1-4):**
+
 - Additional control outputs
 - Array index 0-3 in `Relay.Aux`
 - ESP32 Berry scripting support for extended control
 
 **Functional Assignments:**
 Named relays with specific purposes:
+
 - `Relay.Acid` - Acid dosing pump
 - `Relay.Base` - Base dosing pump
 - `Relay.Redox` - Redox control output
@@ -1285,73 +1420,84 @@ Named relays with specific purposes:
 - `Relay.Valve` - Valve control (multi-port, etc.)
 
 #### Berry Script Extensions (ESP32 Only)
+
 Advanced auxiliary relay control via Berry scripting:
+
 - `NPAux1` - Control auxiliary relay 1
 - `NPAux2` - Control auxiliary relay 2
 - `NPAux3` - Control auxiliary relay 3
 - `NPAux4` - Control auxiliary relay 4
 
 Additional Berry features:
+
 - Timer management (12 device timers)
 - Configuration backup/restore
 - Smart mode antifreeze control
 - Firmware version queries
 
----
+______________________________________________________________________
 
 ### Time Synchronization
 
 #### NPTime Command
+
 Prevents device clock drift by synchronizing with Tasmota:
 
 **Options:**
+
 - `NPTime 0` - Sync to Tasmota local time
 - `NPTime 1` - Sync to Tasmota UTC time
 - `NPTime <epoch>` - Set specific Unix timestamp
 
 **Recommendation:** Set up periodic time sync (e.g., daily) via automation
 
----
+______________________________________________________________________
 
 ### Telemetry Optimization
 
 #### NPTelePeriod Feature
+
 Two telemetry modes:
 
 **Change-Based (`NPTelePeriod 0`):**
+
 - Publishes only when sensor values change
 - Reduces MQTT traffic
 - Ideal for battery-powered ESP devices
 - Recommended for most installations
 
 **Time-Based (`NPTelePeriod 5-3600`):**
+
 - Publishes at fixed intervals
 - Overrides Tasmota's global TelePeriod
 - Useful for logging/graphing requirements
 - Higher network traffic
 
----
+______________________________________________________________________
 
 ### Data Validation (NPSetOption0)
 
 When enabled (`NPSetOption0 1`):
+
 - Validates all sensor readings against min/max ranges
 - Automatically corrects impossible values
 - Filters out Modbus communication errors
 - Improves data reliability
 
 When disabled (`NPSetOption0 0`):
+
 - Raw data passed through
 - Useful for debugging
 - May show invalid readings during communication errors
 
----
+______________________________________________________________________
 
 ### Connection Diagnostics (NPSetOption1)
 
 ESP32-only feature providing Modbus statistics:
 
 **Metrics Tracked:**
+
 - `MBRequests` - Total requests sent
 - `MBNoError` - Successful responses
 - `MBIllegalFunc` - Illegal function code errors
@@ -1360,18 +1506,20 @@ ESP32-only feature providing Modbus statistics:
 - `MBCRCErr` - Checksum errors
 
 **Use Cases:**
+
 - Troubleshooting communication issues
 - Monitoring RS485 bus health
 - Detecting wiring problems
 - Performance optimization
 
----
+______________________________________________________________________
 
 ### Decimal Precision Control
 
 Configure display precision for chemical readings:
 
 **NPPHRes (pH precision):**
+
 ```
 NPPHRes 0  →  7
 NPPHRes 1  →  7.2
@@ -1380,6 +1528,7 @@ NPPHRes 3  →  7.245
 ```
 
 **NPCLRes (Chlorine precision):**
+
 ```
 NPCLRes 0  →  1
 NPCLRes 1  →  1.5
@@ -1388,6 +1537,7 @@ NPCLRes 3  →  1.523
 ```
 
 **NPIONRes (Ionization precision):**
+
 ```
 NPIONRes 0  →  5
 NPIONRes 1  →  5.0
@@ -1397,7 +1547,7 @@ NPIONRes 3  →  5.000
 
 **Impact:** Only affects display/telemetry, not internal calculations
 
----
+______________________________________________________________________
 
 ### Module Detection
 
@@ -1415,6 +1565,7 @@ The `Module` object shows installed hardware:
 ```
 
 **Benefits:**
+
 - Auto-detect available sensors
 - Skip unsupported features in Home Assistant
 - Dynamic entity creation
@@ -1422,46 +1573,54 @@ The `Module` object shows installed hardware:
 
 **Only installed modules appear in telemetry data.**
 
----
+______________________________________________________________________
 
 ### Runtime Tracking
 
 Hydrolysis runtime provides maintenance insights:
 
 **Total Runtime:**
+
 ```
 "Total": "120T15:30:45"
 ```
+
 Format: DDDThh:mm:ss (days T hours:minutes:seconds)
+
 - Example: 120 days, 15 hours, 30 minutes, 45 seconds
 
 **Polarity Runtimes:**
+
 - `Pol1` - Time in polarity 1
 - `Pol2` - Time in polarity 2
 - Should be roughly equal for balanced electrode wear
 
 **Polarity Changes:**
+
 - Counter increments each polarity reversal
 - High numbers indicate frequent switching
 - Useful for electrode lifespan estimation
 
----
+______________________________________________________________________
 
 ### Recommended MQTT Settings for Home Assistant
 
 **Discovery:**
+
 ```
 Topic prefix: homeassistant
 Device topic: poolcontroller (or custom name)
 ```
 
 **Telemetry:**
+
 ```
 NPTelePeriod 0        # Report on changes only
 SetOption147 1        # Enable MQTT sensor discovery
 ```
 
 **Precision:**
+
 ```
 NPPHRes 2             # pH: 7.25
 NPCLRes 2             # Chlorine: 1.52 ppm
@@ -1469,6 +1628,7 @@ NPIONRes 1            # Ionization: 5.0
 ```
 
 **Options:**
+
 ```
 NPSetOption0 1        # Enable data validation
 NPSetOption1 1        # Enable statistics (ESP32)
@@ -1476,13 +1636,14 @@ SetOption157 0        # Hide NodeID (privacy)
 ```
 
 **Time Sync:**
+
 ```
 Rule for daily sync:
 Rule1 ON Time#Minute=0 DO NPTime 0 ENDON
 Rule1 1
 ```
 
----
+______________________________________________________________________
 
 ## Integration Notes for Home Assistant
 
@@ -1491,6 +1652,7 @@ Rule1 1
 Based on the data structure, here are recommended Home Assistant entity types:
 
 #### Sensors (Read-Only)
+
 - Temperature (`sensor`)
 - pH.Data (`sensor`)
 - Redox.Data (`sensor`)
@@ -1498,11 +1660,12 @@ Based on the data structure, here are recommended Home Assistant entity types:
 - Conductivity (`sensor`)
 - Ionization.Data (`sensor`)
 - Hydrolysis.Data (`sensor`)
-- Hydrolysis.Runtime.* (`sensor`)
+- Hydrolysis.Runtime.\* (`sensor`)
 - Powerunit voltages (`sensor`)
 - Connection statistics (`sensor`)
 
 #### Binary Sensors
+
 - pH.FL1 (`binary_sensor` - flow detection)
 - pH.Tank (`binary_sensor` - tank level)
 - Hydrolysis.Cover (`binary_sensor` - pool cover)
@@ -1511,6 +1674,7 @@ Based on the data structure, here are recommended Home Assistant entity types:
 - All Relay states (`binary_sensor` or `switch`)
 
 #### Numbers (Adjustable Setpoints)
+
 - pH.Min (`number`, range: 0-14)
 - pH.Max (`number`, range: 0-14)
 - Redox.Setpoint (`number`, range: 0-1000)
@@ -1519,62 +1683,68 @@ Based on the data structure, here are recommended Home Assistant entity types:
 - Hydrolysis.Setpoint (`number`, range: 0-100 or 0-max)
 
 #### Selects (Mode Selection)
+
 - Filtration.Mode (`select`, options: Manual/Auto/Heating/Smart/Intelligent/Backwash)
 - Filtration.Speed (`select`, options: Low/Medium/High)
 - Hydrolysis.Boost (`select`, options: Off/On/Redox)
 
 #### Switches (Binary Control)
+
 - Filtration.State (`switch` via NPFiltration)
 - Light (`switch` via NPLight)
 - Individual relays (`switch` via low-level commands or Berry scripts)
 
 #### Diagnostic Sensors
+
 - pH.State (`sensor` with state mapping)
 - pH.Pump (`sensor` with state mapping)
 - Hydrolysis.State (`sensor`, values: OFF/FLOW/POL1/POL2)
-- Module.* (`binary_sensor` - installed modules)
+- Module.\* (`binary_sensor` - installed modules)
 - Type (`sensor` - device model)
 - Powerunit.Version (`sensor` - firmware version)
 
----
+______________________________________________________________________
 
 ### MQTT Subscribe Patterns
 
 To receive all NeoPool data:
+
 ```
 tele/+/SENSOR           # All devices, sensor data
 tele/poolcontroller/SENSOR  # Specific device
 ```
 
 To monitor command responses:
+
 ```
 stat/+/RESULT           # All devices, command results
 stat/poolcontroller/RESULT  # Specific device
 ```
 
----
+______________________________________________________________________
 
 ### MQTT Publish Patterns
 
 To send commands:
+
 ```
 cmnd/poolcontroller/NPFiltration "1"
 cmnd/poolcontroller/NPpHMin "7.0"
 cmnd/poolcontroller/NPRedox "700"
 ```
 
----
+______________________________________________________________________
 
 ### JSON Parsing Strategy
 
 1. **Check Module object first** - Only create entities for installed modules
-2. **Parse nested objects** - pH, Redox, Chlorine, etc. are sub-objects
-3. **Handle optional fields** - Not all fields present in all configurations
-4. **State mapping** - Convert numeric states to friendly names
-5. **Unit extraction** - Hydrolysis.Unit determines % vs g/h
-6. **Runtime parsing** - Convert "DDDThh:mm:ss" format to seconds/hours
+1. **Parse nested objects** - pH, Redox, Chlorine, etc. are sub-objects
+1. **Handle optional fields** - Not all fields present in all configurations
+1. **State mapping** - Convert numeric states to friendly names
+1. **Unit extraction** - Hydrolysis.Unit determines % vs g/h
+1. **Runtime parsing** - Convert "DDDThh:mm:ss" format to seconds/hours
 
----
+______________________________________________________________________
 
 ### Example Python Parsing
 
@@ -1641,20 +1811,21 @@ def parse_neopool_sensor(payload):
     return entities
 ```
 
----
+______________________________________________________________________
 
 ## Summary
 
 This document provides complete technical reference for integrating Tasmota NeoPool controllers with Home Assistant via MQTT. Key points:
 
 1. **MQTT Structure:** Clear separation of telemetry (`tele/`), commands (`cmnd/`), and status (`stat/`)
-2. **Rich Data:** Comprehensive sensor readings including pH, redox, chlorine, temperature, filtration, etc.
-3. **Full Control:** Commands for all major pool functions (filtration, lights, chemical dosing, etc.)
-4. **Flexibility:** Low-level register access for advanced customization
-5. **Reliability:** Built-in data validation, error handling, and connection monitoring
-6. **Module Detection:** Dynamic feature availability based on installed hardware
+1. **Rich Data:** Comprehensive sensor readings including pH, redox, chlorine, temperature, filtration, etc.
+1. **Full Control:** Commands for all major pool functions (filtration, lights, chemical dosing, etc.)
+1. **Flexibility:** Low-level register access for advanced customization
+1. **Reliability:** Built-in data validation, error handling, and connection monitoring
+1. **Module Detection:** Dynamic feature availability based on installed hardware
 
 For Home Assistant integration development:
+
 - Parse the `Module` object to detect available features
 - Create appropriate entity types (sensor/number/select/switch/binary_sensor)
 - Map numeric states to friendly names
@@ -1662,7 +1833,7 @@ For Home Assistant integration development:
 - Implement proper unit conversions
 - Use change-based telemetry for efficiency
 
----
+______________________________________________________________________
 
 **Document Version:** 1.0
 **Last Updated:** 2025-01-15

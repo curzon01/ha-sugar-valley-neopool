@@ -4,13 +4,14 @@
 
 This guide provides technical details for implementing a Home Assistant custom integration for Tasmota NeoPool pool controllers via MQTT.
 
----
+______________________________________________________________________
 
 ## Architecture
 
 ### Integration Type: MQTT-based Custom Integration
 
 **Components:**
+
 - `__init__.py` - Integration setup and MQTT subscription
 - `config_flow.py` - Configuration UI
 - `const.py` - Constants and mappings
@@ -20,7 +21,7 @@ This guide provides technical details for implementing a Home Assistant custom i
 - `switch.py` - Switch entities (binary controls)
 - `binary_sensor.py` - Binary sensor entities (status indicators)
 
----
+______________________________________________________________________
 
 ## Entity Mapping Strategy
 
@@ -46,11 +47,12 @@ def should_create_chlorine_entities(module_data):
     return module_data.get("Chlorine") == 1
 ```
 
----
+______________________________________________________________________
 
 ## Sensor Entities (sensor.py)
 
 ### Temperature Sensor
+
 ```python
 {
     "name": "Temperature",
@@ -65,6 +67,7 @@ def should_create_chlorine_entities(module_data):
 ```
 
 ### pH Sensor (if Module.pH == 1)
+
 ```python
 {
     "name": "pH",
@@ -78,6 +81,7 @@ def should_create_chlorine_entities(module_data):
 ```
 
 ### pH State Sensor
+
 ```python
 {
     "name": "pH State",
@@ -100,6 +104,7 @@ def should_create_chlorine_entities(module_data):
 ```
 
 ### Redox Sensor (if Module.Redox == 1)
+
 ```python
 {
     "name": "Redox",
@@ -113,6 +118,7 @@ def should_create_chlorine_entities(module_data):
 ```
 
 ### Chlorine Sensor (if Module.Chlorine == 1)
+
 ```python
 {
     "name": "Chlorine",
@@ -126,6 +132,7 @@ def should_create_chlorine_entities(module_data):
 ```
 
 ### Hydrolysis Production Sensor (if Module.Hydrolysis == 1)
+
 ```python
 {
     "name": "Hydrolysis Production",
@@ -139,6 +146,7 @@ def should_create_chlorine_entities(module_data):
 ```
 
 ### Hydrolysis State Sensor
+
 ```python
 {
     "name": "Hydrolysis State",
@@ -150,6 +158,7 @@ def should_create_chlorine_entities(module_data):
 ```
 
 ### Hydrolysis Runtime Sensors
+
 ```python
 # Total Runtime
 {
@@ -190,6 +199,7 @@ def should_create_chlorine_entities(module_data):
 ```
 
 ### Filtration Speed Sensor
+
 ```python
 {
     "name": "Filtration Speed",
@@ -204,6 +214,7 @@ def should_create_chlorine_entities(module_data):
 ```
 
 ### Filtration Mode Sensor
+
 ```python
 {
     "name": "Filtration Mode",
@@ -225,6 +236,7 @@ def should_create_chlorine_entities(module_data):
 ```
 
 ### Power Supply Sensors
+
 ```python
 # 5V Rail
 {
@@ -261,6 +273,7 @@ def should_create_chlorine_entities(module_data):
 ```
 
 ### Connection Statistics (ESP32 only, if NPSetOption1 enabled)
+
 ```python
 # Total Requests
 {
@@ -307,11 +320,12 @@ def should_create_chlorine_entities(module_data):
 }
 ```
 
----
+______________________________________________________________________
 
 ## Binary Sensor Entities (binary_sensor.py)
 
 ### pH Flow Sensor
+
 ```python
 {
     "name": "pH Flow",
@@ -326,6 +340,7 @@ def should_create_chlorine_entities(module_data):
 ```
 
 ### pH Tank Level
+
 ```python
 {
     "name": "pH Tank",
@@ -340,6 +355,7 @@ def should_create_chlorine_entities(module_data):
 ```
 
 ### Hydrolysis Cover
+
 ```python
 {
     "name": "Pool Cover",
@@ -354,6 +370,7 @@ def should_create_chlorine_entities(module_data):
 ```
 
 ### Filtration State
+
 ```python
 {
     "name": "Filtration Running",
@@ -368,6 +385,7 @@ def should_create_chlorine_entities(module_data):
 ```
 
 ### Module Detection (Diagnostic)
+
 ```python
 # pH Module Installed
 {
@@ -418,11 +436,12 @@ def should_create_chlorine_entities(module_data):
 }
 ```
 
----
+______________________________________________________________________
 
 ## Number Entities (number.py)
 
 ### pH Minimum
+
 ```python
 {
     "name": "pH Min",
@@ -439,6 +458,7 @@ def should_create_chlorine_entities(module_data):
 ```
 
 ### pH Maximum
+
 ```python
 {
     "name": "pH Max",
@@ -455,6 +475,7 @@ def should_create_chlorine_entities(module_data):
 ```
 
 ### Redox Setpoint
+
 ```python
 {
     "name": "Redox Setpoint",
@@ -472,6 +493,7 @@ def should_create_chlorine_entities(module_data):
 ```
 
 ### Chlorine Setpoint
+
 ```python
 {
     "name": "Chlorine Setpoint",
@@ -489,6 +511,7 @@ def should_create_chlorine_entities(module_data):
 ```
 
 ### Hydrolysis Setpoint
+
 ```python
 {
     "name": "Hydrolysis Setpoint",
@@ -506,6 +529,7 @@ def should_create_chlorine_entities(module_data):
 ```
 
 ### Ionization Setpoint (if Module.Ionization == 1)
+
 ```python
 {
     "name": "Ionization Setpoint",
@@ -521,11 +545,12 @@ def should_create_chlorine_entities(module_data):
 }
 ```
 
----
+______________________________________________________________________
 
 ## Select Entities (select.py)
 
 ### Filtration Mode
+
 ```python
 {
     "name": "Filtration Mode",
@@ -560,6 +585,7 @@ def should_create_chlorine_entities(module_data):
 ```
 
 ### Filtration Speed
+
 ```python
 {
     "name": "Filtration Speed",
@@ -580,6 +606,7 @@ def should_create_chlorine_entities(module_data):
 ```
 
 ### Hydrolysis Boost Mode
+
 ```python
 {
     "name": "Hydrolysis Boost",
@@ -599,11 +626,12 @@ def should_create_chlorine_entities(module_data):
 }
 ```
 
----
+______________________________________________________________________
 
 ## Switch Entities (switch.py)
 
 ### Filtration Switch
+
 ```python
 {
     "name": "Filtration",
@@ -618,6 +646,7 @@ def should_create_chlorine_entities(module_data):
 ```
 
 ### Light Switch
+
 ```python
 {
     "name": "Light",
@@ -632,6 +661,7 @@ def should_create_chlorine_entities(module_data):
 ```
 
 ### Relay Switches (7 relays)
+
 ```python
 # Relay 1
 {
@@ -649,6 +679,7 @@ def should_create_chlorine_entities(module_data):
 ```
 
 ### Named Relay Switches
+
 ```python
 # Heating Relay
 {
@@ -669,7 +700,7 @@ def should_create_chlorine_entities(module_data):
 }
 ```
 
----
+______________________________________________________________________
 
 ## Constants (const.py)
 
@@ -780,11 +811,12 @@ ENTITY_CATEGORY_DIAGNOSTIC = "diagnostic"
 ENTITY_CATEGORY_CONFIG = "config"
 ```
 
----
+______________________________________________________________________
 
 ## Data Processing Functions
 
 ### Parse Runtime String
+
 ```python
 def parse_runtime(runtime_str: str) -> int:
     """
@@ -828,6 +860,7 @@ def format_runtime(total_seconds: int) -> str:
 ```
 
 ### Validate pH Value
+
 ```python
 def validate_ph(value: float) -> bool:
     """Validate pH value is within acceptable range."""
@@ -845,6 +878,7 @@ def validate_chlorine(value: float) -> bool:
 ```
 
 ### Module Detection Helper
+
 ```python
 def get_installed_modules(neopool_data: dict) -> dict:
     """
@@ -864,7 +898,7 @@ def get_installed_modules(neopool_data: dict) -> dict:
     }
 ```
 
----
+______________________________________________________________________
 
 ## Device Information
 
@@ -881,11 +915,12 @@ DEVICE_INFO = {
 }
 ```
 
----
+______________________________________________________________________
 
 ## Error Handling
 
 ### MQTT Connection Errors
+
 ```python
 def handle_mqtt_disconnect():
     """Handle MQTT disconnection."""
@@ -902,6 +937,7 @@ def handle_malformed_payload(payload: str):
 ```
 
 ### Value Validation
+
 ```python
 def safe_get_nested(data: dict, path: list, default=None):
     """
@@ -924,7 +960,7 @@ def safe_get_nested(data: dict, path: list, default=None):
     return current
 ```
 
----
+______________________________________________________________________
 
 ## Availability Template
 
@@ -942,11 +978,12 @@ All entities should track availability:
 }
 ```
 
----
+______________________________________________________________________
 
 ## Testing Checklist
 
 ### Unit Tests
+
 - [ ] Parse runtime strings correctly
 - [ ] Validate input ranges (pH, redox, chlorine)
 - [ ] Handle missing JSON keys gracefully
@@ -954,6 +991,7 @@ All entities should track availability:
 - [ ] Parse module installation flags
 
 ### Integration Tests
+
 - [ ] MQTT subscription successful
 - [ ] Entity discovery works
 - [ ] State updates from telemetry
@@ -962,6 +1000,7 @@ All entities should track availability:
 - [ ] Dynamic entity creation based on modules
 
 ### Manual Tests
+
 - [ ] Configure via UI
 - [ ] All sensors show correct values
 - [ ] Number entities accept input
@@ -970,65 +1009,75 @@ All entities should track availability:
 - [ ] Device info displays correctly
 - [ ] Entities unavailable when disconnected
 
----
+______________________________________________________________________
 
 ## Performance Considerations
 
 ### Telemetry Processing
+
 - Use `NPTelePeriod 0` for change-based updates
 - Reduce MQTT traffic
 - Only update changed entities
 
 ### Entity Creation
+
 - Create entities only for installed modules
 - Use entity categories for diagnostic/config entities
 - Lazy load optional features
 
 ### State Updates
+
 - Batch process telemetry messages
 - Avoid redundant state updates
 - Use debouncing for rapid changes
 
----
+______________________________________________________________________
 
 ## Security Considerations
 
 ### MQTT Credentials
+
 - Store in Home Assistant secrets
 - Use TLS for MQTT if possible
 - Validate all incoming data
 
 ### Command Validation
+
 - Range check all numeric inputs
 - Sanitize command payloads
 - Rate limit commands to prevent abuse
 
----
+______________________________________________________________________
 
 ## Future Enhancements
 
 ### Planned Features
+
 1. **Services**
+
    - `neopool_mqtt.sync_time` - Sync device time
    - `neopool_mqtt.clear_errors` - Clear error states
    - `neopool_mqtt.save_config` - Persist settings to EEPROM
 
-2. **Diagnostics**
+1. **Diagnostics**
+
    - Communication quality metrics
    - Error rate tracking
    - Last update timestamp
 
-3. **Advanced Controls**
+1. **Advanced Controls**
+
    - Timer programming via UI
    - Relay mapping configuration
    - Berry script execution (ESP32)
 
-4. **Automations**
+1. **Automations**
+
    - Auto time sync
    - pH alarm notifications
    - Temperature-based filtration
 
----
+______________________________________________________________________
 
 ## Example Integration Setup
 
@@ -1068,7 +1117,7 @@ async def async_setup_entry(hass, entry):
     return True
 ```
 
----
+______________________________________________________________________
 
 ## Recommended Project Structure
 

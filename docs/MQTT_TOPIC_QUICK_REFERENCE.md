@@ -3,6 +3,7 @@
 ## MQTT Topic Overview
 
 ### Topic Structure
+
 ```
 tele/%topic%/SENSOR         # Telemetry data (periodic or on change)
 cmnd/%topic%/<command>      # Send commands
@@ -11,7 +12,7 @@ stat/%topic%/RESULT         # Command responses
 
 Replace `%topic%` with your device topic (e.g., "poolcontroller")
 
----
+______________________________________________________________________
 
 ## Telemetry Topic
 
@@ -20,6 +21,7 @@ Replace `%topic%` with your device topic (e.g., "poolcontroller")
 **Published automatically at TelePeriod intervals or on value changes**
 
 Minimal example:
+
 ```json
 {
   "Time": "2025-01-15T14:30:00",
@@ -42,53 +44,53 @@ Minimal example:
 }
 ```
 
----
+______________________________________________________________________
 
 ## Command Topics
 
 ### Filtration Control
 
-| Topic | Payload | Description |
-|-------|---------|-------------|
-| `cmnd/%topic%/NPFiltration` | `0` | Turn pump off |
-| `cmnd/%topic%/NPFiltration` | `1` | Turn pump on |
-| `cmnd/%topic%/NPFiltration` | `1 2` | Turn pump on at medium speed |
-| `cmnd/%topic%/NPFiltrationmode` | `0-4` or `13` | Set mode (Manual/Auto/Heating/Smart/Intelligent/Backwash) |
-| `cmnd/%topic%/NPFiltrationspeed` | `1-3` | Set speed (Low/Mid/High) |
+| Topic                            | Payload       | Description                                               |
+| -------------------------------- | ------------- | --------------------------------------------------------- |
+| `cmnd/%topic%/NPFiltration`      | `0`           | Turn pump off                                             |
+| `cmnd/%topic%/NPFiltration`      | `1`           | Turn pump on                                              |
+| `cmnd/%topic%/NPFiltration`      | `1 2`         | Turn pump on at medium speed                              |
+| `cmnd/%topic%/NPFiltrationmode`  | `0-4` or `13` | Set mode (Manual/Auto/Heating/Smart/Intelligent/Backwash) |
+| `cmnd/%topic%/NPFiltrationspeed` | `1-3`         | Set speed (Low/Mid/High)                                  |
 
 ### Chemical Control
 
-| Topic | Payload | Description |
-|-------|---------|-------------|
-| `cmnd/%topic%/NPpHMin` | `7.0` | Set pH minimum (0.0-14.0) |
-| `cmnd/%topic%/NPpHMax` | `7.4` | Set pH maximum (0.0-14.0) |
-| `cmnd/%topic%/NPRedox` | `700` | Set redox setpoint (0-1000 mV) |
-| `cmnd/%topic%/NPChlorine` | `1.5` | Set chlorine setpoint (0.0-10.0 ppm) |
-| `cmnd/%topic%/NPHydrolysis` | `75` | Set hydrolysis level (0-100% or g/h) |
-| `cmnd/%topic%/NPIonization` | `5` | Set ionization level |
-| `cmnd/%topic%/NPBoost` | `0` / `1` / `2` | Boost off/on/redox |
+| Topic                       | Payload         | Description                          |
+| --------------------------- | --------------- | ------------------------------------ |
+| `cmnd/%topic%/NPpHMin`      | `7.0`           | Set pH minimum (0.0-14.0)            |
+| `cmnd/%topic%/NPpHMax`      | `7.4`           | Set pH maximum (0.0-14.0)            |
+| `cmnd/%topic%/NPRedox`      | `700`           | Set redox setpoint (0-1000 mV)       |
+| `cmnd/%topic%/NPChlorine`   | `1.5`           | Set chlorine setpoint (0.0-10.0 ppm) |
+| `cmnd/%topic%/NPHydrolysis` | `75`            | Set hydrolysis level (0-100% or g/h) |
+| `cmnd/%topic%/NPIonization` | `5`             | Set ionization level                 |
+| `cmnd/%topic%/NPBoost`      | `0` / `1` / `2` | Boost off/on/redox                   |
 
 ### Light Control
 
-| Topic | Payload | Description |
-|-------|---------|-------------|
-| `cmnd/%topic%/NPLight` | `0` | Light off |
-| `cmnd/%topic%/NPLight` | `1` | Light on |
-| `cmnd/%topic%/NPLight` | `2` | Toggle light |
+| Topic                  | Payload | Description  |
+| ---------------------- | ------- | ------------ |
+| `cmnd/%topic%/NPLight` | `0`     | Light off    |
+| `cmnd/%topic%/NPLight` | `1`     | Light on     |
+| `cmnd/%topic%/NPLight` | `2`     | Toggle light |
 
 ### Configuration
 
-| Topic | Payload | Description |
-|-------|---------|-------------|
-| `cmnd/%topic%/NPTelePeriod` | `0` | Report only on changes |
-| `cmnd/%topic%/NPTelePeriod` | `60` | Report every 60 seconds |
-| `cmnd/%topic%/NPTime` | `0` | Sync to local time |
-| `cmnd/%topic%/NPPHRes` | `2` | pH decimal places (0-3) |
-| `cmnd/%topic%/NPCLRes` | `2` | Chlorine decimal places (0-3) |
-| `cmnd/%topic%/NPSetOption0` | `1` | Enable data validation |
-| `cmnd/%topic%/NPSetOption1` | `1` | Enable statistics (ESP32) |
+| Topic                       | Payload | Description                   |
+| --------------------------- | ------- | ----------------------------- |
+| `cmnd/%topic%/NPTelePeriod` | `0`     | Report only on changes        |
+| `cmnd/%topic%/NPTelePeriod` | `60`    | Report every 60 seconds       |
+| `cmnd/%topic%/NPTime`       | `0`     | Sync to local time            |
+| `cmnd/%topic%/NPPHRes`      | `2`     | pH decimal places (0-3)       |
+| `cmnd/%topic%/NPCLRes`      | `2`     | Chlorine decimal places (0-3) |
+| `cmnd/%topic%/NPSetOption0` | `1`     | Enable data validation        |
+| `cmnd/%topic%/NPSetOption1` | `1`     | Enable statistics (ESP32)     |
 
----
+______________________________________________________________________
 
 ## JSON Paths for Sensors
 
@@ -121,11 +123,12 @@ has_redox = data["NeoPool"]["Module"]["Redox"]  # 0/1
 has_hydrolysis = data["NeoPool"]["Module"]["Hydrolysis"]  # 0/1
 ```
 
----
+______________________________________________________________________
 
 ## State Mappings
 
 ### pH State
+
 ```python
 PH_STATES = {
     0: "OK",
@@ -139,6 +142,7 @@ PH_STATES = {
 ```
 
 ### Filtration Mode
+
 ```python
 FILTRATION_MODES = {
     0: "Manual",
@@ -151,6 +155,7 @@ FILTRATION_MODES = {
 ```
 
 ### Filtration Speed
+
 ```python
 FILTRATION_SPEEDS = {
     1: "Low",
@@ -160,6 +165,7 @@ FILTRATION_SPEEDS = {
 ```
 
 ### Hydrolysis State
+
 ```python
 HYDROLYSIS_STATES = {
     "OFF": "Off",
@@ -170,6 +176,7 @@ HYDROLYSIS_STATES = {
 ```
 
 ### Boost Mode
+
 ```python
 BOOST_MODES = {
     0: "Off",
@@ -178,7 +185,7 @@ BOOST_MODES = {
 }
 ```
 
----
+______________________________________________________________________
 
 ## Example MQTT Commands
 
@@ -223,7 +230,7 @@ client.publish("cmnd/poolcontroller/NPpHMin", "7.0")
 client.publish("cmnd/poolcontroller/NPHydrolysis", "75")
 ```
 
----
+______________________________________________________________________
 
 ## Home Assistant MQTT Subscribe Examples
 
@@ -272,11 +279,12 @@ mqtt:
       step: 0.1
 ```
 
----
+______________________________________________________________________
 
 ## Common Automation Patterns
 
 ### Daily Time Sync
+
 ```yaml
 automation:
   - alias: "Sync Pool Controller Time"
@@ -291,6 +299,7 @@ automation:
 ```
 
 ### pH Alert
+
 ```yaml
 automation:
   - alias: "Pool pH Alert"
@@ -308,6 +317,7 @@ automation:
 ```
 
 ### Auto Filtration Based on Temperature
+
 ```yaml
 automation:
   - alias: "Adjust Filtration for Temperature"
@@ -321,11 +331,12 @@ automation:
           payload: "3"  # Smart mode
 ```
 
----
+______________________________________________________________________
 
 ## Troubleshooting
 
 ### Check Connection Statistics
+
 ```bash
 # Enable statistics (ESP32 only)
 mosquitto_pub -t "cmnd/poolcontroller/NPSetOption1" -m "1"
@@ -337,6 +348,7 @@ mosquitto_pub -t "cmnd/poolcontroller/NPSetOption1" -m "1"
 ```
 
 ### Test Communication
+
 ```bash
 # Subscribe to all topics
 mosquitto_sub -v -t "tele/poolcontroller/#"
@@ -347,6 +359,7 @@ mosquitto_pub -t "cmnd/poolcontroller/NPControl" -m ""
 ```
 
 ### Enable Data Validation
+
 ```bash
 # Prevent invalid readings from Modbus errors
 mosquitto_pub -t "cmnd/poolcontroller/NPSetOption0" -m "1"

@@ -5,9 +5,9 @@
 Before making ANY changes to this repository:
 
 1. **Read this entire document** - Contains critical project-specific information
-2. **Review recent git commits**: `git log --oneline -20`
-3. **Check current status**: `git status`
-4. **Understand the MQTT data flow** before modifying entity definitions
+1. **Review recent git commits**: `git log --oneline -20`
+1. **Check current status**: `git status`
+1. **Understand the MQTT data flow** before modifying entity definitions
 
 ## Project Overview
 
@@ -47,12 +47,12 @@ Home Assistant Entities
 
 ### MQTT Topics
 
-| Topic Pattern | Direction | Purpose |
-|---------------|-----------|---------|
-| `tele/{device}/SENSOR` | Device → HA | JSON sensor data |
-| `tele/{device}/LWT` | Device → HA | Online/Offline status |
-| `cmnd/{device}/{cmd}` | HA → Device | Commands |
-| `stat/{device}/RESULT` | Device → HA | Command responses |
+| Topic Pattern          | Direction   | Purpose               |
+| ---------------------- | ----------- | --------------------- |
+| `tele/{device}/SENSOR` | Device → HA | JSON sensor data      |
+| `tele/{device}/LWT`    | Device → HA | Online/Offline status |
+| `cmnd/{device}/{cmd}`  | HA → Device | Commands              |
+| `stat/{device}/RESULT` | Device → HA | Command responses     |
 
 ### File Structure
 
@@ -79,6 +79,7 @@ custom_components/sugar_valley_neopool/
 ### Data Storage Pattern
 
 **DO use `runtime_data`** (modern pattern):
+
 ```python
 entry.runtime_data = NeoPoolData(device_name=name, mqtt_topic=topic)
 ```
@@ -88,10 +89,11 @@ entry.runtime_data = NeoPoolData(device_name=name, mqtt_topic=topic)
 ### MQTT Subscription Pattern
 
 All MQTT entities should:
+
 1. Subscribe in `async_added_to_hass()`
-2. Unsubscribe in `async_will_remove_from_hass()`
-3. Use `@callback` decorator for message handlers
-4. Call `self.async_write_ha_state()` after state changes
+1. Unsubscribe in `async_will_remove_from_hass()`
+1. Use `@callback` decorator for message handlers
+1. Call `self.async_write_ha_state()` after state changes
 
 ```python
 async def async_added_to_hass(self) -> None:
@@ -113,6 +115,7 @@ async def async_added_to_hass(self) -> None:
 ### Entity Description Pattern
 
 Use dataclasses for entity descriptions:
+
 ```python
 @dataclass(frozen=True, kw_only=True)
 class NeoPoolSensorEntityDescription(SensorEntityDescription):
@@ -123,6 +126,7 @@ class NeoPoolSensorEntityDescription(SensorEntityDescription):
 ### JSON Path Extraction
 
 Use `helpers.get_nested_value()` for extracting values:
+
 ```python
 # Extract NeoPool.pH.Data from JSON payload
 value = get_nested_value(payload, "NeoPool.pH.Data")
@@ -131,6 +135,7 @@ value = get_nested_value(payload, "NeoPool.pH.Data")
 ### State Transformations
 
 Define transformation functions in `helpers.py` or inline:
+
 ```python
 # In const.py - mapping dictionaries
 PH_STATE_MAP = {0: "No Alarm", 1: "pH too high", ...}
@@ -142,6 +147,7 @@ value_fn=lambda x: PH_STATE_MAP.get(safe_int(x), f"Unknown ({x})")
 ### Logging
 
 Use structured logging:
+
 ```python
 _LOGGER.debug("Sensor %s subscribed to %s, path: %s", key, topic, json_path)
 ```
@@ -151,6 +157,7 @@ _LOGGER.debug("Sensor %s subscribed to %s, path: %s", key, topic, json_path)
 ### Type Hints
 
 Always use type hints:
+
 ```python
 async def async_setup_entry(
     hass: HomeAssistant,
@@ -164,16 +171,17 @@ async def async_setup_entry(
 ### CRITICAL: Never Create Tags/Releases Without Explicit User Instruction
 
 Release process:
+
 1. Update version in `manifest.json` AND `const.py` (must match)
-2. Update `CHANGELOG.md` with changes
-3. Commit changes
-4. Create GitHub release (triggers workflow)
-5. Workflow creates ZIP and attaches to release
+1. Update `CHANGELOG.md` with changes
+1. Commit changes
+1. Create GitHub release (triggers workflow)
+1. Workflow creates ZIP and attaches to release
 
 ### Version Locations (Must Be Synchronized)
 
 1. `custom_components/sugar_valley_neopool/manifest.json` → `"version": "X.Y.Z"`
-2. `custom_components/sugar_valley_neopool/const.py` → `VERSION = "X.Y.Z"`
+1. `custom_components/sugar_valley_neopool/const.py` → `VERSION = "X.Y.Z"`
 
 ## NeoPool-Specific Details
 
@@ -222,6 +230,7 @@ Release process:
 ### State Mappings
 
 **pH State** (0-6):
+
 - 0: No Alarm
 - 1: pH too high
 - 2: pH too low
@@ -231,6 +240,7 @@ Release process:
 - 6: Tank level low
 
 **Filtration Mode** (0-4, 13):
+
 - 0: Manual
 - 1: Auto
 - 2: Heating
@@ -239,6 +249,7 @@ Release process:
 - 13: Backwash
 
 **Hydrolysis State**:
+
 - OFF: Cell Inactive
 - FLOW: Flow Alarm
 - POL1: Polarity 1 active
@@ -246,22 +257,23 @@ Release process:
 
 ### Commands
 
-| Command | Payload | Description |
-|---------|---------|-------------|
-| NPFiltration | 0/1 | Filtration on/off |
-| NPFiltrationmode | 0-4,13 | Set filtration mode |
-| NPFiltrationSpeed | 1-3 | Set filtration speed |
-| NPLight | 0/1 | Light on/off |
-| NPAux1-4 | 0/1 | Auxiliary relays |
-| NPBoost | 0/1/2 | Boost mode |
-| NPpHMin/Max | 0.0-14.0 | pH thresholds |
-| NPRedox | 0-1000 | Redox setpoint (mV) |
-| NPHydrolysis | "50 %" | Hydrolysis setpoint |
-| NPEscape | (empty) | Clear error state |
+| Command           | Payload  | Description          |
+| ----------------- | -------- | -------------------- |
+| NPFiltration      | 0/1      | Filtration on/off    |
+| NPFiltrationmode  | 0-4,13   | Set filtration mode  |
+| NPFiltrationSpeed | 1-3      | Set filtration speed |
+| NPLight           | 0/1      | Light on/off         |
+| NPAux1-4          | 0/1      | Auxiliary relays     |
+| NPBoost           | 0/1/2    | Boost mode           |
+| NPpHMin/Max       | 0.0-14.0 | pH thresholds        |
+| NPRedox           | 0-1000   | Redox setpoint (mV)  |
+| NPHydrolysis      | "50 %"   | Hydrolysis setpoint  |
+| NPEscape          | (empty)  | Clear error state    |
 
 ### Runtime Duration Format
 
 NeoPool reports runtime as `DDDThh:mm:ss`:
+
 - `123T04:30:00` = 123 days, 4 hours, 30 minutes
 
 Use `helpers.parse_runtime_duration()` to convert to hours.
@@ -271,6 +283,7 @@ Use `helpers.parse_runtime_duration()` to convert to hours.
 ### 1. Array Access in JSON Paths
 
 Relay states are arrays. Handle both direct access and array index:
+
 ```python
 # NeoPool.Relay.State is [1, 1, 0, 0, 0, 0, 0]
 # To get filtration relay (index 1):
@@ -280,6 +293,7 @@ json_path="NeoPool.Relay.State.1"
 ### 2. Inverted Boolean Logic
 
 Some sensors use inverted logic:
+
 - `FL1 = 0` means flow is OK
 - `Tank = 0` means tank level is LOW
 
@@ -288,6 +302,7 @@ Use `invert=True` in binary sensor descriptions.
 ### 3. Hydrolysis Setpoint Format
 
 Command requires specific format with space and percent sign:
+
 ```python
 command_template="{value} %"  # "50 %" not "50%"
 ```
@@ -295,6 +310,7 @@ command_template="{value} %"  # "50 %" not "50%"
 ### 4. LWT Availability
 
 Always subscribe to LWT topic for availability:
+
 ```python
 lwt_topic = f"tele/{mqtt_topic}/LWT"
 # Payloads: "Online" or "Offline"
@@ -303,6 +319,7 @@ lwt_topic = f"tele/{mqtt_topic}/LWT"
 ## Testing Checklist
 
 Before committing:
+
 - [ ] Run `ruff check .` - no errors
 - [ ] Run `ruff format .` - code formatted
 - [ ] Test with real device or MQTT simulator

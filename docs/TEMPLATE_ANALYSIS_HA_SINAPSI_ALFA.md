@@ -8,7 +8,7 @@
 **HA Minimum**: 2025.10.0
 **Python Minimum**: 3.13.2
 
----
+______________________________________________________________________
 
 ## 1. COMPLETE FOLDER/FILE STRUCTURE
 
@@ -73,7 +73,7 @@ ha-sinapsi-alfa/
 └── requirements.txt                 # Python dependencies
 ```
 
----
+______________________________________________________________________
 
 ## 2. GITHUB ACTIONS WORKFLOWS
 
@@ -82,15 +82,17 @@ ha-sinapsi-alfa/
 **Trigger**: On release publication
 
 **Steps**:
+
 1. Checkout repository with PAT or default token
-2. Update version in `manifest.json` using `yq`:
+1. Update version in `manifest.json` using `yq`:
    ```yaml
    yq -i '.version="${{ github.event.release.tag_name }}"' custom_components/sinapsi_alfa/manifest.json
    ```
-3. Create ZIP archive from `custom_components/sinapsi_alfa/` directory
-4. Upload ZIP to release assets using `softprops/action-gh-release@v2.5.0`
+1. Create ZIP archive from `custom_components/sinapsi_alfa/` directory
+1. Upload ZIP to release assets using `softprops/action-gh-release@v2.5.0`
 
 **Key Features**:
+
 - Automatic version synchronization
 - ZIP packaging for HACS compatibility
 - Uses `actions/checkout@v6.0.1`
@@ -98,6 +100,7 @@ ha-sinapsi-alfa/
 ### 2.2 Validate Workflow (`.github/workflows/validate.yml`)
 
 **Triggers**:
+
 - Manual dispatch (`workflow_dispatch`)
 - Every push
 - Pull requests
@@ -106,10 +109,12 @@ ha-sinapsi-alfa/
 **Jobs**:
 
 **Hassfest Validation**:
+
 - Validates integration meets Home Assistant standards
 - Uses `home-assistant/actions/hassfest@master`
 
 **HACS Validation**:
+
 - Validates HACS compatibility
 - Uses `hacs/action@main` with `category: "integration"`
 - Note: Includes commented option for `ignore: "brands"` once added to brands repository
@@ -117,16 +122,18 @@ ha-sinapsi-alfa/
 ### 2.3 Lint Workflow (`.github/workflows/lint.yml`)
 
 **Triggers**:
+
 - Pushes to `master` branch
 - All pull requests
 
 **Steps**:
+
 1. Checkout repository
-2. Setup Python 3.13 with pip caching
-3. Install dependencies from `requirements.txt`
-4. Run `ruff format .` to auto-format
-5. Run `ruff check .` to lint
-6. Auto-commit formatting changes with message "Style fixes by ruff"
+1. Setup Python 3.13 with pip caching
+1. Install dependencies from `requirements.txt`
+1. Run `ruff format .` to auto-format
+1. Run `ruff check .` to lint
+1. Auto-commit formatting changes with message "Style fixes by ruff"
    - Uses `stefanzweifel/git-auto-commit-action@v5.0.1`
 
 **Permissions**: Write access to contents (for auto-commit)
@@ -136,10 +143,12 @@ ha-sinapsi-alfa/
 **Trigger**: All pull requests
 
 **Conditions**:
+
 - Only runs for Dependabot PRs
 - Auto-merges unless it's a major version bump (except GitHub Actions)
 
 **Logic**:
+
 ```yaml
 if: steps.metadata.outputs.update-type != 'version-update:semver-major' ||
     steps.metadata.outputs.dependency-type == 'direct:production'
@@ -147,21 +156,23 @@ if: steps.metadata.outputs.update-type != 'version-update:semver-major' ||
 
 **Method**: Squash merge
 
----
+______________________________________________________________________
 
 ## 3. PROJECT DOCUMENTATION STRUCTURE
 
 ### 3.1 README.md
 
 **Structure**:
+
 1. Title and badges (stars, forks, license)
-2. Description
-3. Features overview
-4. Installation methods (HACS + Manual)
-5. Configuration parameters
-6. Important disclaimers
+1. Description
+1. Features overview
+1. Installation methods (HACS + Manual)
+1. Configuration parameters
+1. Important disclaimers
 
 **Key Elements**:
+
 - HACS installation button
 - Clear step-by-step instructions
 - Configuration UI screenshots (likely in gfxfiles/)
@@ -172,27 +183,32 @@ if: steps.metadata.outputs.update-type != 'version-update:semver-major' ||
 **Critical Sections**:
 
 1. **Mandatory Starting Actions**:
+
    - Read entire guidelines document
    - Review recent git commits
    - Run `git status`
 
-2. **Project Architecture Overview**:
+1. **Project Architecture Overview**:
+
    - Core components explanation
    - Data flow patterns
    - Integration type details
 
-3. **Coding Standards**:
+1. **Coding Standards**:
+
    - Data storage patterns (use `runtime_data`, not `hass.data`)
    - Error handling (custom exceptions)
    - Logging patterns (use helpers, no f-strings in logger calls)
    - Type hints requirements
 
-4. **Release Management Rules**:
+1. **Release Management Rules**:
+
    - **NEVER create tags/releases without explicit user instruction**
    - Step-by-step release process
    - Version bump requirements (manifest.json + const.py)
 
-5. **Device-Specific Details**:
+1. **Device-Specific Details**:
+
    - Sensor counts and types
    - Special value handling
    - Market-specific naming conventions
@@ -202,6 +218,7 @@ if: steps.metadata.outputs.update-type != 'version-update:semver-major' ||
 **Format**: Follows [Keep a Changelog](https://keepachangelog.com/)
 
 **Structure**:
+
 ```markdown
 # Changelog
 
@@ -230,6 +247,7 @@ All notable changes to this project will be documented in this file.
 ```
 
 **Categories Used**:
+
 - Added
 - Changed
 - Fixed
@@ -238,44 +256,51 @@ All notable changes to this project will be documented in this file.
 - Documentation
 
 **Version Requirements Note**:
+
 - Specifies minimum HA and Python versions for major releases
 
----
+______________________________________________________________________
 
 ## 4. RELEASE MANAGEMENT APPROACH
 
 ### 4.1 Versioning Strategy
 
 **Follows Semantic Versioning** (SemVer):
+
 - MAJOR.MINOR.PATCH (e.g., 1.0.1)
 - Beta releases: 1.0.0-beta.1, 1.0.0-beta.2, etc.
 
 **Version Locations** (must be synchronized):
+
 1. `custom_components/sinapsi_alfa/manifest.json` - `"version"` field
-2. `custom_components/sinapsi_alfa/const.py` - `VERSION` constant
-3. Git tags (e.g., `v1.0.1`)
+1. `custom_components/sinapsi_alfa/const.py` - `VERSION` constant
+1. Git tags (e.g., `v1.0.1`)
 
 ### 4.2 Release Process
 
 1. **Development Phase**:
+
    - Make code changes
    - Test thoroughly
    - Beta releases for major changes
 
-2. **Pre-Release**:
+1. **Pre-Release**:
+
    - Update `CHANGELOG.md` with all changes
    - Create release notes using `.github/release-notes-template.md`
    - Update version in `manifest.json` and `const.py`
    - Commit changes
 
-3. **Release Creation**:
+1. **Release Creation**:
+
    - Create GitHub release (manual)
    - Workflow automatically:
      - Updates manifest.json version
      - Creates ZIP archive
      - Attaches to release
 
-4. **Post-Release**:
+1. **Post-Release**:
+
    - Copy release notes to `docs/releases/`
    - Verify HACS picks up new release
 
@@ -284,6 +309,7 @@ All notable changes to this project will be documented in this file.
 **File**: `.github/release-notes-template.md`
 
 **Sections**:
+
 - Features & Improvements
 - Bug Fixes
 - Code Quality & Maintainability
@@ -294,38 +320,44 @@ All notable changes to this project will be documented in this file.
 
 **Process**: Rename to `release-notes-vX.Y.Z.md` when used
 
----
+______________________________________________________________________
 
 ## 5. HA QUALITY SCALE COMPLIANCE PATTERNS
 
 ### 5.1 Bronze Tier Requirements ✓
 
 **Config Flow**:
+
 - ✓ UI-based setup (no YAML configuration)
 - ✓ Input validation
 - ✓ Duplicate prevention
 - ✓ Connection testing
 
 **Code Quality**:
+
 - ✓ Follows Home Assistant coding standards
 - ✓ Uses Ruff linter with HA-recommended rules
 - ✓ Auto-formatting with Ruff
 - ✓ Basic error handling
 
 **Testing**:
+
 - ✓ Hassfest validation
 - ✓ HACS validation
 
 **Documentation**:
+
 - ✓ README with setup instructions
 - ✓ Configuration parameter documentation
 
 ### 5.2 Silver Tier Requirements ✓
 
 **Code Owners**:
+
 - ✓ Defined in `manifest.json`: `"codeowners": ["@alexdelprete"]`
 
 **Error Handling**:
+
 - ✓ Custom exceptions (`SinapsiConnectionError`, `SinapsiModbusError`)
 - ✓ Automatic recovery from connection errors
 - ✓ Raises `ConfigEntryNotReady` for transient failures
@@ -333,12 +365,14 @@ All notable changes to this project will be documented in this file.
 - ✓ Distinguishes retriable vs. permanent errors
 
 **Logging**:
+
 - ✓ Structured logging via helpers
 - ✓ Context-aware log messages
 - ✓ Appropriate log levels (debug, info, warning, error)
 - ✓ No sensitive data in logs
 
 **Documentation**:
+
 - ✓ Detailed README
 - ✓ Troubleshooting guidance
 - ✓ Issue templates for bug reports
@@ -346,54 +380,64 @@ All notable changes to this project will be documented in this file.
 ### 5.3 Gold Tier Targets
 
 **Discovery**:
+
 - ⚠ Not applicable (requires device IP address)
 
 **Reconfiguration**:
+
 - ✓ Options flow for updating host, port, scan interval
 - ✓ `async_reload_entry` on config changes
 
 **Translations**:
+
 - ✓ English (en.json)
 - ✓ Portuguese (pt.json)
 - ✓ Extensible structure
 
 **Updates**:
+
 - ⚠ Not applicable (device firmware updates not supported via integration)
 
 **Testing**:
+
 - ⚠ Could expand automated test coverage
 
 ### 5.4 Platinum Tier Targets
 
 **Type Annotations**:
+
 - ✓ Type hints on all functions
 - ✓ Uses dataclasses for structured data
 - ✓ Proper typing imports
 
 **Async Code**:
+
 - ✓ Fully asynchronous implementation
 - ✓ Uses `async_add_executor_job` for sync operations (MAC address retrieval)
 - ✓ No blocking I/O in event loop
 
 **Code Quality**:
+
 - ✓ Comprehensive Ruff rules (~100+ checks)
 - ✓ Complexity limits enforced (max cyclomatic complexity: 25)
 - ✓ Code comments for complex logic
 - ✓ Clear variable naming
 
 **Efficiency**:
+
 - ✓ Batched Modbus reads (~75% request reduction)
 - ✓ Data caching in coordinator
 - ✓ Connection pooling via ModbusLink
 - ✓ Configurable polling intervals
 
----
+______________________________________________________________________
 
 ## 6. CODE ORGANIZATION PATTERNS
 
 ### 6.1 `__init__.py` - Integration Entry Point
 
 **Structure**:
+
 ```python
 """The Sinapsi Alfa integration."""
 
@@ -452,6 +496,7 @@ async def async_remove_config_entry_device(
 ```
 
 **Key Patterns**:
+
 - Uses `runtime_data` (modern approach) instead of `hass.data[DOMAIN]`
 - Dataclass for type-safe runtime storage
 - `ConfigEntryNotReady` for transient failures
@@ -462,6 +507,7 @@ async def async_remove_config_entry_device(
 ### 6.2 `const.py` - Constants and Definitions
 
 **Structure**:
+
 ```python
 """Constants for the Sinapsi Alfa integration."""
 
@@ -536,6 +582,7 @@ SENSOR_ENTITIES = [
 ```
 
 **Key Patterns**:
+
 - Single source of truth for all constants
 - Grouped by category (identity, config, limits, API, device, etc.)
 - Sensor definitions as list of dicts (easy to iterate)
@@ -546,6 +593,7 @@ SENSOR_ENTITIES = [
 ### 6.3 `config_flow.py` - Configuration UI
 
 **Structure**:
+
 ```python
 """Config flow for Sinapsi Alfa."""
 
@@ -628,6 +676,7 @@ class SinapsiAlfaOptionsFlow(config_entries.OptionsFlow):
 ```
 
 **Key Patterns**:
+
 - Voluptuous schema with `vol.Clamp()` for range validation
 - Custom validation functions (e.g., `host_valid()`)
 - Duplicate detection via unique ID
@@ -639,6 +688,7 @@ class SinapsiAlfaOptionsFlow(config_entries.OptionsFlow):
 ### 6.4 `coordinator.py` - Data Update Coordinator
 
 **Structure**:
+
 ```python
 """Data Update Coordinator."""
 
@@ -694,6 +744,7 @@ class SinapsiAlfaCoordinator(DataUpdateCoordinator):
 ```
 
 **Key Patterns**:
+
 - Extends `DataUpdateCoordinator`
 - Config validation in `__init__`
 - Bounds enforcement for scan interval
@@ -705,6 +756,7 @@ class SinapsiAlfaCoordinator(DataUpdateCoordinator):
 ### 6.5 `api.py` - API Client
 
 **Structure**:
+
 ```python
 """API Client for Sinapsi Alfa."""
 
@@ -828,6 +880,7 @@ class SinapsiAlfaAPI:
 ```
 
 **Key Patterns**:
+
 - Custom exception classes with context
 - Data structure initialization
 - Connection health tracking
@@ -842,6 +895,7 @@ class SinapsiAlfaAPI:
 ### 6.6 `sensor.py` - Sensor Platform
 
 **Structure**:
+
 ```python
 """Sensor platform."""
 
@@ -931,6 +985,7 @@ class SinapsiAlfaSensor(CoordinatorEntity, SensorEntity):
 ```
 
 **Key Patterns**:
+
 - Multiple inheritance: `CoordinatorEntity` + `SensorEntity`
 - `_attr_has_entity_name = True` for device-based naming
 - Unique ID format: `{domain}_{serial}_{key}`
@@ -944,6 +999,7 @@ class SinapsiAlfaSensor(CoordinatorEntity, SensorEntity):
 ### 6.7 `helpers.py` - Utility Functions
 
 **Structure**:
+
 ```python
 """Helper utilities."""
 
@@ -993,6 +1049,7 @@ def log_error(logger: logging.Logger, context: str, message: str, **kwargs) -> N
 ```
 
 **Key Patterns**:
+
 - Validation functions
 - Type conversions
 - Structured logging with context
@@ -1000,7 +1057,7 @@ def log_error(logger: logging.Logger, context: str, message: str, **kwargs) -> N
 - No f-strings in logger calls (deferred formatting)
 - Consistent logging format across integration
 
----
+______________________________________________________________________
 
 ## 7. HACS INTEGRATION SETUP
 
@@ -1018,6 +1075,7 @@ def log_error(logger: logging.Logger, context: str, message: str, **kwargs) -> N
 ```
 
 **Key Fields**:
+
 - `name`: Display name in HACS
 - `homeassistant`: Minimum HA version
 - `content_in_root`: `false` (integration in `custom_components/` subdirectory)
@@ -1045,6 +1103,7 @@ def log_error(logger: logging.Logger, context: str, message: str, **kwargs) -> N
 ```
 
 **Key Fields**:
+
 - `domain`: Unique integration identifier (lowercase, underscores)
 - `name`: Display name
 - `codeowners`: GitHub usernames for notifications
@@ -1059,19 +1118,21 @@ def log_error(logger: logging.Logger, context: str, message: str, **kwargs) -> N
 - `version`: Current version (auto-updated by release workflow)
 
 **Integration Types**:
+
 - `hub`: Manages a device/service that provides multiple entities
 - `device`: Single device
 - `service`: Cloud service
 - `helper`: Utility integration
 
 **IoT Classes**:
+
 - `local_polling`: Local network, polls device
 - `local_push`: Local network, device pushes updates
 - `cloud_polling`: Cloud service, polls API
 - `cloud_push`: Cloud service, pushes updates
 - `calculated`: Derives data from other integrations
 
----
+______________________________________________________________________
 
 ## 8. PRE-COMMIT HOOKS AND CODE QUALITY TOOLS
 
@@ -1136,6 +1197,7 @@ exclude = [
 ```
 
 **Key Configuration**:
+
 - Python 3.13 target
 - ~100+ linting rules enabled
 - Strategic ignores for false positives
@@ -1156,6 +1218,7 @@ exclude = [
 ```
 
 **Rules**:
+
 - MD024: Duplicate headings only within same level
 - MD050: Use asterisks for emphasis
 - MD013: Max line length 120 characters
@@ -1186,6 +1249,7 @@ updates:
 ```
 
 **Key Points**:
+
 - Daily checks for both GitHub Actions and Python packages
 - Scheduled at specific time/timezone
 - Ignores Home Assistant updates (managed via hacs.json)
@@ -1194,13 +1258,16 @@ updates:
 ### 8.4 Git Configuration
 
 **.gitattributes**:
+
 ```
 * text=auto eol=lf
 ```
+
 - Normalizes line endings to LF (Unix-style)
 - Auto-detection of text files
 
 **.gitignore**:
+
 ```
 # artifacts
 __pycache__
@@ -1222,7 +1289,7 @@ config/*
 !config/configuration.yaml
 ```
 
----
+______________________________________________________________________
 
 ## 9. TRANSLATION STRUCTURE
 
@@ -1280,6 +1347,7 @@ custom_components/sinapsi_alfa/
 ```
 
 **Structure**:
+
 - `config`: Initial setup flow
   - `step`: Each step in config flow
     - `user`: User-initiated step
@@ -1293,20 +1361,21 @@ custom_components/sinapsi_alfa/
 ### 9.3 Translation Best Practices
 
 1. **Always provide `en.json`** (English is required)
-2. **Match keys exactly** with code references
-3. **Use descriptive text** for user guidance
-4. **Include help links** in descriptions
-5. **Map error codes** from config flow
-6. **Translate user-facing strings only** (not internal keys)
-7. **Keep translations synchronized** across languages
+1. **Match keys exactly** with code references
+1. **Use descriptive text** for user guidance
+1. **Include help links** in descriptions
+1. **Map error codes** from config flow
+1. **Translate user-facing strings only** (not internal keys)
+1. **Keep translations synchronized** across languages
 
----
+______________________________________________________________________
 
 ## 10. ADDITIONAL BEST PRACTICES
 
 ### 10.1 Development Environment
 
 **DevContainer** (`.devcontainer.json`):
+
 - Python 3.12 base image (Debian Bullseye)
 - VS Code extensions:
   - Python language support
@@ -1321,6 +1390,7 @@ custom_components/sinapsi_alfa/
 **Scripts**:
 
 **`scripts/setup`**:
+
 ```bash
 #!/usr/bin/env bash
 set -e
@@ -1329,6 +1399,7 @@ python3 -m pip install --requirement requirements.txt
 ```
 
 **`scripts/develop`**:
+
 ```bash
 #!/usr/bin/env bash
 set -e
@@ -1344,6 +1415,7 @@ hass --config "${PWD}/config" --debug
 ```
 
 **`scripts/lint`**:
+
 ```bash
 #!/usr/bin/env bash
 set -e
@@ -1354,6 +1426,7 @@ ruff check . --fix
 ### 10.2 Issue Templates
 
 **Bug Report** (`.github/ISSUE_TEMPLATE/bug.yml`):
+
 - System health data
 - Checklist (debug logging, no duplicates, etc.)
 - Issue description
@@ -1362,6 +1435,7 @@ ruff check . --fix
 - Optional diagnostics dump
 
 **Feature Request** (`.github/ISSUE_TEMPLATE/feature_request.yml`):
+
 - Checklist (completeness, no duplicates)
 - Problem description
 - Proposed solution
@@ -1369,6 +1443,7 @@ ruff check . --fix
 - Additional context
 
 **Config** (`.github/ISSUE_TEMPLATE/config.yml`):
+
 ```yaml
 blank_issues_enabled: false
 contact_links:
@@ -1386,16 +1461,18 @@ contact_links:
 ### 10.3 Documentation Standards
 
 **README.md Structure**:
+
 1. Title and badges
-2. Description and features
-3. Installation (HACS + manual)
-4. Configuration
-5. Troubleshooting
-6. Contributing
-7. License
-8. Disclaimers
+1. Description and features
+1. Installation (HACS + manual)
+1. Configuration
+1. Troubleshooting
+1. Contributing
+1. License
+1. Disclaimers
 
 **CLAUDE.md** (AI Guidelines):
+
 - Mandatory starting checklist
 - Project overview
 - Architecture details
@@ -1405,6 +1482,7 @@ contact_links:
 - Common pitfalls
 
 **CHANGELOG.md**:
+
 - Keep a Changelog format
 - Semantic versioning
 - Categorized changes
@@ -1413,6 +1491,7 @@ contact_links:
 ### 10.4 Code Style Standards
 
 **Type Hints**:
+
 ```python
 from typing import Any
 from homeassistant.core import HomeAssistant
@@ -1426,6 +1505,7 @@ async def async_setup_entry(
 ```
 
 **Logging**:
+
 ```python
 # Use helpers, not f-strings
 log_debug(_LOGGER, "async_update_data", "Update completed", time=datetime.now())
@@ -1435,6 +1515,7 @@ log_debug(_LOGGER, "async_update_data", "Update completed", time=datetime.now())
 ```
 
 **Error Handling**:
+
 ```python
 # Custom exceptions with context
 try:
@@ -1444,6 +1525,7 @@ except ConnectionError as ex:
 ```
 
 **Async Patterns**:
+
 ```python
 # Use async_add_executor_job for sync operations
 mac = await hass.async_add_executor_job(get_mac_address, host)
@@ -1455,12 +1537,14 @@ mac = await hass.async_add_executor_job(get_mac_address, host)
 ### 10.5 Testing Approach
 
 **Validation**:
+
 - Hassfest (Home Assistant standards)
 - HACS validation
 - Ruff linting
 - Manual testing with real devices
 
 **Future Improvements**:
+
 - Unit tests with pytest
 - Integration tests
 - Mock device responses
@@ -1469,21 +1553,25 @@ mac = await hass.async_add_executor_job(get_mac_address, host)
 ### 10.6 Performance Optimizations
 
 **Batch Operations**:
+
 - Group consecutive Modbus registers
 - ~75% request reduction (20 → 5 reads)
 - Sequential processing to avoid transaction conflicts
 
 **Connection Pooling**:
+
 - Single ModbusLink client per coordinator
 - Reuse connections across reads
 - Proper cleanup on unload
 
 **Caching**:
+
 - Data stored in coordinator
 - All sensors read from cache
 - No duplicate API calls
 
 **Configurable Polling**:
+
 - User-adjustable scan interval (30-600s)
 - Bounds enforcement
 - Balance between freshness and load
@@ -1491,16 +1579,19 @@ mac = await hass.async_add_executor_job(get_mac_address, host)
 ### 10.7 Security Considerations
 
 **Local-Only Communication**:
+
 - Direct IP connection (no cloud)
 - User's network only
 - No external data transmission
 
 **Input Validation**:
+
 - Host format validation
 - Port range checking
 - Scan interval bounds
 
 **Error Information**:
+
 - No sensitive data in logs
 - Connection details only when needed
 - Safe error messages to users
@@ -1508,50 +1599,59 @@ mac = await hass.async_add_executor_job(get_mac_address, host)
 ### 10.8 Accessibility and UX
 
 **Device Naming**:
+
 - `has_entity_name = True` for clean naming
 - User-configurable device prefix
 - Descriptive sensor names
 
 **Entity Organization**:
+
 - Device grouping (all sensors under one device)
 - Entity categories (diagnostic vs. measurement)
 - Appropriate device classes
 
 **Icons**:
+
 - MDI icons for visual clarity
 - Context-appropriate (e.g., transmission tower for grid power)
 
 **Availability**:
+
 - Sensors marked unavailable on connection failure
 - Clear distinction between "0" and "unavailable"
 
 ### 10.9 Maintenance Practices
 
 **Dependencies**:
+
 - Specify minimum versions (`>=1.2.0`)
 - Use Dependabot for updates
 - Test compatibility before merging
 
 **Backwards Compatibility**:
+
 - Migration code (commented out when not needed)
 - Preserve unique IDs across versions
 - Careful with config entry changes
 
 **Code Ownership**:
+
 - Defined codeowners in manifest
 - GitHub notifications for maintainers
 - Community contributions welcome
 
 **Documentation Maintenance**:
+
 - Update README with new features
 - Keep CHANGELOG current
 - Sync translations
 
----
+______________________________________________________________________
 
 ## 11. QUALITY SCALE COMPLIANCE CHECKLIST
 
 ### Bronze Tier ✓
+
 - [x] UI-based config flow
 - [x] Input validation
 - [x] Duplicate prevention
@@ -1562,6 +1662,7 @@ mac = await hass.async_add_executor_job(get_mac_address, host)
 - [x] Basic documentation
 
 ### Silver Tier ✓
+
 - [x] Code owners defined
 - [x] Custom exceptions
 - [x] Automatic error recovery
@@ -1572,6 +1673,7 @@ mac = await hass.async_add_executor_job(get_mac_address, host)
 - [x] Issue templates
 
 ### Gold Tier (Partial)
+
 - [x] Options flow (reconfiguration)
 - [x] Translations (multiple languages)
 - [x] Detailed documentation
@@ -1581,6 +1683,7 @@ mac = await hass.async_add_executor_job(get_mac_address, host)
 - [ ] Comprehensive automated tests
 
 ### Platinum Tier (Partial)
+
 - [x] Full type annotations
 - [x] Fully asynchronous
 - [x] Code comments
@@ -1590,13 +1693,14 @@ mac = await hass.async_add_executor_job(get_mac_address, host)
 - [x] Connection pooling
 - [ ] 100% test coverage
 
----
+______________________________________________________________________
 
 ## 12. RELEASE WORKFLOW EXAMPLE
 
 ### Step-by-Step Process
 
 **1. Development**:
+
 ```bash
 # Make changes
 git checkout -b feature/new-sensor
@@ -1613,6 +1717,7 @@ git push origin feature/new-sensor
 ```
 
 **2. Pre-Release**:
+
 ```bash
 # Update CHANGELOG.md
 ## [1.1.0] - 2025-12-15
@@ -1638,23 +1743,27 @@ git push
 ```
 
 **3. Create Release** (GitHub UI):
+
 - Tag: `v1.1.0`
 - Title: `v1.1.0`
 - Description: Copy from CHANGELOG
 - Publish release
 
 **4. Automatic Actions** (via workflow):
+
 - Checkout code
 - Update manifest.json version (redundant now, but ensures sync)
 - Create `sinapsi_alfa.zip`
 - Upload to release
 
 **5. HACS Detection**:
+
 - HACS automatically detects new release
 - Users see update available
 - One-click update in HACS
 
 **6. Post-Release**:
+
 ```bash
 # Copy release notes to archive
 cp .github/release-notes-v1.1.0.md docs/releases/
@@ -1666,13 +1775,14 @@ git commit -am "Archive release notes"
 git push
 ```
 
----
+______________________________________________________________________
 
 ## 13. MIGRATION GUIDE FOR NEW INTEGRATION
 
 ### Checklist for Creating New Integration
 
 **1. Repository Setup**:
+
 - [ ] Create GitHub repository
 - [ ] Add LICENSE (MIT)
 - [ ] Add README.md (copy structure)
@@ -1680,17 +1790,20 @@ git push
 - [ ] Add .gitattributes (copy exact)
 
 **2. Documentation**:
+
 - [ ] CHANGELOG.md (start with [Unreleased])
 - [ ] CLAUDE.md (adapt for your integration)
 - [ ] Issue templates (copy all)
 - [ ] Release notes template
 
 **3. Code Quality**:
+
 - [ ] .ruff.toml (copy exact)
 - [ ] .markdownlint.json (copy exact)
 - [ ] requirements.txt (update dependencies)
 
 **4. GitHub Actions**:
+
 - [ ] workflows/release.yml (update paths)
 - [ ] workflows/validate.yml (copy exact)
 - [ ] workflows/lint.yml (copy exact)
@@ -1698,10 +1811,12 @@ git push
 - [ ] dependabot.yml (copy exact)
 
 **5. HACS Integration**:
+
 - [ ] hacs.json (update name, domain)
 - [ ] manifest.json (update all fields)
 
 **6. Integration Code**:
+
 - [ ] custom_components/{domain}/__init__.py
 - [ ] custom_components/{domain}/const.py
 - [ ] custom_components/{domain}/config_flow.py
@@ -1712,10 +1827,12 @@ git push
 - [ ] custom_components/{domain}/manifest.json
 
 **7. Translations**:
+
 - [ ] translations/en.json (required)
 - [ ] translations/{lang}.json (optional)
 
 **8. Development**:
+
 - [ ] .devcontainer.json (optional)
 - [ ] .vscode/settings.json (optional)
 - [ ] scripts/setup
@@ -1724,6 +1841,7 @@ git push
 - [ ] config/configuration.yaml
 
 **9. Testing**:
+
 - [ ] Test hassfest validation
 - [ ] Test HACS validation
 - [ ] Test config flow
@@ -1731,19 +1849,21 @@ git push
 - [ ] Test with real device
 
 **10. Release**:
+
 - [ ] Update version (manifest.json + const.py)
 - [ ] Update CHANGELOG.md
 - [ ] Create GitHub release
 - [ ] Verify ZIP creation
 - [ ] Test HACS installation
 
----
+______________________________________________________________________
 
 ## APPENDIX A: Key Files Reference
 
 ### A.1 Minimal Working Integration
 
 **Absolute Minimum Files**:
+
 ```
 custom_components/{domain}/
 ├── __init__.py          # Setup and unload
@@ -1752,6 +1872,7 @@ custom_components/{domain}/
 ```
 
 **Production-Ready Minimum**:
+
 ```
 custom_components/{domain}/
 ├── translations/
@@ -1785,11 +1906,12 @@ repository/
 └── hacs.json
 ```
 
----
+______________________________________________________________________
 
 ## APPENDIX B: Common Patterns Quick Reference
 
 ### B.1 Config Entry Setup
+
 ```python
 async def async_setup_entry(hass, entry):
     coordinator = MyCoordinator(hass, entry)
@@ -1801,6 +1923,7 @@ async def async_setup_entry(hass, entry):
 ```
 
 ### B.2 Coordinator Pattern
+
 ```python
 class MyCoordinator(DataUpdateCoordinator):
     def __init__(self, hass, entry):
@@ -1817,6 +1940,7 @@ class MyCoordinator(DataUpdateCoordinator):
 ```
 
 ### B.3 Sensor Entity
+
 ```python
 class MySensor(CoordinatorEntity, SensorEntity):
     _attr_has_entity_name = True
@@ -1832,6 +1956,7 @@ class MySensor(CoordinatorEntity, SensorEntity):
 ```
 
 ### B.4 Config Flow
+
 ```python
 class MyConfigFlow(ConfigFlow, domain=DOMAIN):
     VERSION = 1
@@ -1848,24 +1973,25 @@ class MyConfigFlow(ConfigFlow, domain=DOMAIN):
                                      errors=errors)
 ```
 
----
+______________________________________________________________________
 
 ## SUMMARY
 
 The **ha-sinapsi-alfa** repository represents a **Gold-tier quality** Home Assistant custom integration with strong Platinum-tier elements. It demonstrates:
 
 1. **Professional Project Structure**: Complete CI/CD, documentation, and quality tooling
-2. **Modern HA Patterns**: runtime_data, coordinator pattern, config flow, proper error handling
-3. **Code Quality**: Comprehensive linting, type hints, structured logging, performance optimization
-4. **Developer Experience**: DevContainer, helper scripts, clear documentation, AI guidelines
-5. **User Experience**: UI configuration, translations, error recovery, clear entity organization
-6. **Maintenance**: Dependabot, auto-merge, release automation, HACS integration
+1. **Modern HA Patterns**: runtime_data, coordinator pattern, config flow, proper error handling
+1. **Code Quality**: Comprehensive linting, type hints, structured logging, performance optimization
+1. **Developer Experience**: DevContainer, helper scripts, clear documentation, AI guidelines
+1. **User Experience**: UI configuration, translations, error recovery, clear entity organization
+1. **Maintenance**: Dependabot, auto-merge, release automation, HACS integration
 
 This template is suitable for creating production-quality integrations that meet Home Assistant's highest standards.
 
----
+______________________________________________________________________
 
 **Sources for Quality Scale Information**:
+
 - [Quality scale - Home Assistant](https://www.home-assistant.io/docs/quality_scale/)
 - [Integration quality scale | Home Assistant Developer Docs](https://developers.home-assistant.io/docs/core/integration-quality-scale/)
 - [Integration Quality Scale: Chapter 3 · Discussion #1155](https://github.com/home-assistant/architecture/discussions/1155)

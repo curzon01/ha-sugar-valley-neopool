@@ -3,24 +3,26 @@
 This document provides a comprehensive guide to using the official Home Assistant MQTT integration as a dependency in custom integrations. It is based on the analysis of the Home Assistant Core MQTT component at `homeassistant/components/mqtt/`.
 
 ## Table of Contents
-1. [Overview](#overview)
-2. [Declaring MQTT as a Dependency](#declaring-mqtt-as-a-dependency)
-3. [Publishing Messages](#publishing-messages)
-4. [Subscribing to Topics](#subscribing-to-topics)
-5. [Entity Base Classes](#entity-base-classes)
-6. [QoS Handling](#qos-handling)
-7. [Connection State Management](#connection-state-management)
-8. [Discovery Patterns](#discovery-patterns)
-9. [Best Practices](#best-practices)
-10. [Complete Examples](#complete-examples)
 
----
+1. [Overview](#overview)
+1. [Declaring MQTT as a Dependency](#declaring-mqtt-as-a-dependency)
+1. [Publishing Messages](#publishing-messages)
+1. [Subscribing to Topics](#subscribing-to-topics)
+1. [Entity Base Classes](#entity-base-classes)
+1. [QoS Handling](#qos-handling)
+1. [Connection State Management](#connection-state-management)
+1. [Discovery Patterns](#discovery-patterns)
+1. [Best Practices](#best-practices)
+1. [Complete Examples](#complete-examples)
+
+______________________________________________________________________
 
 ## Overview
 
 The Home Assistant MQTT integration provides a comprehensive framework for MQTT-based integrations. Instead of managing MQTT connections directly, custom integrations should use the official MQTT integration as a dependency.
 
 ### Key Benefits
+
 - Centralized connection management
 - Automatic reconnection handling
 - Built-in subscription management
@@ -28,7 +30,7 @@ The Home Assistant MQTT integration provides a comprehensive framework for MQTT-
 - Support for MQTT discovery
 - Proper QoS and retain flag handling
 
----
+______________________________________________________________________
 
 ## Declaring MQTT as a Dependency
 
@@ -81,7 +83,7 @@ mqtt_data: MqttData = hass.data[mqtt.DATA_MQTT]
 is_connected = mqtt_data.client.connected
 ```
 
----
+______________________________________________________________________
 
 ## Publishing Messages
 
@@ -175,7 +177,7 @@ await mqtt.async_publish(
 )
 ```
 
----
+______________________________________________________________________
 
 ## Subscribing to Topics
 
@@ -336,7 +338,7 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     return True
 ```
 
----
+______________________________________________________________________
 
 ## Entity Base Classes
 
@@ -411,13 +413,14 @@ class MyMqttSensor(MqttEntity, SensorEntity):
 ### Required Methods
 
 1. **config_schema()** - Static method returning the configuration schema
-2. **_setup_from_config()** - Initialize entity attributes from config
-3. **_prepare_subscribe_topics()** - Prepare topic subscriptions
-4. **_subscribe_topics()** - Activate topic subscriptions
+1. **\_setup_from_config()** - Initialize entity attributes from config
+1. **\_prepare_subscribe_topics()** - Prepare topic subscriptions
+1. **\_subscribe_topics()** - Activate topic subscriptions
 
 ### Inherited Mixins
 
 #### MqttAttributesMixin
+
 Handles JSON attributes from MQTT payloads.
 
 ```python
@@ -431,6 +434,7 @@ config = {
 ```
 
 #### MqttAvailabilityMixin
+
 Manages entity availability through MQTT.
 
 ```python
@@ -445,6 +449,7 @@ config = {
 ```
 
 #### MqttDiscoveryUpdateMixin
+
 Handles dynamic updates from MQTT discovery messages.
 
 ```python
@@ -455,6 +460,7 @@ async def discovery_update(self, discovery_payload, discovery_hash):
 ```
 
 #### MqttEntityDeviceInfo
+
 Manages device registry integration.
 
 ```python
@@ -627,7 +633,7 @@ class MqttSwitch(MqttEntity, SwitchEntity):
             self.async_write_ha_state()
 ```
 
----
+______________________________________________________________________
 
 ## QoS Handling
 
@@ -666,16 +672,19 @@ SCHEMA = vol.Schema({
 ### Best Practices
 
 1. **Use QoS 0 for frequent updates** (temperature, humidity sensors)
+
    ```python
    await mqtt.async_publish(hass, "sensor/temperature", "22.5", qos=0)
    ```
 
-2. **Use QoS 1 for commands** (switch on/off, mode changes)
+1. **Use QoS 1 for commands** (switch on/off, mode changes)
+
    ```python
    await mqtt.async_publish(hass, "switch/command", "ON", qos=1)
    ```
 
-3. **Use QoS 2 sparingly** (critical commands only, has performance overhead)
+1. **Use QoS 2 sparingly** (critical commands only, has performance overhead)
+
    ```python
    await mqtt.async_publish(hass, "alarm/arm", "AWAY", qos=2)
    ```
@@ -714,7 +723,7 @@ from homeassistant.components.mqtt.const import (
 )
 ```
 
----
+______________________________________________________________________
 
 ## Connection State Management
 
@@ -811,6 +820,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 ### Automatic Reconnection
 
 The MQTT integration handles reconnection automatically:
+
 - Reconnects every 10 seconds when disconnected
 - Resubscribes to all topics on reconnection
 - Buffers messages during disconnection (up to 8 MiB, minimum 128 KiB)
@@ -838,7 +848,7 @@ WILL_MESSAGE = {
 
 Entities can subscribe to the birth message topic to detect reconnection.
 
----
+______________________________________________________________________
 
 ## Discovery Patterns
 
@@ -1013,12 +1023,12 @@ async def remove_discovery(hass: HomeAssistant):
 ### Discovery Best Practices
 
 1. **Use retain=True** for discovery messages
-2. **Include device information** to group entities
-3. **Use unique_id** for entity identification
-4. **Include availability topics** for proper status reporting
-5. **Use abbreviated keys** to reduce MQTT traffic
-6. **Publish on startup** and when configuration changes
-7. **Remove on shutdown** (optional, for clean uninstall)
+1. **Include device information** to group entities
+1. **Use unique_id** for entity identification
+1. **Include availability topics** for proper status reporting
+1. **Use abbreviated keys** to reduce MQTT traffic
+1. **Publish on startup** and when configuration changes
+1. **Remove on shutdown** (optional, for clean uninstall)
 
 ### Complete Discovery Example
 
@@ -1189,7 +1199,7 @@ async def setup_discovery(hass: HomeAssistant, device_id: str):
     return manager
 ```
 
----
+______________________________________________________________________
 
 ## Best Practices
 
@@ -1332,7 +1342,7 @@ value_template = MqttValueTemplate(
 result = value_template.async_render(payload)
 ```
 
----
+______________________________________________________________________
 
 ## Complete Examples
 
@@ -1680,20 +1690,20 @@ class PoolTemperatureSensor(MqttEntity, SensorEntity):
         self.async_write_ha_state()
 ```
 
----
+______________________________________________________________________
 
 ## Summary
 
 This guide covers the essential APIs and patterns for integrating with the Home Assistant MQTT component:
 
 1. **Dependency Declaration**: Add "mqtt" to dependencies in manifest.json
-2. **Publishing**: Use `mqtt.async_publish()` with appropriate QoS and retain flags
-3. **Subscribing**: Use `mqtt.async_subscribe()` and handle callbacks properly
-4. **Entities**: Extend `MqttEntity` base class for automatic subscription management
-5. **QoS**: Choose appropriate levels (0 for sensors, 1 for commands)
-6. **Connection**: Monitor connection state and handle reconnections
-7. **Discovery**: Use standard discovery topics and payloads for auto-configuration
-8. **Best Practices**: Validate topics, clean up subscriptions, use unique IDs
+1. **Publishing**: Use `mqtt.async_publish()` with appropriate QoS and retain flags
+1. **Subscribing**: Use `mqtt.async_subscribe()` and handle callbacks properly
+1. **Entities**: Extend `MqttEntity` base class for automatic subscription management
+1. **QoS**: Choose appropriate levels (0 for sensors, 1 for commands)
+1. **Connection**: Monitor connection state and handle reconnections
+1. **Discovery**: Use standard discovery topics and payloads for auto-configuration
+1. **Best Practices**: Validate topics, clean up subscriptions, use unique IDs
 
 By following these patterns, custom integrations can properly leverage the HA MQTT integration for reliable, maintainable MQTT communication.
 
