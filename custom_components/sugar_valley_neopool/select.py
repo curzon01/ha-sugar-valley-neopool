@@ -114,7 +114,7 @@ class NeoPoolSelect(NeoPoolMQTTEntity, SelectEntity):
         """Initialize the select."""
         super().__init__(config_entry, description.key)
         self.entity_description = description
-        self._attr_current_option = None
+        self._attr_current_option: str | None = None
         self._attr_options = description.options or []
 
     async def async_added_to_hass(self) -> None:

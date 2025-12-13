@@ -24,7 +24,7 @@ STEP_USER_DATA_SCHEMA = vol.Schema(
 )
 
 
-class NeoPoolConfigFlow(ConfigFlow, domain=DOMAIN):  # type: ignore
+class NeoPoolConfigFlow(ConfigFlow, domain=DOMAIN):  # type: ignore[call-arg]
     """Handle a config flow for NeoPool MQTT."""
 
     VERSION = 1

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from collections.abc import Callable
 import logging
 from typing import Any
 
@@ -86,7 +87,7 @@ class NeoPoolMQTTEntity(NeoPoolEntity):
     async def _subscribe_topic(
         self,
         topic: str,
-        msg_callback: callback,
+        msg_callback: Callable[[mqtt.ReceiveMessage], None],
         qos: int = 1,
     ) -> None:
         """Subscribe to an MQTT topic."""

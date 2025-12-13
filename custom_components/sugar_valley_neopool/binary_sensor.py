@@ -203,7 +203,7 @@ class NeoPoolBinarySensor(NeoPoolMQTTEntity, BinarySensorEntity):
         """Initialize the binary sensor."""
         super().__init__(config_entry, description.key)
         self.entity_description = description
-        self._attr_is_on = None
+        self._attr_is_on: bool | None = None
 
     async def async_added_to_hass(self) -> None:
         """Subscribe to MQTT topic when entity is added."""

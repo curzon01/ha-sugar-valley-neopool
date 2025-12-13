@@ -10,13 +10,15 @@ keywords = ["home-assistant", "neopool", "sugar-valley", "mqtt", "tasmota", "poo
 classifiers = [
     "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",
-    "License :: OSI Approved :: MIT License",
     "Programming Language :: Python :: 3.13",
 ]
 
 [project.urls]
 "Homepage" = "https://github.com/alexdelprete/ha-sugar-valley-neopool"
 "Bug Tracker" = "https://github.com/alexdelprete/ha-sugar-valley-neopool/issues"
+
+[tool.setuptools.packages.find]
+include = ["custom_components*"]
 
 [project.optional-dependencies]
 dev = [

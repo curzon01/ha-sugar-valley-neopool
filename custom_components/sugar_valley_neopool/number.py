@@ -124,7 +124,7 @@ class NeoPoolNumber(NeoPoolMQTTEntity, NumberEntity):
         """Initialize the number."""
         super().__init__(config_entry, description.key)
         self.entity_description = description
-        self._attr_native_value = None
+        self._attr_native_value: float | None = None
 
     async def async_added_to_hass(self) -> None:
         """Subscribe to MQTT topic when entity is added."""

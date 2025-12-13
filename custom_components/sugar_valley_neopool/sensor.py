@@ -92,7 +92,7 @@ SENSOR_DESCRIPTIONS: tuple[NeoPoolSensorEntityDescription, ...] = (
         name="pH State",
         icon="mdi:ph",
         json_path="NeoPool.pH.State",
-        value_fn=lambda x: PH_STATE_MAP.get(safe_int(x), f"Unknown ({x})"),
+        value_fn=lambda x: PH_STATE_MAP.get(safe_int(x, -1), f"Unknown ({x})"),
     ),
     NeoPoolSensorEntityDescription(
         key="ph_pump",
@@ -100,7 +100,7 @@ SENSOR_DESCRIPTIONS: tuple[NeoPoolSensorEntityDescription, ...] = (
         name="pH Pump",
         icon="mdi:ph",
         json_path="NeoPool.pH.Pump",
-        value_fn=lambda x: PH_PUMP_MAP.get(safe_int(x), f"Unknown ({x})"),
+        value_fn=lambda x: PH_PUMP_MAP.get(safe_int(x, -1), f"Unknown ({x})"),
     ),
     # Redox (ORP) sensors
     NeoPoolSensorEntityDescription(
@@ -179,7 +179,7 @@ SENSOR_DESCRIPTIONS: tuple[NeoPoolSensorEntityDescription, ...] = (
         name="Filtration Mode",
         icon="mdi:pump",
         json_path="NeoPool.Filtration.Mode",
-        value_fn=lambda x: FILTRATION_MODE_MAP.get(safe_int(x), f"Unknown ({x})"),
+        value_fn=lambda x: FILTRATION_MODE_MAP.get(safe_int(x, -1), f"Unknown ({x})"),
     ),
     NeoPoolSensorEntityDescription(
         key="filtration_speed",
@@ -187,7 +187,7 @@ SENSOR_DESCRIPTIONS: tuple[NeoPoolSensorEntityDescription, ...] = (
         name="Filtration Speed",
         icon="mdi:speedometer",
         json_path="NeoPool.Filtration.Speed",
-        value_fn=lambda x: FILTRATION_SPEED_MAP.get(safe_int(x), f"Unknown ({x})"),
+        value_fn=lambda x: FILTRATION_SPEED_MAP.get(safe_int(x, -1), f"Unknown ({x})"),
     ),
     # Powerunit sensors
     NeoPoolSensorEntityDescription(

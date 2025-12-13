@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import json
 import logging
-from typing import Any
+from typing import Any, overload
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -88,6 +88,12 @@ def int_to_bool(value: str | int) -> bool:
         return False
 
 
+@overload
+def safe_float(value: Any) -> float | None: ...
+@overload
+def safe_float(value: Any, default: None) -> float | None: ...
+@overload
+def safe_float(value: Any, default: float) -> float: ...
 def safe_float(value: Any, default: float | None = None) -> float | None:
     """Safely convert value to float."""
     if value is None:
@@ -98,6 +104,12 @@ def safe_float(value: Any, default: float | None = None) -> float | None:
         return default
 
 
+@overload
+def safe_int(value: Any) -> int | None: ...
+@overload
+def safe_int(value: Any, default: None) -> int | None: ...
+@overload
+def safe_int(value: Any, default: int) -> int: ...
 def safe_int(value: Any, default: int | None = None) -> int | None:
     """Safely convert value to int."""
     if value is None:
