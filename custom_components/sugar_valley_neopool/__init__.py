@@ -6,7 +6,7 @@ from dataclasses import dataclass, field
 import logging
 from typing import TYPE_CHECKING, Any
 
-from homeassistant.components import mqtt
+from homeassistant.components import mqtt, persistent_notification
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.exceptions import ConfigEntryNotReady
 from homeassistant.helpers import device_registry as dr, entity_registry as er
@@ -233,7 +233,8 @@ async def _show_migration_summary(hass: HomeAssistant, summary: dict[str, Any]) 
         if len(summary["errors"]) > 5:
             lines.append(f"- ...and {len(summary['errors']) - 5} more")
 
-    hass.components.persistent_notification.async_create(
+    persistent_notification.async_create(
+        hass,
         message="\n".join(lines),
         title="NeoPool Migration",
         notification_id="neopool_migration_summary",

@@ -5,7 +5,6 @@
   "config_flow": true,
   "dependencies": ["mqtt"],
   "documentation": "https://github.com/alexdelprete/ha-sugar-valley-neopool",
-  "homeassistant": "2024.12.0",
   "integration_type": "hub",
   "iot_class": "local_push",
   "issue_tracker": "https://github.com/alexdelprete/ha-sugar-valley-neopool/issues",
