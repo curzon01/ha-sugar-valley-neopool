@@ -58,29 +58,35 @@ This integration provides comprehensive monitoring and control of your NeoPool s
 
 ### Migration from YAML Package
 
-If you're currently using the YAML package ([`ha_neopool_mqtt_package.yaml`](docs/ha_neopool_mqtt_package.yaml)):
+If you're currently using the YAML package
+([`ha_neopool_mqtt_package.yaml`](docs/ha_neopool_mqtt_package.yaml)):
 
-1. **Keep your YAML configuration** - Don't remove it yet
-1. Install this custom integration through HACS or manually (see above)
-1. Add the integration in Home Assistant:
+> ⚠️ **Important**: You must remove the YAML package **before** adding this integration to avoid
+> duplicate entities.
+
+1. **Remove/comment out** the YAML package from your `configuration.yaml`
+1. **Restart Home Assistant** - entities will become "orphaned" but remain in the registry
+   with all historical data intact
+1. **Install** this custom integration through HACS or manually (see above)
+1. **Add the integration** in Home Assistant:
    - Go to **Settings** → **Devices & Services** → **Add Integration**
    - Search for "Sugar Valley NeoPool"
-   - When prompted, check the box **"Migrating from YAML package"**
-   - Enter your YAML MQTT topic (default: `SmartPool`)
-     - If you customized the topic in your YAML package, enter your custom topic
-   - The integration will automatically:
-     - Validate the MQTT topic by checking for NeoPool messages
-     - Configure Tasmota with `SetOption157 1` to expose NodeID
-     - Migrate all existing entities to NodeID-based unique IDs
-     - Preserve all historical data (graphs, statistics, history)
-     - Associate entities with the new config entry
+   - Check the box **"Migrating from YAML package"**
+1. **Auto-detection**: The integration will attempt to:
+   - Auto-detect your MQTT topic (falls back to asking you if not found)
+   - Auto-detect orphaned entities with prefix `neopool_mqtt_` (falls back to asking for
+     custom prefix)
+   - Configure Tasmota with `SetOption157 1` to expose NodeID
+1. **Review and confirm**: Before migration, you'll see:
+   - Summary of validated settings (topic, NodeID)
+   - List of entities to be migrated
+   - Explanation of what will happen
+   - Confirmation checkbox (required to proceed)
 1. **Verify migration**:
+   - Check the persistent notification for migration results
    - All your entities should appear in the new integration
-   - Check that historical data is intact (graphs should show continuous data)
+   - Historical data should be intact (graphs show continuous data)
    - Test that controls (switches, selects, numbers) work correctly
-1. After confirming everything works, remove the YAML package from your `configuration.yaml`
-
-**No manual steps required** - the integration handles everything automatically, including Tasmota configuration!
 
 #### Why NodeID?
 
@@ -97,19 +103,26 @@ The integration now uses the hardware NodeID from your NeoPool controller to cre
 
 **Problem**: "Cannot read from this MQTT topic"
 
-- **Solution**: Verify your Tasmota device is online and publishing to the topic you entered
+- Verify your Tasmota device is online and publishing to the topic you entered
 - Check the topic name matches exactly (case-sensitive)
 - Verify MQTT broker is working: look for `tele/{topic}/SENSOR` messages
 
+**Problem**: "No orphaned entities found"
+
+- Make sure you removed the YAML package from `configuration.yaml`
+- Make sure you restarted Home Assistant after removing the YAML package
+- If you used a custom `unique_id` prefix, enter it when prompted
+
 **Problem**: "Failed to configure NodeID"
 
-- **Solution**: Manually set `SetOption157 1` in Tasmota console, then retry setup
+- Manually set `SetOption157 1` in Tasmota console, then retry setup
 - Some Tasmota versions may require this to be set manually
 
-**Problem**: Entities appear duplicated after migration
+**Problem**: Entities appear duplicated
 
-- **Solution**: Remove the old YAML package configuration from `configuration.yaml` and restart Home Assistant
-- The old YAML entities will be automatically migrated to the new integration
+- This happens if you didn't remove the YAML package before adding the integration
+- Remove the YAML package from `configuration.yaml` and restart Home Assistant
+- The duplicates should be resolved after restart
 
 ## Configuration
 

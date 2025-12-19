@@ -13,15 +13,20 @@ from homeassistant.components import mqtt
 from homeassistant.components.mqtt import valid_subscribe_topic
 from homeassistant.config_entries import ConfigFlow, ConfigFlowResult
 from homeassistant.core import callback
-from homeassistant.helpers import config_validation as cv
+from homeassistant.helpers import config_validation as cv, entity_registry as er
+from homeassistant.helpers.entity_registry import RegistryEntry
 from homeassistant.helpers.service_info.mqtt import MqttServiceInfo
 
 from .const import (
+    CONF_CONFIRM_MIGRATION,
     CONF_DEVICE_NAME,
     CONF_DISCOVERY_PREFIX,
     CONF_MIGRATE_YAML,
     CONF_NODEID,
+    CONF_UNIQUE_ID_PREFIX,
     DEFAULT_DEVICE_NAME,
+    DEFAULT_MQTT_TOPIC,
+    DEFAULT_UNIQUE_ID_PREFIX,
     DOMAIN,
 )
 from .helpers import get_nested_value, validate_nodeid
@@ -36,7 +41,7 @@ STEP_USER_DATA_SCHEMA = vol.Schema(
 )
 
 
-class NeoPoolConfigFlow(ConfigFlow, domain=DOMAIN):
+class NeoPoolConfigFlow(ConfigFlow, domain=DOMAIN):  # type: ignore[call-arg]
     """Handle a config flow for NeoPool MQTT."""
 
     VERSION = 1
@@ -49,6 +54,8 @@ class NeoPoolConfigFlow(ConfigFlow, domain=DOMAIN):
         self._nodeid: str | None = None
         self._yaml_topic: str | None = None
         self._migrate_yaml: bool = False
+        self._unique_id_prefix: str = DEFAULT_UNIQUE_ID_PREFIX
+        self._migrating_entities: list[RegistryEntry] = []
 
     async def async_step_user(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
         """Handle the initial step - ask about YAML migration first."""
@@ -62,8 +69,8 @@ class NeoPoolConfigFlow(ConfigFlow, domain=DOMAIN):
             self._migrate_yaml = user_input.get(CONF_MIGRATE_YAML, False)
 
             if self._migrate_yaml:
-                # Ask for YAML topic
-                return await self.async_step_yaml_topic()
+                # Try auto-detection first
+                return await self.async_step_yaml_detect()
             # No migration needed, continue with normal flow
             return await self.async_step_discover_device()
 
@@ -79,14 +86,48 @@ class NeoPoolConfigFlow(ConfigFlow, domain=DOMAIN):
             },
         )
 
+    async def async_step_yaml_detect(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
+        """Auto-detect MQTT topic for YAML migration."""
+        # Try to auto-detect the MQTT topic
+        detected_topic = await self._auto_detect_topic()
+
+        if detected_topic:
+            _LOGGER.info("Auto-detected NeoPool device on topic: %s", detected_topic)
+            # Validate the detected topic and get NodeID
+            validation_result = await self._validate_yaml_topic(detected_topic)
+
+            if validation_result["valid"]:
+                self._yaml_topic = detected_topic
+                self._discovery_prefix = detected_topic
+
+                nodeid = validation_result.get("nodeid")
+                if not validate_nodeid(nodeid):
+                    config_result = await self._auto_configure_nodeid(detected_topic)
+                    if config_result["success"]:
+                        nodeid = config_result["nodeid"]
+                    else:
+                        # NodeID config failed, ask for topic manually
+                        return await self.async_step_yaml_topic()
+
+                self._nodeid = nodeid
+
+                # Now try to find orphaned entities
+                return await self._check_orphaned_entities()
+
+        # Could not auto-detect, ask user for topic
+        _LOGGER.debug("Could not auto-detect NeoPool topic, asking user")
+        return await self.async_step_yaml_topic()
+
     async def async_step_yaml_topic(
         self, user_input: dict[str, Any] | None = None
     ) -> ConfigFlowResult:
-        """Get and validate YAML topic."""
+        """Get and validate YAML topic (fallback when auto-detection fails)."""
         errors: dict[str, str] = {}
 
         if user_input is not None:
-            yaml_topic = user_input.get("yaml_topic", "SmartPool")
+            yaml_topic = user_input.get("yaml_topic", DEFAULT_MQTT_TOPIC)
 
             # Validate YAML topic by trying to read from it
             validation_result = await self._validate_yaml_topic(yaml_topic)
@@ -112,57 +153,141 @@ class NeoPoolConfigFlow(ConfigFlow, domain=DOMAIN):
 
                 self._nodeid = nodeid
 
-                # Continue to device name confirmation
-                return await self.async_step_yaml_confirm()
-            errors["yaml_topic"] = "invalid_yaml_topic"
+                # Now check for orphaned entities
+                return await self._check_orphaned_entities()
+
+            errors["base"] = "cannot_connect"
 
         return self.async_show_form(
             step_id="yaml_topic",
             data_schema=vol.Schema(
                 {
-                    vol.Required("yaml_topic", default="SmartPool"): cv.string,
+                    vol.Required("yaml_topic", default=DEFAULT_MQTT_TOPIC): cv.string,
                 }
             ),
             errors=errors,
-            description_placeholders={
-                "info": "Enter the MQTT topic used in your YAML configuration (default: SmartPool)"
-            },
+        )
+
+    async def _check_orphaned_entities(self) -> ConfigFlowResult:
+        """Check for orphaned entities with default prefix, or ask user for custom prefix."""
+        # Try default prefix first
+        entities = self._find_orphaned_entities(DEFAULT_UNIQUE_ID_PREFIX)
+
+        if entities:
+            self._unique_id_prefix = DEFAULT_UNIQUE_ID_PREFIX
+            self._migrating_entities = entities
+            _LOGGER.info(
+                "Found %d orphaned entities with prefix '%s'",
+                len(entities),
+                DEFAULT_UNIQUE_ID_PREFIX,
+            )
+            return await self.async_step_yaml_confirm()
+
+        # No entities found with default prefix, ask user for custom prefix
+        _LOGGER.debug(
+            "No orphaned entities found with default prefix '%s', asking user",
+            DEFAULT_UNIQUE_ID_PREFIX,
+        )
+        return await self.async_step_yaml_prefix()
+
+    def _find_orphaned_entities(self, prefix: str) -> list[RegistryEntry]:
+        """Find orphaned entities with given unique_id prefix."""
+        entity_registry = er.async_get(self.hass)
+        return [
+            entity
+            for entity in entity_registry.entities.values()
+            if entity.unique_id.startswith(prefix) and entity.config_entry_id is None
+        ]
+
+    def _format_entity_list(self, entities: list[RegistryEntry]) -> str:
+        """Format entity list for display (first 5 + count)."""
+        lines = [f"• `{entity.entity_id}`" for entity in entities[:5]]
+        if len(entities) > 5:
+            lines.append(f"• ...and {len(entities) - 5} more")
+        return "\n".join(lines)
+
+    async def async_step_yaml_prefix(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
+        """Ask user for custom unique_id prefix (when default not found)."""
+        errors: dict[str, str] = {}
+
+        if user_input is not None:
+            prefix = user_input.get(CONF_UNIQUE_ID_PREFIX, "")
+
+            if prefix:
+                entities = self._find_orphaned_entities(prefix)
+
+                if entities:
+                    self._unique_id_prefix = prefix
+                    self._migrating_entities = entities
+                    _LOGGER.info(
+                        "Found %d orphaned entities with custom prefix '%s'",
+                        len(entities),
+                        prefix,
+                    )
+                    return await self.async_step_yaml_confirm()
+
+                errors["base"] = "no_entities_found"
+            else:
+                errors["base"] = "no_entities_found"
+
+        return self.async_show_form(
+            step_id="yaml_prefix",
+            data_schema=vol.Schema(
+                {
+                    vol.Required(CONF_UNIQUE_ID_PREFIX): cv.string,
+                }
+            ),
+            errors=errors,
         )
 
     async def async_step_yaml_confirm(
         self, user_input: dict[str, Any] | None = None
     ) -> ConfigFlowResult:
-        """Confirm YAML migration setup."""
+        """Show migration summary and require explicit confirmation."""
+        errors: dict[str, str] = {}
+
         if user_input is not None:
-            device_name = user_input.get(CONF_DEVICE_NAME, f"NeoPool {self._yaml_topic}")
+            # User must check the confirmation checkbox
+            if not user_input.get(CONF_CONFIRM_MIGRATION):
+                errors["base"] = "confirmation_required"
+            else:
+                # User confirmed - proceed with migration
+                device_name = f"NeoPool {self._yaml_topic}"
 
-            # Set unique ID based on NodeID
-            await self.async_set_unique_id(f"{DOMAIN}_{self._nodeid}")
-            self._abort_if_unique_id_configured()
+                # Set unique ID based on NodeID
+                await self.async_set_unique_id(f"{DOMAIN}_{self._nodeid}")
+                self._abort_if_unique_id_configured()
 
-            return self.async_create_entry(
-                title=device_name,
-                data={
-                    CONF_DEVICE_NAME: device_name,
-                    CONF_DISCOVERY_PREFIX: self._yaml_topic,
-                    CONF_NODEID: self._nodeid,
-                    CONF_MIGRATE_YAML: True,
-                },
-            )
+                return self.async_create_entry(
+                    title=device_name,
+                    data={
+                        CONF_DEVICE_NAME: device_name,
+                        CONF_DISCOVERY_PREFIX: self._yaml_topic,
+                        CONF_NODEID: self._nodeid,
+                        CONF_UNIQUE_ID_PREFIX: self._unique_id_prefix,
+                        CONF_MIGRATE_YAML: True,
+                    },
+                )
+
+        # Build entity list for display
+        entity_list = self._format_entity_list(self._migrating_entities)
 
         return self.async_show_form(
             step_id="yaml_confirm",
             data_schema=vol.Schema(
                 {
-                    vol.Required(
-                        CONF_DEVICE_NAME, default=f"NeoPool {self._yaml_topic}"
-                    ): cv.string,
+                    vol.Required(CONF_CONFIRM_MIGRATION, default=False): cv.boolean,
                 }
             ),
             description_placeholders={
                 "topic": self._yaml_topic or "",
                 "nodeid": self._nodeid or "",
+                "entity_count": str(len(self._migrating_entities)),
+                "entity_list": entity_list,
             },
+            errors=errors,
         )
 
     async def async_step_discover_device(
@@ -304,6 +429,46 @@ class NeoPoolConfigFlow(ConfigFlow, domain=DOMAIN):
                 "device": self._discovery_prefix or "",
             },
         )
+
+    async def _auto_detect_topic(self, timeout_seconds: int = 10) -> str | None:
+        """Auto-detect MQTT topic by scanning for NeoPool messages.
+
+        Subscribes to tele/+/SENSOR wildcard and looks for NeoPool payloads.
+        Returns the detected topic or None if not found.
+        """
+        detected_topic: str | None = None
+        event = asyncio.Event()
+
+        @callback
+        def message_received(msg: mqtt.ReceiveMessage) -> None:
+            nonlocal detected_topic
+            # Topic format: tele/{device_topic}/SENSOR
+            parts = msg.topic.split("/")
+            if len(parts) >= 3 and parts[0] == "tele" and parts[2] == "SENSOR":
+                try:
+                    payload = json.loads(msg.payload)
+                    if "NeoPool" in payload:
+                        detected_topic = parts[1]  # Extract device topic
+                        event.set()
+                except (json.JSONDecodeError, TypeError):
+                    pass
+
+        # Subscribe to wildcard topic
+        unsubscribe = await mqtt.async_subscribe(
+            self.hass,
+            "tele/+/SENSOR",
+            message_received,
+            qos=0,
+        )
+
+        try:
+            await asyncio.wait_for(event.wait(), timeout=timeout_seconds)
+        except TimeoutError:
+            _LOGGER.debug("Timeout during auto-detection of NeoPool topic")
+        finally:
+            unsubscribe()
+
+        return detected_topic
 
     async def _validate_yaml_topic(self, topic: str, timeout_seconds: int = 10) -> dict[str, Any]:
         """Validate YAML topic by subscribing and waiting for message.

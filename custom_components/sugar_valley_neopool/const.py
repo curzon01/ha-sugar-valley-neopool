@@ -27,10 +27,14 @@ CONF_DISCOVERY_PREFIX: Final = "discovery_prefix"
 CONF_DEVICE_NAME: Final = "device_name"
 CONF_NODEID: Final = "nodeid"
 CONF_MIGRATE_YAML: Final = "migrate_yaml"
+CONF_UNIQUE_ID_PREFIX: Final = "unique_id_prefix"
+CONF_CONFIRM_MIGRATION: Final = "confirm_migration"
 
 # Default values
 DEFAULT_DEVICE_NAME: Final = "NeoPool"
 DEFAULT_DISCOVERY_PREFIX: Final = "tele/"
+DEFAULT_UNIQUE_ID_PREFIX: Final = "neopool_mqtt_"
+DEFAULT_MQTT_TOPIC: Final = "SmartPool"
 
 # MQTT Topics - Tasmota NeoPool patterns
 TOPIC_SENSOR: Final = "tele/{device}/SENSOR"

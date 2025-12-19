@@ -14,8 +14,11 @@ from homeassistant.helpers import device_registry as dr, entity_registry as er
 from .const import (
     CONF_DEVICE_NAME,
     CONF_DISCOVERY_PREFIX,
+    CONF_MIGRATE_YAML,
     CONF_NODEID,
+    CONF_UNIQUE_ID_PREFIX,
     DEFAULT_DEVICE_NAME,
+    DEFAULT_UNIQUE_ID_PREFIX,
     DOMAIN,
     MANUFACTURER,
     PLATFORMS,
@@ -102,28 +105,51 @@ async def async_migrate_yaml_entities(
     hass: HomeAssistant,
     entry: NeoPoolConfigEntry,
     nodeid: str,
-) -> None:
+) -> dict[str, Any]:
     """Migrate YAML package entities to new unique_id format.
 
-    Old format: neopool_mqtt_{key}
+    Old format: {prefix}{key}
     New format: neopool_mqtt_{nodeid}_{key}
 
     This preserves historical data by updating entity unique_ids in the registry.
+    Returns a summary dict with migration results.
     """
+    summary: dict[str, Any] = {
+        "steps": [],
+        "entities_found": 0,
+        "entities_migrated": 0,
+        "errors": [],
+    }
+
+    # Only run if YAML migration was requested
+    if not entry.data.get(CONF_MIGRATE_YAML, False):
+        _LOGGER.debug("Not a YAML migration, skipping entity migration")
+        return summary
+
+    # Get the prefix (default or custom from config flow)
+    prefix = entry.data.get(CONF_UNIQUE_ID_PREFIX, DEFAULT_UNIQUE_ID_PREFIX)
+
     entity_registry = er.async_get(hass)
 
-    # Get all entities that might be from YAML package
-    # YAML entities are not associated with any config entry
-    all_entities = list(entity_registry.entities.values())
+    # Find all orphaned entities with the prefix
     yaml_entities = [
         entity
-        for entity in all_entities
-        if entity.unique_id.startswith("neopool_mqtt_") and entity.config_entry_id is None
+        for entity in entity_registry.entities.values()
+        if entity.unique_id.startswith(prefix) and entity.config_entry_id is None
     ]
 
+    summary["entities_found"] = len(yaml_entities)
+    summary["steps"].append(
+        {
+            "name": "Find orphaned entities",
+            "status": "success" if yaml_entities else "skipped",
+            "detail": f"Found {len(yaml_entities)} entities with prefix '{prefix}'",
+        }
+    )
+
     if not yaml_entities:
-        _LOGGER.debug("No YAML entities found to migrate")
-        return
+        _LOGGER.debug("No YAML entities found to migrate with prefix '%s'", prefix)
+        return summary
 
     _LOGGER.info(
         "Found %d YAML package entities to migrate to NodeID-based unique_ids",
@@ -134,10 +160,9 @@ async def async_migrate_yaml_entities(
     for entity in yaml_entities:
         old_unique_id = entity.unique_id
 
-        # Extract entity key from old unique_id
-        # Old format: neopool_mqtt_{key}
-        if old_unique_id.startswith("neopool_mqtt_"):
-            entity_key = old_unique_id.replace("neopool_mqtt_", "", 1)
+        try:
+            # Extract entity key from old unique_id
+            entity_key = old_unique_id.replace(prefix, "", 1)
 
             # New format: neopool_mqtt_{nodeid}_{key}
             new_unique_id = f"neopool_mqtt_{nodeid}_{entity_key}"
@@ -149,12 +174,70 @@ async def async_migrate_yaml_entities(
                 config_entry_id=entry.entry_id,
             )
 
+            summary["entities_migrated"] += 1
             _LOGGER.info(
                 "Migrated entity %s: %s -> %s",
                 entity.entity_id,
                 old_unique_id,
                 new_unique_id,
             )
+        except Exception as e:  # noqa: BLE001
+            error_msg = f"{entity.entity_id}: {e}"
+            summary["errors"].append(error_msg)
+            _LOGGER.error("Failed to migrate entity %s: %s", entity.entity_id, e)
+
+    # Add migration step result
+    if summary["errors"]:
+        status = "partial"
+    else:
+        status = "success"
+
+    summary["steps"].append(
+        {
+            "name": "Migrate entities",
+            "status": status,
+            "detail": f"Migrated {summary['entities_migrated']}/{summary['entities_found']}",
+        }
+    )
+
+    # Show persistent notification with summary
+    await _show_migration_summary(hass, summary)
+
+    return summary
+
+
+async def _show_migration_summary(hass: HomeAssistant, summary: dict[str, Any]) -> None:
+    """Show migration summary as persistent notification."""
+    lines = ["## NeoPool YAML Migration Complete\n"]
+
+    # Steps summary
+    lines.append("### Steps:")
+    for step in summary["steps"]:
+        if step["status"] == "success":
+            icon = "✓"
+        elif step["status"] == "partial":
+            icon = "⚠️"
+        else:
+            icon = "○"
+        lines.append(f"- {icon} **{step['name']}**: {step['detail']}")
+
+    # Entity counts
+    lines.append("\n### Results:")
+    lines.append(f"- Entities found: **{summary['entities_found']}**")
+    lines.append(f"- Entities migrated: **{summary['entities_migrated']}**")
+
+    # Errors if any
+    if summary["errors"]:
+        lines.append(f"\n### Errors ({len(summary['errors'])}):")
+        lines.extend(f"- {error}" for error in summary["errors"][:5])
+        if len(summary["errors"]) > 5:
+            lines.append(f"- ...and {len(summary['errors']) - 5} more")
+
+    hass.components.persistent_notification.async_create(
+        message="\n".join(lines),
+        title="NeoPool Migration",
+        notification_id="neopool_migration_summary",
+    )
 
 
 async def async_register_device(hass: HomeAssistant, entry: NeoPoolConfigEntry) -> None:

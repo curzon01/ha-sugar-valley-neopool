@@ -28,17 +28,24 @@
         }
       },
       "yaml_topic": {
-        "title": "YAML MQTT Topic",
-        "description": "Enter the MQTT topic used in your YAML configuration.\n\nThis is typically 'SmartPool' unless you customized it.",
+        "title": "MQTT Topic",
+        "description": "Could not auto-detect your NeoPool device.\n\nPlease enter the MQTT topic configured in your Tasmota device.",
         "data": {
-          "yaml_topic": "YAML MQTT Topic"
+          "yaml_topic": "MQTT Topic (e.g., SmartPool)"
+        }
+      },
+      "yaml_prefix": {
+        "title": "Custom Entity Prefix",
+        "description": "No entities found with the default prefix `neopool_mqtt_`.\n\nIf you customized the `unique_id` prefix in your YAML package, enter it below.",
+        "data": {
+          "unique_id_prefix": "Unique ID Prefix"
         }
       },
       "yaml_confirm": {
-        "title": "Confirm Device",
-        "description": "Confirm the device name for your NeoPool controller.\n\n**Topic**: {topic}\n**NodeID**: {nodeid}",
+        "title": "Confirm Migration",
+        "description": "## Migration Summary\n\nThe following has been validated:\n\n✓ **MQTT Topic**: `{topic}`\n✓ **NodeID**: `{nodeid}`\n✓ **Orphaned entities found**: {entity_count}\n\n### Entities to migrate:\n{entity_list}\n\n---\n\n## What will happen:\n\n1. Each entity's `unique_id` will be updated to include the NodeID\n2. Entities will be associated with this integration\n3. **All historical data will be preserved** (graphs, statistics)\n4. Entity IDs will remain unchanged\n\n---\n\n⚠️ **Prerequisites** (confirm before proceeding):\n- I have removed/commented out the YAML package from `configuration.yaml`\n- I have restarted Home Assistant after removing the YAML package\n- I understand this process will modify my entity registry\n\n**This action cannot be undone automatically.** By checking the box below, you confirm you have completed the prerequisites and accept responsibility for this migration.",
         "data": {
-          "device_name": "Device Name"
+          "confirm_migration": "I confirm I have completed the prerequisites and want to proceed"
         }
       },
       "discover_device": {
@@ -53,7 +60,9 @@
     "error": {
       "invalid_topic": "Invalid MQTT topic format",
       "invalid_yaml_topic": "Cannot read from this MQTT topic. Please verify the topic is correct and the device is online.",
-      "cannot_connect": "Cannot connect to device. Please verify the topic is correct and the device is online."
+      "cannot_connect": "Could not receive messages from this MQTT topic. Verify the topic name and that your device is online.",
+      "no_entities_found": "No orphaned entities found with this prefix. Check that:\n1. You removed the YAML package from configuration.yaml\n2. You restarted Home Assistant\n3. The prefix matches your YAML configuration",
+      "confirmation_required": "You must check the confirmation checkbox to proceed with the migration."
     },
     "abort": {
       "already_configured": "This device is already configured",
