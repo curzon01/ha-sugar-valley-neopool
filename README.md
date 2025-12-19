@@ -120,7 +120,8 @@ The integration now uses the hardware NodeID from your NeoPool controller to cre
    - **Device Name**: A friendly name for your pool controller
    - **Tasmota Device Topic**: The MQTT topic used by your Tasmota device (e.g., `SmartPool`)
 
-The integration also supports **automatic MQTT discovery** - if your Tasmota device is publishing NeoPool data, it may be discovered automatically.
+The integration also supports **automatic MQTT discovery** - if your Tasmota device is
+publishing NeoPool data, it may be discovered automatically.
 
 ## MQTT Topic Configuration
 
@@ -156,7 +157,8 @@ To remove this integration from Home Assistant:
 1. Select **Delete**
 1. Confirm the deletion
 
-This will remove the integration, all associated devices, and entities from Home Assistant. Your Tasmota device and MQTT broker configuration will remain unchanged.
+This will remove the integration, all associated devices, and entities from Home Assistant.
+Your Tasmota device and MQTT broker configuration will remain unchanged.
 
 ## Troubleshooting
 

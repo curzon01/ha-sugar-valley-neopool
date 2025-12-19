@@ -13,7 +13,9 @@ Before making ANY changes to this repository:
 
 ### What is NeoPool MQTT?
 
-A Home Assistant custom integration for **Sugar Valley NeoPool** pool controllers connected via **Tasmota MQTT**. The integration subscribes to MQTT topics published by Tasmota devices running the NeoPool module and provides bidirectional control.
+A Home Assistant custom integration for **Sugar Valley NeoPool** pool controllers connected via
+**Tasmota MQTT**. The integration subscribes to MQTT topics published by Tasmota devices running
+the NeoPool module and provides bidirectional control.
 
 ### Integration Type
 
@@ -267,7 +269,7 @@ The integration supports three setup paths, all converging to NodeID-based confi
 
 **1. YAML Migration Path:**
 
-```
+```text
 async_step_user
     ↓
 async_step_yaml_migration (checkbox)
@@ -285,7 +287,7 @@ async_create_entry (with CONF_MIGRATE_YAML: True)
 
 **2. Manual Setup Path:**
 
-```
+```text
 async_step_user
     ↓
 async_step_yaml_migration (checkbox)
@@ -301,7 +303,7 @@ async_create_entry
 
 **3. MQTT Discovery Path:**
 
-```
+```text
 async_step_mqtt (auto-triggered by MQTT discovery)
     ↓
 Extract NodeID from discovery payload
@@ -374,7 +376,9 @@ async def async_migrate_yaml_entities(
 All setup paths validate the MQTT topic before proceeding:
 
 ```python
-async def _validate_yaml_topic(self, topic: str, timeout_seconds: int = 10) -> dict[str, Any]:
+async def _validate_yaml_topic(
+    self, topic: str, timeout_seconds: int = 10
+) -> dict[str, Any]:
     """Validate YAML topic by subscribing and waiting for message."""
     # Subscribe to tele/{topic}/SENSOR
     # Wait for NeoPool message or timeout
@@ -581,7 +585,7 @@ Before committing:
 
 ## Quality Scale Tracking (MUST DO)
 
-This integration tracks [Home Assistant Quality Scale](https://developers.home-assistant.io/docs/core/integration-quality-scale/) rules in `quality_scale.yaml`.
+This integration tracks [Home Assistant Quality Scale][qs] rules in `quality_scale.yaml`.
 
 **When implementing new features or fixing bugs:**
 
@@ -615,3 +619,5 @@ This integration tracks [Home Assistant Quality Scale](https://developers.home-a
 - [Home Assistant MQTT Integration](https://www.home-assistant.io/integrations/mqtt/)
 - [Home Assistant Developer Docs](https://developers.home-assistant.io/)
 - [Project docs/](docs/) folder contains detailed analysis documents
+
+[qs]: https://developers.home-assistant.io/docs/core/integration-quality-scale/
