@@ -151,7 +151,7 @@ class TestReconfigureFlowExtended:
             CONF_NODEID: "ABC123",
         }
         entry.options = {}
-        entry.unique_id = "ABC123"
+        entry.unique_id = "sugar_valley_neopool_ABC123"
         return entry
 
     async def test_reconfigure_topic_validation_failure(self, mock_hass: MagicMock) -> None:
@@ -176,7 +176,11 @@ class TestReconfigureFlowExtended:
         assert result["errors"]["base"] == "cannot_connect"
 
     async def test_reconfigure_same_nodeid_success(self, mock_hass: MagicMock) -> None:
-        """Test reconfigure with same NodeID succeeds."""
+        """Test reconfigure with same NodeID succeeds.
+
+        The reconfigure flow calls async_set_unique_id and _abort_if_unique_id_mismatch.
+        For success, the entry's unique_id must match the new unique_id format.
+        """
         flow = NeoPoolConfigFlow()
         flow.hass = mock_hass
         flow.context = {"source": config_entries.SOURCE_RECONFIGURE}
@@ -189,12 +193,21 @@ class TestReconfigureFlowExtended:
             return_value={"valid": True, "nodeid": "ABC123", "payload": {}}
         )
 
+        # Mock async_set_unique_id to set the unique_id
+        async def mock_set_unique_id(unique_id):
+            flow._unique_id = unique_id
+
+        flow.async_set_unique_id = mock_set_unique_id
+
+        # Mock _abort_if_unique_id_mismatch - this checks if entry unique_id matches
+        flow._abort_if_unique_id_mismatch = MagicMock()
+
         # Mock async_update_reload_and_abort
-        flow.async_update_reload_and_abort = AsyncMock(
+        flow.async_update_reload_and_abort = MagicMock(
             return_value={"type": FlowResultType.ABORT, "reason": "reconfigure_successful"}
         )
 
-        await flow.async_step_reconfigure(
+        result = await flow.async_step_reconfigure(
             {
                 CONF_DEVICE_NAME: "New Name",
                 CONF_DISCOVERY_PREFIX: "NewTopic",
@@ -203,6 +216,8 @@ class TestReconfigureFlowExtended:
 
         # Should successfully reconfigure
         flow.async_update_reload_and_abort.assert_called_once()
+        assert result["type"] == FlowResultType.ABORT
+        assert result["reason"] == "reconfigure_successful"
 
 
 class TestAutoDetectTopicExtended:

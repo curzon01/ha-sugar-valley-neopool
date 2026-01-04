@@ -40,10 +40,15 @@ class TestCreateValueFnExtended:
 class TestSelectDescriptionsExtended:
     """Extended tests for select descriptions."""
 
-    def test_all_selects_have_value_fn(self) -> None:
-        """Test all selects have value_fn."""
+    def test_all_selects_have_options_map(self) -> None:
+        """Test all selects have options_map for fallback conversion.
+
+        Note: value_fn is optional - selects without it use
+        the fallback logic in message_received that converts via options_map.
+        """
         for desc in SELECT_DESCRIPTIONS:
-            assert desc.value_fn is not None
+            assert desc.options_map is not None
+            assert len(desc.options_map) > 0
 
     def test_boost_mode_options(self) -> None:
         """Test boost mode has correct options."""

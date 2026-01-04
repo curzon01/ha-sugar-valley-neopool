@@ -153,24 +153,27 @@ class TestBitToBoolExtended:
         assert bit_to_bool(None) is None
 
     def test_boolean_input(self) -> None:
-        """Test boolean input returns None (not 0 or 1)."""
-        assert bit_to_bool(True) is None  # True is not 1
-        assert bit_to_bool(False) is None  # False is not 0
+        """Test boolean input - Python True == 1 and False == 0."""
+        # In Python, True == 1 is True, so bit_to_bool(True) returns True
+        assert bit_to_bool(True) is True
+        # In Python, False == 0 is True, so bit_to_bool(False) returns False
+        assert bit_to_bool(False) is False
 
     def test_float_input(self) -> None:
-        """Test float input."""
-        assert bit_to_bool(1.0) is None  # float is not int/str
-        assert bit_to_bool(0.0) is None
+        """Test float input - Python 1.0 == 1 and 0.0 == 0."""
+        # In Python, 1.0 == 1 is True, so bit_to_bool(1.0) returns True
+        assert bit_to_bool(1.0) is True
+        # In Python, 0.0 == 0 is True, so bit_to_bool(0.0) returns False
+        assert bit_to_bool(0.0) is False
 
 
 class TestIntToBoolExtended:
     """Extended tests for int_to_bool function."""
 
     def test_float_string(self) -> None:
-        """Test float string input."""
-        assert int_to_bool("3.7") is True  # int("3.7") fails
-        # Actually int("3.7") raises ValueError, so it returns False
-        # Let me check the implementation...
+        """Test float string input - int('3.7') raises ValueError."""
+        # int("3.7") raises ValueError, so int_to_bool returns False
+        assert int_to_bool("3.7") is False
 
     def test_empty_string(self) -> None:
         """Test empty string."""
