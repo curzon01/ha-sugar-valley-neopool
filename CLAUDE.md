@@ -474,20 +474,20 @@ in manifest.json and const.py.
 > The release workflow VALIDATES that tag, manifest.json, and const.py versions all match.
 > You MUST update versions BEFORE creating the release, not after.
 
-| Step | Tool | Action |
-| ---- | ---- | ------ |
-| 1 | Edit | Update `CHANGELOG.md` with version summary |
-| 2 | Edit | Ensure `manifest.json` and `const.py` have correct version |
-| 3 | Bash | Run linting: `ruff format .`, `ruff check . --fix`, `pymarkdown scan .` |
-| 4 | Bash | `git add . && git commit -m "..."` |
-| 5 | Bash | `git push` |
-| 6 | **STOP** | Wait for user "tag and release" command |
-| 7 | **Checklist** | Display Release Readiness Checklist (see below) |
-| 8 | Bash | `git tag -a vX.Y.Z -m "Release vX.Y.Z"` |
-| 9 | Bash | `git push --tags` |
-| 10 | gh CLI | `gh release create vX.Y.Z --title "vX.Y.Z" --generate-notes` |
-| 11 | GitHub Actions | Validates versions match, then auto-uploads ZIP asset |
-| 12 | Edit | Bump versions in `manifest.json` and `const.py` to next version |
+| Step | Tool           | Action                                                                  |
+| ---- | -------------- | ----------------------------------------------------------------------- |
+| 1    | Edit           | Update `CHANGELOG.md` with version summary                              |
+| 2    | Edit           | Ensure `manifest.json` and `const.py` have correct version              |
+| 3    | Bash           | Run linting: `ruff format .`, `ruff check . --fix`, `pymarkdown scan .` |
+| 4    | Bash           | `git add . && git commit -m "..."`                                      |
+| 5    | Bash           | `git push`                                                              |
+| 6    | **STOP**       | Wait for user "tag and release" command                                 |
+| 7    | **Checklist**  | Display Release Readiness Checklist (see below)                         |
+| 8    | Bash           | `git tag -a vX.Y.Z -m "Release vX.Y.Z"`                                 |
+| 9    | Bash           | `git push --tags`                                                       |
+| 10   | gh CLI         | `gh release create vX.Y.Z --title "vX.Y.Z" --generate-notes`            |
+| 11   | GitHub Actions | Validates versions match, then auto-uploads ZIP asset                   |
+| 12   | Edit           | Bump versions in `manifest.json` and `const.py` to next version         |
 
 ### Release Readiness Checklist (MANDATORY)
 
@@ -645,13 +645,13 @@ lwt_topic = f"tele/{mqtt_topic}/LWT"
 
 Linting tools and settings are defined in `.pre-commit-config.yaml`:
 
-| Hook | Tool | Purpose |
-| ---- | ---- | ------- |
-| ruff | `ruff check --no-fix` | Python linting |
-| ruff-format | `ruff format --check` | Python formatting |
-| jsonlint | `uvx --from demjson3 jsonlint` | JSON validation |
-| yamllint | `uvx yamllint -d "{...}"` | YAML linting (inline config) |
-| pymarkdown | `pymarkdown scan` | Markdown linting |
+| Hook        | Tool                           | Purpose                      |
+| ----------- | ------------------------------ | ---------------------------- |
+| ruff        | `ruff check --no-fix`          | Python linting               |
+| ruff-format | `ruff format --check`          | Python formatting            |
+| jsonlint    | `uvx --from demjson3 jsonlint` | JSON validation              |
+| yamllint    | `uvx yamllint -d "{...}"`      | YAML linting (inline config) |
+| pymarkdown  | `pymarkdown scan`              | Markdown linting             |
 
 All hooks use `language: system` (local tools) with `verbose: true` for visibility.
 
@@ -689,7 +689,18 @@ Check for and delete them after command execution:
 rm nul  # if it exists
 ```
 
-## Testing Checklist
+## Testing
+
+> **CRITICAL: NEVER run pytest locally. The local environment cannot be set up correctly for
+> Home Assistant integration tests. ALWAYS use GitHub Actions CI to run tests.**
+
+To run tests:
+
+1. Commit and push changes to the repository
+1. GitHub Actions will automatically run the test workflow
+1. Check the workflow results in the Actions tab or use `mcp__github__*` tools
+
+### Testing Checklist
 
 Before committing:
 
@@ -732,8 +743,6 @@ This integration tracks [Home Assistant Quality Scale][qs] rules in `quality_sca
 - [Home Assistant Developer Docs](https://developers.home-assistant.io/)
 - [Project docs/](docs/) folder contains detailed analysis documents
 
-[qs]: https://developers.home-assistant.io/docs/core/integration-quality-scale/
-
 ## Do's and Don'ts
 
 **DO:**
@@ -761,3 +770,5 @@ This integration tracks [Home Assistant Quality Scale][qs] rules in `quality_sca
 - Ignore LWT (Last Will and Testament) for availability
 - Use blocking calls in async context
 - Close GitHub issues without explicit user instruction
+
+[qs]: https://developers.home-assistant.io/docs/core/integration-quality-scale/
