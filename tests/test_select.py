@@ -275,7 +275,7 @@ class TestNeoPoolSelect:
         select.hass = mock_hass
 
         with patch(
-            "homeassistant.components.mqtt.async_publish",
+            "custom_components.sugar_valley_neopool.entity.mqtt.async_publish",
             new_callable=AsyncMock,
         ) as mock_publish:
             # Select "Boost" option (value 1)
