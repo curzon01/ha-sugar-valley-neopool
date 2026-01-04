@@ -28,6 +28,7 @@ jobs:
       - name: Run tests with coverage
         run: |
           pytest tests/ \
+            --import-mode=importlib \
             --cov=custom_components/sugar_valley_neopool \
             --cov-report=term-missing \
             --cov-report=xml \

@@ -15,7 +15,7 @@ from custom_components.sugar_valley_neopool.const import DOMAIN
 
 @pytest.fixture(autouse=True)
 def auto_enable_custom_integrations(
-    enable_custom_integrations: None,  # noqa: ARG001
+    enable_custom_integrations: None,
 ) -> None:
     """Enable custom integrations for all tests."""
 
