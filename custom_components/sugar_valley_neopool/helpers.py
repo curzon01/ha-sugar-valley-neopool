@@ -52,10 +52,10 @@ def parse_runtime_duration(duration_str: str) -> float | None:
         return None
 
 
-def parse_json_payload(payload: str | bytes) -> dict[str, Any] | None:
+def parse_json_payload(payload: str | bytes | bytearray) -> dict[str, Any] | None:
     """Parse MQTT JSON payload safely."""
     try:
-        if isinstance(payload, bytes):
+        if isinstance(payload, (bytes, bytearray)):
             payload = payload.decode("utf-8")
         return json.loads(payload)
     except (json.JSONDecodeError, UnicodeDecodeError) as ex:
