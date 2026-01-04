@@ -17,7 +17,6 @@ from custom_components.sugar_valley_neopool import (
 )
 from custom_components.sugar_valley_neopool.config_flow import (
     NeoPoolConfigFlow,
-    NeoPoolOptionsFlow,
     get_topics_from_config,
 )
 from custom_components.sugar_valley_neopool.const import (
@@ -117,11 +116,8 @@ class TestOptionsFlow:
         )
         entry.add_to_hass(hass)
 
-        flow = NeoPoolOptionsFlow()
-        flow.hass = hass
-        flow.config_entry = entry
-
-        result = await flow.async_step_init(None)
+        # Use hass.config_entries.options.async_init to properly initialize the flow
+        result = await hass.config_entries.options.async_init(entry.entry_id)
 
         assert result["type"] == FlowResultType.FORM
         assert result["step_id"] == "init"
@@ -139,17 +135,19 @@ class TestOptionsFlow:
         )
         entry.add_to_hass(hass)
 
-        flow = NeoPoolOptionsFlow()
-        flow.hass = hass
-        flow.config_entry = entry
+        # Initialize options flow properly
+        result = await hass.config_entries.options.async_init(entry.entry_id)
+        assert result["type"] == FlowResultType.FORM
 
-        result = await flow.async_step_init(
+        # Submit the form
+        result = await hass.config_entries.options.async_configure(
+            result["flow_id"],
             {
                 CONF_RECOVERY_SCRIPT: "script.test_recovery",
                 CONF_ENABLE_REPAIR_NOTIFICATION: True,
                 CONF_FAILURES_THRESHOLD: 5,
                 CONF_OFFLINE_TIMEOUT: 120,
-            }
+            },
         )
 
         assert result["type"] == FlowResultType.CREATE_ENTRY
@@ -176,11 +174,8 @@ class TestOptionsFlow:
         )
         entry.add_to_hass(hass)
 
-        flow = NeoPoolOptionsFlow()
-        flow.hass = hass
-        flow.config_entry = entry
-
-        result = await flow.async_step_init(None)
+        # Initialize options flow properly
+        result = await hass.config_entries.options.async_init(entry.entry_id)
 
         assert result["type"] == FlowResultType.FORM
         # Form should be shown with existing values as defaults
@@ -189,8 +184,8 @@ class TestOptionsFlow:
 class TestReconfigureFlow:
     """Extended tests for reconfigure flow."""
 
-    async def test_reconfigure_invalid_topic_format(self, hass: HomeAssistant) -> None:
-        """Test reconfigure with invalid topic format."""
+    async def test_reconfigure_invalid_topic_validation_fails(self, hass: HomeAssistant) -> None:
+        """Test reconfigure when topic validation fails (timeout/no message)."""
         flow = NeoPoolConfigFlow()
         flow.hass = hass
         flow.context = {"source": "reconfigure"}
@@ -203,15 +198,21 @@ class TestReconfigureFlow:
         }
         flow._get_reconfigure_entry = MagicMock(return_value=mock_entry)
 
+        # Mock _validate_yaml_topic to return invalid (simulates timeout or bad topic)
+        flow._validate_yaml_topic = AsyncMock(
+            return_value={"valid": False, "nodeid": None, "payload": {}}
+        )
+
         result = await flow.async_step_reconfigure(
             {
                 CONF_DEVICE_NAME: "New Name",
-                CONF_DISCOVERY_PREFIX: "invalid/topic/with/many/slashes",
+                CONF_DISCOVERY_PREFIX: "invalid_topic",
             }
         )
 
         # Should show form with error for invalid topic
         assert result["type"] == FlowResultType.FORM
+        assert result["errors"]["base"] == "topic_validation_failed"
 
     async def test_reconfigure_hidden_nodeid_auto_config(self, hass: HomeAssistant) -> None:
         """Test reconfigure with hidden NodeID triggers auto-config."""
@@ -439,8 +440,8 @@ class TestGetDeviceInfo:
 
         result = get_device_info(entry)
 
-        # Should use default device name
-        assert result["name"] == "NeoPool Controller"
+        # Should use default device name (DEFAULT_DEVICE_NAME = "NeoPool")
+        assert result["name"] == "NeoPool"
         # Empty nodeid in identifiers
         assert (DOMAIN, "") in result["identifiers"]
 
