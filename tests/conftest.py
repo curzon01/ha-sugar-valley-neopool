@@ -13,6 +13,13 @@ from custom_components.sugar_valley_neopool import NeoPoolData
 from custom_components.sugar_valley_neopool.const import DOMAIN
 
 
+@pytest.fixture(autouse=True)
+def auto_enable_custom_integrations(
+    enable_custom_integrations: None,  # noqa: ARG001
+) -> None:
+    """Enable custom integrations for all tests."""
+
+
 @pytest.fixture
 def mock_setup_entry() -> Generator[AsyncMock]:
     """Override async_setup_entry."""
