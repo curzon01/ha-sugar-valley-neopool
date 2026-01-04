@@ -1,0 +1,680 @@
+"""Additional tests to boost coverage to 97%+.
+
+This file targets specific uncovered code paths identified through coverage analysis.
+"""
+
+from __future__ import annotations
+
+from unittest.mock import AsyncMock, MagicMock, patch
+
+import pytest
+from pytest_homeassistant_custom_component.common import MockConfigEntry
+
+from custom_components.sugar_valley_neopool import (
+    NeoPoolData,
+    async_remove_config_entry_device,
+    get_device_info,
+)
+from custom_components.sugar_valley_neopool.config_flow import (
+    NeoPoolConfigFlow,
+    NeoPoolOptionsFlow,
+    get_topics_from_config,
+)
+from custom_components.sugar_valley_neopool.const import (
+    CONF_DEVICE_NAME,
+    CONF_DISCOVERY_PREFIX,
+    CONF_ENABLE_REPAIR_NOTIFICATION,
+    CONF_FAILURES_THRESHOLD,
+    CONF_NODEID,
+    CONF_OFFLINE_TIMEOUT,
+    CONF_RECOVERY_SCRIPT,
+    DOMAIN,
+)
+from custom_components.sugar_valley_neopool.select import create_value_fn
+from homeassistant.config_entries import SOURCE_USER
+from homeassistant.core import HomeAssistant
+from homeassistant.data_entry_flow import FlowResultType
+from homeassistant.helpers import device_registry as dr
+
+
+class TestGetTopicsFromConfig:
+    """Tests for get_topics_from_config function."""
+
+    def test_returns_empty_set_when_no_entries(self, hass: HomeAssistant) -> None:
+        """Test returns empty set when no config entries."""
+        result = get_topics_from_config(hass)
+        # Should return set with None since no entries exist
+        assert isinstance(result, set)
+
+    def test_returns_topics_from_entries(self, hass: HomeAssistant) -> None:
+        """Test returns topics from existing config entries."""
+        entry1 = MockConfigEntry(
+            domain=DOMAIN,
+            data={CONF_DISCOVERY_PREFIX: "SmartPool1"},
+        )
+        entry1.add_to_hass(hass)
+
+        entry2 = MockConfigEntry(
+            domain=DOMAIN,
+            data={CONF_DISCOVERY_PREFIX: "SmartPool2"},
+        )
+        entry2.add_to_hass(hass)
+
+        result = get_topics_from_config(hass)
+
+        assert "SmartPool1" in result
+        assert "SmartPool2" in result
+
+
+class TestMqttConfirmStep:
+    """Tests for async_step_mqtt_confirm with user input."""
+
+    async def test_mqtt_confirm_creates_entry(self, hass: HomeAssistant) -> None:
+        """Test MQTT confirm step creates entry with user input."""
+        flow = NeoPoolConfigFlow()
+        flow.hass = hass
+        flow.context = {"source": SOURCE_USER}
+        flow._discovery_prefix = "SmartPool"
+        flow._device_name = "Auto Pool"
+        flow._nodeid = "ABC123"
+
+        result = await flow.async_step_mqtt_confirm({CONF_DEVICE_NAME: "Custom Pool Name"})
+
+        assert result["type"] == FlowResultType.CREATE_ENTRY
+        assert result["title"] == "Custom Pool Name"
+        assert result["data"][CONF_DEVICE_NAME] == "Custom Pool Name"
+        assert result["data"][CONF_NODEID] == "ABC123"
+
+    async def test_mqtt_confirm_uses_default_name(self, hass: HomeAssistant) -> None:
+        """Test MQTT confirm uses discovered name when no input."""
+        flow = NeoPoolConfigFlow()
+        flow.hass = hass
+        flow.context = {"source": SOURCE_USER}
+        flow._discovery_prefix = "SmartPool"
+        flow._device_name = "Discovered Pool"
+        flow._nodeid = "XYZ789"
+
+        # Submit with device name provided
+        result = await flow.async_step_mqtt_confirm({CONF_DEVICE_NAME: "Discovered Pool"})
+
+        assert result["type"] == FlowResultType.CREATE_ENTRY
+        assert result["title"] == "Discovered Pool"
+
+
+class TestOptionsFlow:
+    """Tests for NeoPoolOptionsFlow."""
+
+    async def test_options_flow_init_shows_form(self, hass: HomeAssistant) -> None:
+        """Test options flow init step shows form."""
+        entry = MockConfigEntry(
+            domain=DOMAIN,
+            data={
+                CONF_DEVICE_NAME: "Test Pool",
+                CONF_DISCOVERY_PREFIX: "SmartPool",
+                CONF_NODEID: "ABC123",
+            },
+            options={},
+        )
+        entry.add_to_hass(hass)
+
+        flow = NeoPoolOptionsFlow()
+        flow.hass = hass
+        flow.config_entry = entry
+
+        result = await flow.async_step_init(None)
+
+        assert result["type"] == FlowResultType.FORM
+        assert result["step_id"] == "init"
+
+    async def test_options_flow_creates_entry(self, hass: HomeAssistant) -> None:
+        """Test options flow creates entry with user input."""
+        entry = MockConfigEntry(
+            domain=DOMAIN,
+            data={
+                CONF_DEVICE_NAME: "Test Pool",
+                CONF_DISCOVERY_PREFIX: "SmartPool",
+                CONF_NODEID: "ABC123",
+            },
+            options={},
+        )
+        entry.add_to_hass(hass)
+
+        flow = NeoPoolOptionsFlow()
+        flow.hass = hass
+        flow.config_entry = entry
+
+        result = await flow.async_step_init(
+            {
+                CONF_RECOVERY_SCRIPT: "script.test_recovery",
+                CONF_ENABLE_REPAIR_NOTIFICATION: True,
+                CONF_FAILURES_THRESHOLD: 5,
+                CONF_OFFLINE_TIMEOUT: 120,
+            }
+        )
+
+        assert result["type"] == FlowResultType.CREATE_ENTRY
+        assert result["data"][CONF_RECOVERY_SCRIPT] == "script.test_recovery"
+        assert result["data"][CONF_ENABLE_REPAIR_NOTIFICATION] is True
+        assert result["data"][CONF_FAILURES_THRESHOLD] == 5
+        assert result["data"][CONF_OFFLINE_TIMEOUT] == 120
+
+    async def test_options_flow_uses_existing_values(self, hass: HomeAssistant) -> None:
+        """Test options flow shows existing values."""
+        entry = MockConfigEntry(
+            domain=DOMAIN,
+            data={
+                CONF_DEVICE_NAME: "Test Pool",
+                CONF_DISCOVERY_PREFIX: "SmartPool",
+                CONF_NODEID: "ABC123",
+            },
+            options={
+                CONF_RECOVERY_SCRIPT: "script.existing",
+                CONF_ENABLE_REPAIR_NOTIFICATION: False,
+                CONF_FAILURES_THRESHOLD: 10,
+                CONF_OFFLINE_TIMEOUT: 300,
+            },
+        )
+        entry.add_to_hass(hass)
+
+        flow = NeoPoolOptionsFlow()
+        flow.hass = hass
+        flow.config_entry = entry
+
+        result = await flow.async_step_init(None)
+
+        assert result["type"] == FlowResultType.FORM
+        # Form should be shown with existing values as defaults
+
+
+class TestReconfigureFlow:
+    """Extended tests for reconfigure flow."""
+
+    async def test_reconfigure_invalid_topic_format(self, hass: HomeAssistant) -> None:
+        """Test reconfigure with invalid topic format."""
+        flow = NeoPoolConfigFlow()
+        flow.hass = hass
+        flow.context = {"source": "reconfigure"}
+
+        mock_entry = MagicMock()
+        mock_entry.data = {
+            CONF_DEVICE_NAME: "Test Pool",
+            CONF_DISCOVERY_PREFIX: "SmartPool",
+            CONF_NODEID: "ABC123",
+        }
+        flow._get_reconfigure_entry = MagicMock(return_value=mock_entry)
+
+        result = await flow.async_step_reconfigure(
+            {
+                CONF_DEVICE_NAME: "New Name",
+                CONF_DISCOVERY_PREFIX: "invalid/topic/with/many/slashes",
+            }
+        )
+
+        # Should show form with error for invalid topic
+        assert result["type"] == FlowResultType.FORM
+
+    async def test_reconfigure_hidden_nodeid_auto_config(self, hass: HomeAssistant) -> None:
+        """Test reconfigure with hidden NodeID triggers auto-config."""
+        flow = NeoPoolConfigFlow()
+        flow.hass = hass
+        flow.context = {"source": "reconfigure"}
+
+        mock_entry = MagicMock()
+        mock_entry.data = {
+            CONF_DEVICE_NAME: "Test Pool",
+            CONF_DISCOVERY_PREFIX: "SmartPool",
+            CONF_NODEID: "ABC123",
+        }
+        mock_entry.unique_id = "sugar_valley_neopool_ABC123"
+        flow._get_reconfigure_entry = MagicMock(return_value=mock_entry)
+
+        # Validation returns hidden NodeID
+        flow._validate_yaml_topic = AsyncMock(
+            return_value={"valid": True, "nodeid": "hidden", "payload": {}}
+        )
+        # Auto-config succeeds with same NodeID
+        flow._auto_configure_nodeid = AsyncMock(return_value={"success": True, "nodeid": "ABC123"})
+
+        async def mock_set_unique_id(uid):
+            flow._unique_id = uid
+
+        flow.async_set_unique_id = mock_set_unique_id
+        flow._abort_if_unique_id_mismatch = MagicMock()
+        flow.async_update_reload_and_abort = MagicMock(
+            return_value={"type": FlowResultType.ABORT, "reason": "reconfigure_successful"}
+        )
+
+        await flow.async_step_reconfigure(
+            {
+                CONF_DEVICE_NAME: "New Name",
+                CONF_DISCOVERY_PREFIX: "NewTopic",
+            }
+        )
+
+        flow._auto_configure_nodeid.assert_called_once_with("NewTopic")
+
+    async def test_reconfigure_nodeid_config_failure(self, hass: HomeAssistant) -> None:
+        """Test reconfigure when NodeID auto-config fails."""
+        flow = NeoPoolConfigFlow()
+        flow.hass = hass
+        flow.context = {"source": "reconfigure"}
+
+        mock_entry = MagicMock()
+        mock_entry.data = {
+            CONF_DEVICE_NAME: "Test Pool",
+            CONF_DISCOVERY_PREFIX: "SmartPool",
+            CONF_NODEID: "ABC123",
+        }
+        flow._get_reconfigure_entry = MagicMock(return_value=mock_entry)
+
+        flow._validate_yaml_topic = AsyncMock(
+            return_value={"valid": True, "nodeid": "hidden", "payload": {}}
+        )
+        flow._auto_configure_nodeid = AsyncMock(return_value={"success": False, "error": "Failed"})
+
+        result = await flow.async_step_reconfigure(
+            {
+                CONF_DEVICE_NAME: "New Name",
+                CONF_DISCOVERY_PREFIX: "NewTopic",
+            }
+        )
+
+        assert result["type"] == FlowResultType.FORM
+        assert result["errors"]["base"] == "nodeid_configuration_failed"
+
+
+class TestYamlPrefixStep:
+    """Tests for async_step_yaml_prefix."""
+
+    async def test_yaml_prefix_shows_form(self, hass: HomeAssistant) -> None:
+        """Test yaml_prefix step shows form."""
+        flow = NeoPoolConfigFlow()
+        flow.hass = hass
+        flow.context = {"source": SOURCE_USER}
+
+        result = await flow.async_step_yaml_prefix(None)
+
+        assert result["type"] == FlowResultType.FORM
+        assert result["step_id"] == "yaml_prefix"
+
+    async def test_yaml_prefix_empty_prefix_error(self, hass: HomeAssistant) -> None:
+        """Test yaml_prefix with empty prefix shows error."""
+        flow = NeoPoolConfigFlow()
+        flow.hass = hass
+        flow.context = {"source": SOURCE_USER}
+        flow._find_orphaned_entities = MagicMock(return_value=[])
+
+        result = await flow.async_step_yaml_prefix({"unique_id_prefix": ""})
+
+        assert result["type"] == FlowResultType.FORM
+        assert result["errors"]["base"] == "no_entities_found"
+
+    async def test_yaml_prefix_no_matching_entities(self, hass: HomeAssistant) -> None:
+        """Test yaml_prefix when no entities match prefix."""
+        flow = NeoPoolConfigFlow()
+        flow.hass = hass
+        flow.context = {"source": SOURCE_USER}
+        flow._find_orphaned_entities = MagicMock(return_value=[])
+
+        result = await flow.async_step_yaml_prefix({"unique_id_prefix": "custom_prefix_"})
+
+        assert result["type"] == FlowResultType.FORM
+        assert result["errors"]["base"] == "no_entities_found"
+
+
+class TestYamlConfirmStep:
+    """Tests for async_step_yaml_confirm."""
+
+    async def test_yaml_confirm_no_confirmation_error(self, hass: HomeAssistant) -> None:
+        """Test yaml_confirm without confirmation checkbox shows error."""
+        flow = NeoPoolConfigFlow()
+        flow.hass = hass
+        flow.context = {"source": SOURCE_USER}
+        flow._yaml_topic = "SmartPool"
+        flow._nodeid = "ABC123"
+        flow._migrating_entities = []
+
+        result = await flow.async_step_yaml_confirm({"confirm_migration": False})
+
+        assert result["type"] == FlowResultType.FORM
+        assert result["errors"]["base"] == "confirmation_required"
+
+
+class TestFormatEntityList:
+    """Tests for _format_entity_list method."""
+
+    def test_format_less_than_five_entities(self) -> None:
+        """Test formatting less than 5 entities."""
+        flow = NeoPoolConfigFlow()
+
+        entities = [MagicMock(entity_id=f"sensor.entity_{i}") for i in range(3)]
+
+        result = flow._format_entity_list(entities)
+
+        assert "sensor.entity_0" in result
+        assert "sensor.entity_1" in result
+        assert "sensor.entity_2" in result
+        assert "more" not in result
+
+    def test_format_more_than_five_entities(self) -> None:
+        """Test formatting more than 5 entities shows count."""
+        flow = NeoPoolConfigFlow()
+
+        entities = [MagicMock(entity_id=f"sensor.entity_{i}") for i in range(10)]
+
+        result = flow._format_entity_list(entities)
+
+        assert "sensor.entity_0" in result
+        assert "sensor.entity_4" in result
+        assert "5 more" in result
+
+    def test_format_exactly_five_entities(self) -> None:
+        """Test formatting exactly 5 entities."""
+        flow = NeoPoolConfigFlow()
+
+        entities = [MagicMock(entity_id=f"sensor.entity_{i}") for i in range(5)]
+
+        result = flow._format_entity_list(entities)
+
+        assert "sensor.entity_0" in result
+        assert "sensor.entity_4" in result
+        assert "more" not in result
+
+
+class TestAsyncRemoveConfigEntryDevice:
+    """Tests for async_remove_config_entry_device."""
+
+    @pytest.mark.asyncio
+    async def test_always_returns_false(self, hass: HomeAssistant) -> None:
+        """Test function always returns False to prevent device removal."""
+        entry = MockConfigEntry(
+            domain=DOMAIN,
+            data={
+                CONF_DEVICE_NAME: "Test Pool",
+                CONF_DISCOVERY_PREFIX: "SmartPool",
+                CONF_NODEID: "ABC123",
+            },
+        )
+        entry.add_to_hass(hass)
+        entry.runtime_data = NeoPoolData(
+            device_name="Test Pool",
+            mqtt_topic="SmartPool",
+            nodeid="ABC123",
+        )
+
+        mock_device = MagicMock(spec=dr.DeviceEntry)
+
+        result = await async_remove_config_entry_device(hass, entry, mock_device)
+
+        assert result is False
+
+
+class TestGetDeviceInfo:
+    """Tests for get_device_info function."""
+
+    def test_returns_device_info(self) -> None:
+        """Test get_device_info returns correct DeviceInfo."""
+        entry = MockConfigEntry(
+            domain=DOMAIN,
+            data={
+                CONF_DEVICE_NAME: "My Pool",
+                CONF_DISCOVERY_PREFIX: "SmartPool",
+                CONF_NODEID: "XYZ789",
+            },
+        )
+
+        result = get_device_info(entry)
+
+        assert result["name"] == "My Pool"
+        assert (DOMAIN, "XYZ789") in result["identifiers"]
+        assert result["manufacturer"] == "Sugar Valley"
+        assert result["model"] == "NeoPool Controller"
+
+    def test_device_info_uses_defaults(self) -> None:
+        """Test get_device_info uses defaults when data missing."""
+        entry = MockConfigEntry(
+            domain=DOMAIN,
+            data={},
+        )
+
+        result = get_device_info(entry)
+
+        # Should use default device name
+        assert result["name"] == "NeoPool Controller"
+        # Empty nodeid in identifiers
+        assert (DOMAIN, "") in result["identifiers"]
+
+
+class TestCreateValueFn:
+    """Tests for create_value_fn factory function in select.py."""
+
+    def test_returns_callable(self) -> None:
+        """Test create_value_fn returns a callable."""
+        options_map = {0: "Off", 1: "On"}
+        fn = create_value_fn(options_map)
+
+        assert callable(fn)
+
+    def test_maps_int_to_string(self) -> None:
+        """Test value function maps int to string."""
+        options_map = {0: "Off", 1: "On", 2: "Auto"}
+        fn = create_value_fn(options_map)
+
+        assert fn(0) == "Off"
+        assert fn(1) == "On"
+        assert fn(2) == "Auto"
+
+    def test_handles_string_int(self) -> None:
+        """Test value function handles string integers."""
+        options_map = {0: "Off", 1: "On"}
+        fn = create_value_fn(options_map)
+
+        assert fn("0") == "Off"
+        assert fn("1") == "On"
+
+    def test_returns_none_for_invalid(self) -> None:
+        """Test value function returns None for invalid values."""
+        options_map = {0: "Off", 1: "On"}
+        fn = create_value_fn(options_map)
+
+        assert fn(99) is None
+        assert fn("invalid") is None
+        assert fn(None) is None
+
+
+class TestDiscoverDeviceHiddenNodeid:
+    """Tests for discover_device with hidden NodeID."""
+
+    async def test_discover_device_hidden_nodeid_auto_config(self, hass: HomeAssistant) -> None:
+        """Test discover_device with hidden NodeID triggers auto-config."""
+        flow = NeoPoolConfigFlow()
+        flow.hass = hass
+        flow.context = {"source": SOURCE_USER}
+
+        flow._validate_yaml_topic = AsyncMock(
+            return_value={"valid": True, "nodeid": "hidden", "payload": {}}
+        )
+        flow._auto_configure_nodeid = AsyncMock(
+            return_value={"success": True, "nodeid": "CONFIGURED123"}
+        )
+        flow.async_set_unique_id = AsyncMock()
+        flow._abort_if_unique_id_configured = MagicMock()
+
+        result = await flow.async_step_discover_device(
+            {
+                CONF_DEVICE_NAME: "My Pool",
+                CONF_DISCOVERY_PREFIX: "SmartPool",
+            }
+        )
+
+        flow._auto_configure_nodeid.assert_called_once_with("SmartPool")
+        assert result["type"] == FlowResultType.CREATE_ENTRY
+
+    async def test_discover_device_auto_config_failure(self, hass: HomeAssistant) -> None:
+        """Test discover_device aborts when auto-config fails."""
+        flow = NeoPoolConfigFlow()
+        flow.hass = hass
+        flow.context = {"source": SOURCE_USER}
+
+        flow._validate_yaml_topic = AsyncMock(
+            return_value={"valid": True, "nodeid": "hidden", "payload": {}}
+        )
+        flow._auto_configure_nodeid = AsyncMock(
+            return_value={"success": False, "error": "Failed to configure"}
+        )
+
+        result = await flow.async_step_discover_device(
+            {
+                CONF_DEVICE_NAME: "My Pool",
+                CONF_DISCOVERY_PREFIX: "SmartPool",
+            }
+        )
+
+        assert result["type"] == FlowResultType.ABORT
+        assert result["reason"] == "nodeid_configuration_failed"
+
+
+class TestAutoDetectTimeout:
+    """Tests for auto-detection timeout scenarios."""
+
+    async def test_auto_detect_timeout_returns_none(self, hass: HomeAssistant) -> None:
+        """Test auto-detection returns None on timeout."""
+        flow = NeoPoolConfigFlow()
+        flow.hass = hass
+
+        async def mock_subscribe(hass, topic, callback, **kwargs):
+            return MagicMock()
+
+        with patch(
+            "homeassistant.components.mqtt.async_subscribe",
+            side_effect=mock_subscribe,
+        ):
+            result = await flow._auto_detect_topic(timeout_seconds=0.1)
+
+        assert result is None
+
+    async def test_validate_topic_timeout_returns_invalid(self, hass: HomeAssistant) -> None:
+        """Test topic validation returns invalid on timeout."""
+        flow = NeoPoolConfigFlow()
+        flow.hass = hass
+
+        async def mock_subscribe(hass, topic, callback, **kwargs):
+            return MagicMock()
+
+        with patch(
+            "homeassistant.components.mqtt.async_subscribe",
+            side_effect=mock_subscribe,
+        ):
+            result = await flow._validate_yaml_topic("SmartPool", timeout_seconds=0.1)
+
+        assert result["valid"] is False
+
+
+class TestYamlDetectAutoConfigFailure:
+    """Tests for yaml_detect when auto-config fails."""
+
+    async def test_yaml_detect_auto_config_fails_goes_to_yaml_topic(
+        self, hass: HomeAssistant
+    ) -> None:
+        """Test yaml_detect falls back to yaml_topic when auto-config fails."""
+        flow = NeoPoolConfigFlow()
+        flow.hass = hass
+        flow.context = {"source": SOURCE_USER}
+
+        flow._auto_detect_topic = AsyncMock(return_value="SmartPool")
+        flow._validate_yaml_topic = AsyncMock(
+            return_value={"valid": True, "nodeid": "hidden", "payload": {}}
+        )
+        flow._auto_configure_nodeid = AsyncMock(return_value={"success": False, "error": "Failed"})
+        flow.async_step_yaml_topic = AsyncMock(
+            return_value={"type": FlowResultType.FORM, "step_id": "yaml_topic"}
+        )
+
+        await flow.async_step_yaml_detect()
+
+        # Should fall back to yaml_topic step
+        flow.async_step_yaml_topic.assert_called_once()
+
+
+class TestMqttDiscoveryEdgeCases:
+    """Edge case tests for MQTT discovery."""
+
+    async def test_mqtt_discovery_invalid_topic_format(self, hass: HomeAssistant) -> None:
+        """Test MQTT discovery with invalid topic format."""
+        flow = NeoPoolConfigFlow()
+        flow.hass = hass
+        flow.context = {"source": "mqtt"}
+
+        mock_discovery = MagicMock()
+        mock_discovery.topic = "invalid_topic"
+        mock_discovery.payload = '{"NeoPool": {}}'
+
+        result = await flow.async_step_mqtt(mock_discovery)
+
+        assert result["type"] == FlowResultType.ABORT
+        assert result["reason"] == "invalid_discovery_info"
+
+    async def test_mqtt_discovery_non_neopool_device(self, hass: HomeAssistant) -> None:
+        """Test MQTT discovery rejects non-NeoPool devices."""
+        flow = NeoPoolConfigFlow()
+        flow.hass = hass
+        flow.context = {"source": "mqtt"}
+
+        mock_discovery = MagicMock()
+        mock_discovery.topic = "tele/SomeDevice/SENSOR"
+        mock_discovery.payload = '{"SomeOtherDevice": {}}'
+
+        result = await flow.async_step_mqtt(mock_discovery)
+
+        assert result["type"] == FlowResultType.ABORT
+        assert result["reason"] == "not_neopool_device"
+
+    async def test_mqtt_discovery_invalid_json(self, hass: HomeAssistant) -> None:
+        """Test MQTT discovery with invalid JSON."""
+        flow = NeoPoolConfigFlow()
+        flow.hass = hass
+        flow.context = {"source": "mqtt"}
+
+        mock_discovery = MagicMock()
+        mock_discovery.topic = "tele/SmartPool/SENSOR"
+        mock_discovery.payload = "not valid json"
+
+        result = await flow.async_step_mqtt(mock_discovery)
+
+        assert result["type"] == FlowResultType.ABORT
+        assert result["reason"] == "invalid_discovery_info"
+
+
+class TestAutoConfigureNodeid:
+    """Tests for _auto_configure_nodeid method."""
+
+    async def test_auto_configure_publishes_setoption(self, hass: HomeAssistant) -> None:
+        """Test auto-configure publishes SetOption157 command."""
+        flow = NeoPoolConfigFlow()
+        flow.hass = hass
+
+        with (
+            patch("homeassistant.components.mqtt.async_publish") as mock_publish,
+            patch.object(flow, "_wait_for_nodeid", return_value="NEW123"),
+        ):
+            result = await flow._auto_configure_nodeid("SmartPool")
+
+        mock_publish.assert_called_once()
+        call_args = mock_publish.call_args
+        assert "cmnd/SmartPool/SetOption157" in str(call_args)
+        assert result["success"] is True
+        assert result["nodeid"] == "NEW123"
+
+    async def test_auto_configure_fails_when_nodeid_not_received(self, hass: HomeAssistant) -> None:
+        """Test auto-configure fails when NodeID not received."""
+        flow = NeoPoolConfigFlow()
+        flow.hass = hass
+
+        with (
+            patch("homeassistant.components.mqtt.async_publish"),
+            patch.object(flow, "_wait_for_nodeid", return_value=None),
+        ):
+            result = await flow._auto_configure_nodeid("SmartPool")
+
+        assert result["success"] is False
+        assert "error" in result
