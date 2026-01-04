@@ -117,10 +117,10 @@ After installation, you can adjust runtime settings without restart:
 1. Adjust the available options:
    - **Recovery script**: Script to execute when failure threshold is reached
    - **Enable repair notifications**: Toggle repair issue creation on/off
-   - **Failures threshold**: Number of failures before creating repair issue
-     (1-10)
-   - **Offline timeout**: Seconds to wait for MQTT data before considering
-     device offline (60-3600)
+   - **Failures threshold**: Number of consecutive LWT offline messages before
+     triggering notifications (1-10)
+   - **Offline timeout**: How long the device must be offline before triggering
+     notifications (60-3600 seconds)
 1. Click **Submit** - changes apply immediately
 
 ### Reconfiguring Connection Settings
@@ -267,9 +267,22 @@ automated recovery actions.
 1. Select a script from the **Recovery script** dropdown
 1. The script will run when the failure threshold is reached
 
+### Recovery Script Variables
+
+When the recovery script runs, it receives context variables that you can use
+in your script actions. Access these using the `trigger` context:
+
+| Variable | Description | Example Value |
+|----------|-------------|---------------|
+| `device_name` | The configured device name | `"Pool Controller"` |
+| `mqtt_topic` | The MQTT topic for the device | `"SmartPool"` |
+| `nodeid` | The device's hardware NodeID | `"ABC123"` |
+| `failures_count` | Number of consecutive failures | `3` |
+
 ### Example Recovery Script
 
-Create a script that restarts a smart plug and sends a notification:
+Create a script that restarts a smart plug and sends a notification with
+device details:
 
 ```yaml
 script:
@@ -279,7 +292,9 @@ script:
       - service: notify.mobile_app
         data:
           title: "NeoPool Recovery"
-          message: "NeoPool device failed multiple times. Restarting power..."
+          message: >
+            {{ device_name }} failed {{ failures_count }} times.
+            MQTT topic: {{ mqtt_topic }}. Restarting power...
       - service: switch.turn_off
         target:
           entity_id: switch.tasmota_smart_plug
@@ -288,6 +303,10 @@ script:
       - service: switch.turn_on
         target:
           entity_id: switch.tasmota_smart_plug
+      - service: notify.mobile_app
+        data:
+          title: "NeoPool Recovery Complete"
+          message: "Power cycled for {{ device_name }} (NodeID: {{ nodeid }})"
 ```
 
 ## MQTT Topic Configuration
