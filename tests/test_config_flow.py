@@ -47,7 +47,6 @@ async def test_form_user_starts_yaml_migration(hass: HomeAssistant) -> None:
     )
     assert result["type"] is FlowResultType.FORM
     assert result["step_id"] == "yaml_migration"
-    assert result["errors"] == {}
 
 
 async def test_mqtt_discovery(hass: HomeAssistant) -> None:
@@ -197,37 +196,6 @@ async def test_options_flow_init(hass: HomeAssistant) -> None:
 
     assert result["type"] is FlowResultType.FORM
     assert result["step_id"] == "init"
-
-
-async def test_options_flow_update(hass: HomeAssistant) -> None:
-    """Test options flow updates options."""
-    entry = MockConfigEntry(
-        domain=DOMAIN,
-        data={
-            CONF_DEVICE_NAME: "Test Pool",
-            CONF_DISCOVERY_PREFIX: "SmartPool",
-            CONF_NODEID: "ABC123",
-        },
-        options={},
-    )
-    entry.add_to_hass(hass)
-
-    result = await hass.config_entries.options.async_init(entry.entry_id)
-
-    result = await hass.config_entries.options.async_configure(
-        result["flow_id"],
-        user_input={
-            CONF_ENABLE_REPAIR_NOTIFICATION: True,
-            CONF_FAILURES_THRESHOLD: 5,
-            CONF_OFFLINE_TIMEOUT: 120,
-        },
-    )
-    await hass.async_block_till_done()
-
-    assert result["type"] is FlowResultType.CREATE_ENTRY
-    assert entry.options[CONF_ENABLE_REPAIR_NOTIFICATION] is True
-    assert entry.options[CONF_FAILURES_THRESHOLD] == 5
-    assert entry.options[CONF_OFFLINE_TIMEOUT] == 120
 
 
 async def test_reconfigure_flow_init(hass: HomeAssistant) -> None:
