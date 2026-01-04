@@ -80,7 +80,7 @@ This integration is available as a custom repository in [HACS].
 1. Open HACS in Home Assistant
 1. Click on "Integrations"
 1. Click the three dots menu → "Custom repositories"
-1. Add `https://github.com/alexdelprete/ha-neopool-mqtt` with category
+1. Add `https://github.com/alexdelprete/ha-sugar-valley-neopool` with category
    "Integration"
 1. Search for "Sugar Valley NeoPool" and install
 1. Restart Home Assistant
@@ -88,7 +88,7 @@ This integration is available as a custom repository in [HACS].
 ## Manual Installation
 
 1. Download the latest release from
-   [GitHub](https://github.com/alexdelprete/ha-neopool-mqtt/releases)
+   [GitHub](https://github.com/alexdelprete/ha-sugar-valley-neopool/releases)
 1. Extract and copy `custom_components/sugar_valley_neopool` to your
    `config/custom_components/` directory
 1. Restart Home Assistant
@@ -453,13 +453,13 @@ file for details.
 [buymecoffee]: https://www.buymeacoffee.com/alexdelprete
 [buymecoffee-button]: https://img.buymeacoffee.com/button-api/?text=Buy%20me%20a%20coffee&emoji=%E2%98%95&slug=alexdelprete&button_colour=FFDD00&font_colour=000000&font_family=Lato&outline_colour=000000&coffee_colour=ffffff
 [buymecoffee-shield]: https://img.shields.io/badge/buy%20me%20a%20coffee-donate-white?style=for-the-badge&logo=buymeacoffee&logoColor=white
-[coverage]: https://codecov.io/github/alexdelprete/ha-neopool-mqtt
-[coverage-shield]: https://img.shields.io/codecov/c/github/alexdelprete/ha-neopool-mqtt?style=for-the-badge
-[downloads]: https://github.com/alexdelprete/ha-neopool-mqtt/releases
-[downloads-shield]: https://img.shields.io/github/downloads/alexdelprete/ha-neopool-mqtt/total?style=for-the-badge
+[coverage]: https://codecov.io/github/alexdelprete/ha-sugar-valley-neopool
+[coverage-shield]: https://img.shields.io/codecov/c/github/alexdelprete/ha-sugar-valley-neopool?style=for-the-badge
+[downloads]: https://github.com/alexdelprete/ha-sugar-valley-neopool/releases
+[downloads-shield]: https://img.shields.io/github/downloads/alexdelprete/ha-sugar-valley-neopool/total?style=for-the-badge
 [HACS]: https://hacs.xyz/
-[issues]: https://github.com/alexdelprete/ha-neopool-mqtt/issues
-[releases]: https://github.com/alexdelprete/ha-neopool-mqtt/releases
-[releases-shield]: https://img.shields.io/github/v/release/alexdelprete/ha-neopool-mqtt?style=for-the-badge&color=darkgreen
-[tests]: https://github.com/alexdelprete/ha-neopool-mqtt/actions/workflows/test.yml
-[tests-shield]: https://img.shields.io/github/actions/workflow/status/alexdelprete/ha-neopool-mqtt/test.yml?style=for-the-badge&label=Tests
+[issues]: https://github.com/alexdelprete/ha-sugar-valley-neopool/issues
+[releases]: https://github.com/alexdelprete/ha-sugar-valley-neopool/releases
+[releases-shield]: https://img.shields.io/github/v/release/alexdelprete/ha-sugar-valley-neopool?style=for-the-badge&color=darkgreen
+[tests]: https://github.com/alexdelprete/ha-sugar-valley-neopool/actions/workflows/test.yml
+[tests-shield]: https://img.shields.io/github/actions/workflow/status/alexdelprete/ha-sugar-valley-neopool/test.yml?style=for-the-badge&label=Tests
