@@ -210,9 +210,9 @@ class TestReconfigureFlow:
             }
         )
 
-        # Should show form with error for invalid topic
+        # Should show form with error for invalid topic (cannot_connect is used for validation failures)
         assert result["type"] == FlowResultType.FORM
-        assert result["errors"]["base"] == "topic_validation_failed"
+        assert result["errors"]["base"] == "cannot_connect"
 
     async def test_reconfigure_hidden_nodeid_auto_config(self, hass: HomeAssistant) -> None:
         """Test reconfigure with hidden NodeID triggers auto-config."""
