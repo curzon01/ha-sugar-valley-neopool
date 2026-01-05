@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-01-05
+
 ### Added
 
 - **NodeID-based unique IDs**: All entities now use hardware-based NodeID in unique_id pattern
@@ -20,6 +22,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   hidden
 - **Multi-device support**: NodeID-based identifiers enable stable configuration for multiple NeoPool controllers
 - **Powerunit NodeID diagnostic sensor**: Shows the hardware NodeID from the NeoPool controller
+- **Comprehensive test suite**: Added tests for all modules achieving 97%+ code coverage
 
 ### Changed
 
@@ -29,11 +32,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Tasmota SetOption157**: Changed from `0` (hide NodeID) to `1` (show NodeID) - required for integration
 - Device identifiers now use NodeID instead of topic name
 - Config entry unique_id now based on NodeID for proper duplicate detection
+- Updated GitHub Actions workflows for improved CI/CD
+- Enhanced README with recovery script variables documentation
 
 ### Fixed
 
 - Multiple instances of the same device no longer create duplicate entities
 - Entity unique IDs are now stable across topic name changes
+- Fixed release workflow path (was pointing to wrong directory)
+- Corrected repository name in README badges and links
 
 ## [0.1.0] - 2024-12-13
 
