@@ -485,9 +485,46 @@ in manifest.json and const.py.
 | 7    | **Checklist**  | Display Release Readiness Checklist (see below)                         |
 | 8    | Bash           | `git tag -a vX.Y.Z -m "Release vX.Y.Z"`                                 |
 | 9    | Bash           | `git push --tags`                                                       |
-| 10   | gh CLI         | `gh release create vX.Y.Z --title "vX.Y.Z" --generate-notes`            |
+| 10   | gh CLI         | `gh release create vX.Y.Z --title "vX.Y.Z" --notes "$(RELEASE_NOTES)"`  |
 | 11   | GitHub Actions | Validates versions match, then auto-uploads ZIP asset                   |
 | 12   | Edit           | Bump versions in `manifest.json` and `const.py` to next version         |
+
+### Release Notes Format (MANDATORY)
+
+When creating a release, use this format for the release notes:
+
+```markdown
+# Release vX.Y.Z
+
+[![GitHub Downloads](https://img.shields.io/github/downloads/alexdelprete/ha-sugar-valley-neopool/vX.Y.Z/total?style=for-the-badge)](https://github.com/alexdelprete/ha-sugar-valley-neopool/releases/tag/vX.Y.Z)
+
+**Release Date:** YYYY-MM-DD
+
+**Type:** [Major/Minor/Patch] release - Brief description.
+
+## What's Changed
+
+### ✨ Added
+- Feature 1
+- Feature 2
+
+### 🔄 Changed
+- Change 1
+- Change 2
+
+### 🐛 Fixed
+- Fix 1
+- Fix 2
+
+**Full Changelog**: https://github.com/alexdelprete/ha-sugar-valley-neopool/compare/vPREV...vX.Y.Z
+```
+
+**Key elements:**
+- Downloads badge with version-specific URL at the top
+- Release date
+- Release type (Major/Minor/Patch) with brief description
+- Categorized changes with emojis (✨ Added, 🔄 Changed, 🐛 Fixed)
+- Full changelog link at the bottom
 
 ### Release Readiness Checklist (MANDATORY)
 
