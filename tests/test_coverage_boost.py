@@ -303,7 +303,7 @@ class TestYamlPrefixStep:
         flow = NeoPoolConfigFlow()
         flow.hass = hass
         flow.context = {"source": SOURCE_USER}
-        flow._find_orphaned_entities = MagicMock(return_value=[])
+        flow._find_migratable_entities = MagicMock(return_value=[])
 
         result = await flow.async_step_yaml_prefix({"unique_id_prefix": ""})
 
@@ -315,7 +315,7 @@ class TestYamlPrefixStep:
         flow = NeoPoolConfigFlow()
         flow.hass = hass
         flow.context = {"source": SOURCE_USER}
-        flow._find_orphaned_entities = MagicMock(return_value=[])
+        flow._find_migratable_entities = MagicMock(return_value=[])
 
         result = await flow.async_step_yaml_prefix({"unique_id_prefix": "custom_prefix_"})
 

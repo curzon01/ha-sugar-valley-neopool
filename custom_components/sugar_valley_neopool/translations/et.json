@@ -3,111 +3,104 @@
     "step": {
       "user": {
         "title": "Sugar Valley NeoPool seadistamine",
-        "description": "Seadistage oma Sugar Valley NeoPool basseini kontroller, mis on ühendatud Tasmota MQTT kaudu.",
+        "description": "Seadistage oma NeoPool seade, mis on ühendatud Tasmota MQTT kaudu.\n\nLisateabe saamiseks vaadake [Tasmota NeoPool dokumentatsiooni]({docs_url}).",
         "data": {
-          "mqtt_topic": "Tasmota seadme MQTT teema",
-          "name": "Seadme nimi"
+          "device_name": "Seadme nimi",
+          "discovery_prefix": "Tasmota seadme teema (nt SmartPool)"
         },
         "data_description": {
-          "mqtt_topic": "MQTT teema, mis on seadistatud teie Tasmota seadmes (nt 'SmartPool'). Integratsioon tellib automaatselt andurite värskendused.",
-          "name": "Sõbralik nimi teie NeoPool basseini kontrollerile."
+          "device_name": "Sõbralik nimi teie basseini kontrollerile",
+          "discovery_prefix": "MQTT teema, mida kasutab teie Tasmota seade (leitav Tasmota veebiliideses MQTT seadete alt)"
+        }
+      },
+      "mqtt_confirm": {
+        "title": "NeoPool seade avastatud",
+        "description": "NeoPool seade avastati MQTT teemal: **{device}**",
+        "data": {
+          "device_name": "Seadme nimi"
         }
       },
       "yaml_migration": {
-        "title": "Seadistamise meetod",
-        "description": "Valige, kuidas seda integratsiooni seadistada.\n\nKui migreerite YAML paketi seadistuselt, märkige allolev ruut, et üle kanda oma ajaloolised andmed uude UI-integratsioon.\n\nKui see on uus installatsioon, jätke ruut märkimata.",
+        "title": "YAML paketi migratsioon",
+        "description": "Kas migreerite YAML paketi konfiguratsioonist?\n\nMärkige see ruut, kui kasutate praegu `ha_neopool_mqtt_package.yaml` faili.",
         "data": {
-          "migrate_yaml": "Migreeri YAML paketist"
-        },
-        "data_description": {
-          "migrate_yaml": "Märkige see, kui teil on olemasolevad olemid YAML paketi seadistusest, mida soovite migreerida."
+          "migrate_yaml": "Migreerin YAML paketist"
         }
       },
       "yaml_topic": {
-        "title": "YAML paketi MQTT teema",
-        "description": "Sisestage MQTT teema oma olemasolevast YAML paketi seadistusest.\n\n**Oluline:** Integratsioon seadistab automaatselt teie Tasmota seadme NodeID eksponeerimiseks, kui see pole juba tehtud.",
+        "title": "MQTT teema",
+        "description": "NeoPool seadet ei õnnestunud automaatselt tuvastada.\n\nPalun sisestage MQTT teema, mis on seadistatud teie Tasmota seadmes.",
         "data": {
-          "mqtt_topic": "Tasmota seadme MQTT teema"
-        },
-        "data_description": {
-          "mqtt_topic": "MQTT teema, mis on seadistatud teie Tasmota seadmes (nt 'SmartPool')."
+          "yaml_topic": "MQTT teema (nt SmartPool)"
+        }
+      },
+      "yaml_prefix": {
+        "title": "Kohandatud olemi prefiks",
+        "description": "Vaikimisi prefiksiga `neopool_mqtt_` olemeid ei leitud.\n\nKui kohandasite `unique_id` prefiksit oma YAML paketis, sisestage see allpool.",
+        "data": {
+          "unique_id_prefix": "Unikaalse ID prefiks"
         }
       },
       "yaml_confirm": {
-        "title": "Kinnita YAML migratsioon",
-        "description": "Valmis migreerima YAML paketist.\n\n**MQTT teema:** `{mqtt_topic}`\n**Seadme NodeID:** `{nodeid}`\n\nPärast seadistamist:\n1. Teie olemasolevad olemid migreeritakse uude integratsiooni\n2. Kõik ajaloolised andmed säilitatakse\n3. Saate eemaldada oma YAML paketi seadistuse\n\nKlõpsake **Esita**, et migratsioon lõpule viia."
-      },
-      "discover_device": {
-        "title": "Seadista NeoPool seade",
-        "description": "Sisestage oma Tasmota NeoPool seadme andmed.",
+        "title": "Kinnita migratsioon",
+        "description": "## Migratsiooni kokkuvõte\n\nJärgmised elemendid on valideeritud:\n\n✓ **MQTT teema**: `{topic}`\n✓ **NodeID**: `{nodeid}`\n✓ **Migreeritavaid olemeid leitud**: {entity_count}\n\n### Migreeritavad olemid:\n{entity_list}\n\n---\n\n## Mis juhtub:\n\n1. Iga olemi `unique_id` uuendatakse, et sisaldada NodeID-d\n2. Olemid seotakse selle integratsiooniga\n3. **Kõik ajaloolised andmed säilitatakse** (graafikud, statistika)\n4. Olemi ID-d jäävad muutumatuks\n\n---\n\n⚠️ **Eeltingimused** (kinnitage enne jätkamist):\n- Olen eemaldanud/kommenteerinud YAML paketi `configuration.yaml`-ist\n- Olen taaskäivitanud Home Assistanti pärast YAML paketi eemaldamist\n- Mõistan, et see protsess muudab minu olemi registrit\n\n**Seda toimingut ei saa automaatselt tagasi võtta.** Alloleva ruudu märkimisega kinnitate, et olete eeltingimused täitnud ja võtate vastutuse selle migratsiooni eest.",
         "data": {
-          "mqtt_topic": "Tasmota seadme MQTT teema",
-          "name": "Seadme nimi"
-        },
-        "data_description": {
-          "mqtt_topic": "MQTT teema, mis on seadistatud teie Tasmota seadmes.",
-          "name": "Sõbralik nimi teie NeoPool basseini kontrollerile."
+          "confirm_migration": "Kinnitan, et olen eeltingimused täitnud ja soovin jätkata"
         }
       },
-      "mqtt": {
-        "title": "NeoPool seade avastatud",
-        "description": "Sugar Valley NeoPool basseini kontroller avastati MQTT kaudu.\n\n**Teema:** `{mqtt_topic}`\n**NodeID:** `{nodeid}`\n\nKas soovite selle seadme seadistada?"
-      },
-      "mqtt_confirm": {
-        "title": "Kinnita avastatud seade",
-        "description": "Kinnitage avastatud NeoPool seadme seadistus.\n\n**MQTT teema:** `{mqtt_topic}`\n**NodeID:** `{nodeid}`",
+      "discover_device": {
+        "title": "Käsitsi seadistamine",
+        "description": "Sisestage oma NeoPool seadme andmed.\n\nLisateabe saamiseks vaadake [Tasmota NeoPool dokumentatsiooni]({docs_url}).",
         "data": {
-          "name": "Seadme nimi"
-        },
-        "data_description": {
-          "name": "Sõbralik nimi teie NeoPool basseini kontrollerile."
+          "device_name": "Seadme nimi",
+          "discovery_prefix": "MQTT teema (Tasmota seadme nimi)"
         }
       },
       "reconfigure": {
-        "title": "Seadista Sugar Valley NeoPool uuesti",
-        "description": "Värskendage oma NeoPool kontrolleri ühenduse seadeid.\n\n**Praegune NodeID:** `{nodeid}`\n**Praegune MQTT teema:** `{mqtt_topic}`",
+        "title": "Seadista NeoPool uuesti",
+        "description": "Uuendage oma NeoPool seadme ühenduse seadeid.",
         "data": {
-          "mqtt_topic": "Tasmota seadme MQTT teema",
-          "name": "Seadme nimi"
+          "device_name": "Seadme nimi",
+          "discovery_prefix": "MQTT teema"
         },
         "data_description": {
-          "mqtt_topic": "MQTT teema, mis on seadistatud teie Tasmota seadmes.",
-          "name": "Sõbralik nimi teie NeoPool basseini kontrollerile."
+          "device_name": "Sõbralik nimi teie basseini kontrollerile",
+          "discovery_prefix": "MQTT teema, mida kasutab teie Tasmota seade"
         }
       }
     },
     "error": {
-      "cannot_connect": "MQTT vahendajaga ei saa ühendust",
-      "invalid_topic": "Vigane MQTT teema vorming",
-      "no_neopool_data": "NeoPool andmeid ei saadud - kontrollige teemat ja seadme ühenduvust",
-      "timeout": "Seadmelt MQTT andmete ootamise ajalõpp",
-      "unknown": "Ootamatu viga",
-      "nodeid_required": "Seadmelt ei õnnestunud NodeID-d hankida. Palun veenduge, et teie Tasmota seade on võrgus.",
-      "nodeid_configuration_failed": "Tasmota seadme seadistamine NodeID eksponeerimiseks ebaõnnestus. Palun määrake käsitsi SetOption157 1 Tasmota konsoolis."
+      "invalid_topic": "Vigane MQTT teema formaat",
+      "invalid_yaml_topic": "Sellelt MQTT teemalt ei saa lugeda. Palun veenduge, et teema on õige ja seade on võrgus.",
+      "cannot_connect": "Sellelt MQTT teemalt ei õnnestunud sõnumeid vastu võtta. Kontrollige teema nime ja kas teie seade on võrgus.",
+      "no_entities_found": "Selle prefiksiga migreeritavaid olemeid ei leitud. Kontrollige, et:\n1. Prefiks vastab teie YAML konfiguratsioonile\n2. Olemid eksisteerivad Home Assistantis\n3. Olemid ei kuulu juba sellele integratsioonile",
+      "confirmation_required": "Migratsiooni jätkamiseks peate märkima kinnituse ruudu.",
+      "nodeid_configuration_failed": "NodeID seadistamine seadmel ebaõnnestus."
     },
     "abort": {
-      "already_configured": "Seade on juba seadistatud",
-      "no_devices_found": "Võrgust ei leitud NeoPool seadmeid",
-      "mqtt_not_available": "MQTT integratsioon pole saadaval",
-      "reconfigure_successful": "Uuesti seadistamine õnnestus"
+      "already_configured": "See seade on juba seadistatud",
+      "invalid_discovery_info": "Saadi vigane avastamisteave",
+      "not_neopool_device": "Avastatud seade ei ole NeoPool kontroller",
+      "nodeid_configuration_failed": "NodeID seadistamine ebaõnnestus. Palun määrake käsitsi SetOption157 1 Tasmota konsoolis ja proovige uuesti.",
+      "unique_id_mismatch": "Seadme NodeID ei vasta algsele konfiguratsioonile."
     }
   },
   "options": {
     "step": {
       "init": {
-        "title": "Sugar Valley NeoPool valikud",
-        "description": "Seadistage oma NeoPool integratsiooni käitusaja seaded.",
+        "title": "NeoPool käitusaja valikud",
+        "description": "Seadistage käitusaja valikud.\n\n**Taastamise skripti muutujad:**\nKui on seadistatud, saab taastamise skript need muutujad:\n\n- `device_name` : Seadme nimi\n- `mqtt_topic` : MQTT teema\n- `nodeid` : Seadme NodeID\n- `failures_count` : Järjestikuste tõrgete arv",
         "data": {
-          "recovery_script": "Taastamise skript",
-          "enable_repair_notification": "Luba parandamise teavitused",
-          "failures_threshold": "Ebaõnnestumiste lävi",
-          "offline_timeout": "Võrguühenduseta ajalõpp (sekundid)"
+          "recovery_script": "Taastamise skript (valikuline, käivitub kui seade lõpetab vastamise)",
+          "enable_repair_notification": "Luba paranduse teavitused",
+          "failures_threshold": "Tõrked enne teavitust (1-10)",
+          "offline_timeout": "Võrguühenduseta aegumine (sekundites)"
         },
         "data_description": {
-          "recovery_script": "Valikuline skript, mida käivitada, kui seade taastub pärast võrguühenduseta olekut (nt 'script.neopool_recovery').",
-          "enable_repair_notification": "Loo parandamise probleemid, kui seade on pikka aega võrguühenduseta.",
-          "failures_threshold": "Järjestikuste võrguühenduseta kontrollide arv enne parandamise probleemi loomist (1-10).",
-          "offline_timeout": "Aeg sekundites MQTT andmete ootamiseks enne seadme võrguühenduseta pidamist (60-3600)."
+          "recovery_script": "Skript, mida käivitada kui seade on liiga kaua võrguühenduseta",
+          "enable_repair_notification": "Loo paranduse probleem kui seade läheb võrguühenduseta",
+          "failures_threshold": "Järjestikuste LWT võrguühenduseta sõnumite arv enne teavituste käivitamist",
+          "offline_timeout": "Kui kaua peab seade olema võrguühenduseta enne teavituste käivitamist"
         }
       }
     }
@@ -115,14 +108,190 @@
   "issues": {
     "device_offline": {
       "title": "NeoPool seade võrguühenduseta: {device_name}",
-      "description": "NeoPool seade **{device_name}** (MQTT teema: `{mqtt_topic}`) on olnud võrguühenduseta **{offline_duration}**.\n\n## Tõrkeotsingu sammud\n\n1. Kontrollige, et Tasmota seade on toitega ja ühendatud WiFi-ga\n2. Kontrollige, et MQTT vahendaja töötab ja on kättesaadav\n3. Kontrollige Tasmota seadme logisid vigade osas\n4. Veenduge, et NeoPool kontroller on ühendatud Tasmota seadmega\n\n## Seadme andmed\n\n- **MQTT teema:** `{mqtt_topic}`\n- **Võrguühenduseta alates:** {offline_since}\n- **Kestus:** {offline_duration}"
+      "description": "NeoPool seade **{device_name}** on olnud pikema perioodi võrguühenduseta.\n\n**MQTT teema:** `{mqtt_topic}`\n\nPalun kontrollige:\n- Tasmota seade on sisse lülitatud\n- Seade on ühendatud teie võrguga\n- MQTT maakler töötab\n- MQTT teema on õige"
     }
   },
   "device_automation": {
     "trigger_type": {
       "device_offline": "Seade läks võrguühenduseta",
-      "device_online": "Seade tuli tagasi võrku",
-      "device_recovered": "Seade taastus pärast pikaajalist katkestust"
+      "device_online": "Seade tuli võrku",
+      "device_recovered": "Seade taastus pärast võrguühenduseta olekut"
+    }
+  },
+  "entity": {
+    "sensor": {
+      "system_model": {
+        "name": "Süsteemi mudel"
+      },
+      "water_temperature": {
+        "name": "Vee temperatuur"
+      },
+      "ph_data": {
+        "name": "pH"
+      },
+      "ph_state": {
+        "name": "pH olek"
+      },
+      "ph_pump": {
+        "name": "pH pump"
+      },
+      "redox_data": {
+        "name": "Redoks (ORP)"
+      },
+      "hydrolysis_percent": {
+        "name": "Hüdrolüüs"
+      },
+      "hydrolysis_data": {
+        "name": "Hüdrolüüs (g/h)"
+      },
+      "hydrolysis_state": {
+        "name": "Hüdrolüüsi olek"
+      },
+      "hydrolysis_runtime_total": {
+        "name": "Hüdrolüüsi kogukäitusaeg"
+      },
+      "hydrolysis_runtime_part": {
+        "name": "Hüdrolüüsi osaline käitusaeg"
+      },
+      "hydrolysis_polarity_changes": {
+        "name": "Hüdrolüüsi polaarsuse muutused"
+      },
+      "filtration_mode": {
+        "name": "Filtreerimise režiim"
+      },
+      "filtration_speed": {
+        "name": "Filtreerimise kiirus"
+      },
+      "powerunit_version": {
+        "name": "Toiteüksuse versioon"
+      },
+      "powerunit_5v": {
+        "name": "Toiteüksus 5V"
+      },
+      "powerunit_12v": {
+        "name": "Toiteüksus 12V"
+      },
+      "powerunit_24v": {
+        "name": "Toiteüksus 24-30V"
+      },
+      "powerunit_4ma": {
+        "name": "Toiteüksus 4-20mA"
+      },
+      "connection_requests": {
+        "name": "Ühenduse päringud"
+      },
+      "connection_responses": {
+        "name": "Ühenduse vastused"
+      },
+      "connection_no_response": {
+        "name": "Ühendus vastuseta"
+      },
+      "powerunit_nodeid": {
+        "name": "Toiteüksuse NodeID"
+      }
+    },
+    "binary_sensor": {
+      "modules_ph": {
+        "name": "pH moodul"
+      },
+      "modules_redox": {
+        "name": "Redoks moodul"
+      },
+      "modules_hydrolysis": {
+        "name": "Hüdrolüüsi moodul"
+      },
+      "modules_chlorine": {
+        "name": "Kloori moodul"
+      },
+      "modules_conductivity": {
+        "name": "Juhtivuse moodul"
+      },
+      "modules_ionization": {
+        "name": "Ionisatsiooni moodul"
+      },
+      "relay_ph_state": {
+        "name": "Relee pH olek"
+      },
+      "relay_filtration_state": {
+        "name": "Relee filtreerimise olek"
+      },
+      "relay_light_state": {
+        "name": "Relee valguse olek"
+      },
+      "relay_acid_state": {
+        "name": "Relee happe olek"
+      },
+      "ph_fl1": {
+        "name": "pH FL1"
+      },
+      "hydrolysis_fl1": {
+        "name": "Hüdrolüüs FL1"
+      },
+      "hydrolysis_water_flow": {
+        "name": "Vee vool"
+      },
+      "ph_tank_level": {
+        "name": "pH paagi tase madal"
+      },
+      "redox_tank_level": {
+        "name": "Redoks paagi tase madal"
+      },
+      "hydrolysis_cover": {
+        "name": "Hüdrolüüsi kate"
+      },
+      "hydrolysis_low_production": {
+        "name": "Hüdrolüüsi madal tootlikkus"
+      }
+    },
+    "switch": {
+      "filtration": {
+        "name": "Filtreerimine"
+      },
+      "light": {
+        "name": "Valgus"
+      },
+      "aux1": {
+        "name": "AUX1"
+      },
+      "aux2": {
+        "name": "AUX2"
+      },
+      "aux3": {
+        "name": "AUX3"
+      },
+      "aux4": {
+        "name": "AUX4"
+      }
+    },
+    "select": {
+      "filtration_mode": {
+        "name": "Filtreerimise režiim"
+      },
+      "filtration_speed": {
+        "name": "Filtreerimise kiirus"
+      },
+      "boost_mode": {
+        "name": "Võimenduse režiim"
+      }
+    },
+    "number": {
+      "ph_min": {
+        "name": "pH min"
+      },
+      "ph_max": {
+        "name": "pH max"
+      },
+      "redox_setpoint": {
+        "name": "Redoks seadepunkt"
+      },
+      "hydrolysis_setpoint": {
+        "name": "Hüdrolüüsi seadepunkt"
+      }
+    },
+    "button": {
+      "clear_error": {
+        "name": "Tühjenda vea olek"
+      }
     }
   }
 }

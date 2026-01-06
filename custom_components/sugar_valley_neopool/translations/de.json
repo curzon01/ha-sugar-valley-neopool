@@ -43,7 +43,7 @@
       },
       "yaml_confirm": {
         "title": "Migration bestätigen",
-        "description": "## Migrations-Zusammenfassung\n\nFolgendes wurde validiert:\n\n✓ **MQTT-Topic**: `{topic}`\n✓ **NodeID**: `{nodeid}`\n✓ **Gefundene verwaiste Entities**: {entity_count}\n\n### Zu migrierende Entities:\n{entity_list}\n\n---\n\n## Was passieren wird:\n\n1. Die `unique_id` jeder Entity wird aktualisiert, um die NodeID einzuschließen\n2. Entities werden mit dieser Integration verknüpft\n3. **Alle historischen Daten bleiben erhalten** (Diagramme, Statistiken)\n4. Entity-IDs bleiben unverändert\n\n---\n\n⚠️ **Voraussetzungen** (vor dem Fortfahren bestätigen):\n- Ich habe das YAML-Paket aus `configuration.yaml` entfernt/auskommentiert\n- Ich habe Home Assistant nach dem Entfernen des YAML-Pakets neu gestartet\n- Ich verstehe, dass dieser Prozess mein Entity-Registry modifizieren wird\n\n**Diese Aktion kann nicht automatisch rückgängig gemacht werden.** Durch Aktivieren des Kontrollkästchens bestätigen Sie, dass Sie die Voraussetzungen erfüllt haben und die Verantwortung für diese Migration übernehmen.",
+        "description": "## Migrations-Zusammenfassung\n\nFolgendes wurde validiert:\n\n✓ **MQTT-Topic**: `{topic}`\n✓ **NodeID**: `{nodeid}`\n✓ **Gefundene migrierbare Entities**: {entity_count}\n\n### Zu migrierende Entities:\n{entity_list}\n\n---\n\n## Was passieren wird:\n\n1. Die `unique_id` jeder Entity wird aktualisiert, um die NodeID einzuschließen\n2. Entities werden mit dieser Integration verknüpft\n3. **Alle historischen Daten bleiben erhalten** (Diagramme, Statistiken)\n4. Entity-IDs bleiben unverändert\n\n---\n\n⚠️ **Voraussetzungen** (vor dem Fortfahren bestätigen):\n- Ich habe das YAML-Paket aus `configuration.yaml` entfernt/auskommentiert\n- Ich habe Home Assistant nach dem Entfernen des YAML-Pakets neu gestartet\n- Ich verstehe, dass dieser Prozess mein Entity-Registry modifizieren wird\n\n**Diese Aktion kann nicht automatisch rückgängig gemacht werden.** Durch Aktivieren des Kontrollkästchens bestätigen Sie, dass Sie die Voraussetzungen erfüllt haben und die Verantwortung für diese Migration übernehmen.",
         "data": {
           "confirm_migration": "Ich bestätige, dass ich die Voraussetzungen erfüllt habe und fortfahren möchte"
         }
@@ -73,7 +73,7 @@
       "invalid_topic": "Ungültiges MQTT-Topic-Format",
       "invalid_yaml_topic": "Kann nicht von diesem MQTT-Topic lesen. Bitte überprüfen Sie, ob das Topic korrekt ist und das Gerät online ist.",
       "cannot_connect": "Konnte keine Nachrichten von diesem MQTT-Topic empfangen. Überprüfen Sie den Topic-Namen und ob Ihr Gerät online ist.",
-      "no_entities_found": "Keine verwaisten Entities mit diesem Präfix gefunden. Überprüfen Sie:\n1. Sie haben das YAML-Paket aus configuration.yaml entfernt\n2. Sie haben Home Assistant neu gestartet\n3. Das Präfix stimmt mit Ihrer YAML-Konfiguration überein",
+      "no_entities_found": "Keine migrierbaren Entities mit diesem Präfix gefunden. Überprüfen Sie:\n1. Das Präfix stimmt mit Ihrer YAML-Konfiguration überein\n2. Die Entities existieren in Home Assistant\n3. Die Entities gehören nicht bereits zu dieser Integration",
       "confirmation_required": "Sie müssen das Bestätigungsfeld aktivieren, um mit der Migration fortzufahren.",
       "nodeid_configuration_failed": "NodeID konnte auf dem Gerät nicht konfiguriert werden."
     },

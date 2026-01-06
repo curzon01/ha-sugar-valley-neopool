@@ -425,7 +425,7 @@ class TestAsyncMigrateYamlEntities:
     @pytest.mark.asyncio
     async def test_migrate_entities_success(self, hass: HomeAssistant) -> None:
         """Test successful entity migration."""
-        # Create orphaned entities in registry
+        # Create migratable entities in registry (owned by mqtt platform)
         entity_registry = er.async_get(hass)
         entity_registry.async_get_or_create(
             domain="sensor",
@@ -465,7 +465,7 @@ class TestAsyncMigrateYamlEntities:
     @pytest.mark.asyncio
     async def test_migrate_with_custom_prefix(self, hass: HomeAssistant) -> None:
         """Test migration with custom unique_id prefix."""
-        # Create orphaned entity with custom prefix
+        # Create migratable entity with custom prefix
         entity_registry = er.async_get(hass)
         entity_registry.async_get_or_create(
             domain="sensor",
@@ -495,8 +495,8 @@ class TestAsyncMigrateYamlEntities:
         assert updated_entity.unique_id == "neopool_mqtt_ABC123_temperature"
 
     @pytest.mark.asyncio
-    async def test_no_orphaned_entities_found(self, hass: HomeAssistant) -> None:
-        """Test when no orphaned entities are found."""
+    async def test_no_migratable_entities_found(self, hass: HomeAssistant) -> None:
+        """Test when no migratable entities are found."""
         entry = MockConfigEntry(
             domain=DOMAIN,
             data={
@@ -553,7 +553,7 @@ class TestAsyncMigrateYamlEntities:
     @pytest.mark.asyncio
     async def test_migration_summary_steps(self, hass: HomeAssistant) -> None:
         """Test that migration summary includes proper steps."""
-        # Create orphaned entity
+        # Create migratable entity
         entity_registry = er.async_get(hass)
         entity_registry.async_get_or_create(
             domain="sensor",
@@ -578,13 +578,13 @@ class TestAsyncMigrateYamlEntities:
         # Verify steps are recorded
         assert len(result["steps"]) >= 2
         step_names = [step["name"] for step in result["steps"]]
-        assert "Find orphaned entities" in step_names
+        assert "Find migratable entities" in step_names
         assert "Migrate entities" in step_names
 
     @pytest.mark.asyncio
     async def test_shows_persistent_notification(self, hass: HomeAssistant) -> None:
         """Test that migration shows persistent notification."""
-        # Create orphaned entity
+        # Create migratable entity
         entity_registry = er.async_get(hass)
         entity_registry.async_get_or_create(
             domain="sensor",

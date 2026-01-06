@@ -43,7 +43,7 @@
       },
       "yaml_confirm": {
         "title": "Confirm Migration",
-        "description": "## Migration Summary\n\nThe following has been validated:\n\n✓ **MQTT Topic**: `{topic}`\n✓ **NodeID**: `{nodeid}`\n✓ **Orphaned entities found**: {entity_count}\n\n### Entities to migrate:\n{entity_list}\n\n---\n\n## What will happen:\n\n1. Each entity's `unique_id` will be updated to include the NodeID\n2. Entities will be associated with this integration\n3. **All historical data will be preserved** (graphs, statistics)\n4. Entity IDs will remain unchanged\n\n---\n\n⚠️ **Prerequisites** (confirm before proceeding):\n- I have removed/commented out the YAML package from `configuration.yaml`\n- I have restarted Home Assistant after removing the YAML package\n- I understand this process will modify my entity registry\n\n**This action cannot be undone automatically.** By checking the box below, you confirm you have completed the prerequisites and accept responsibility for this migration.",
+        "description": "## Migration Summary\n\nThe following has been validated:\n\n✓ **MQTT Topic**: `{topic}`\n✓ **NodeID**: `{nodeid}`\n✓ **Migratable entities found**: {entity_count}\n\n### Entities to migrate:\n{entity_list}\n\n---\n\n## What will happen:\n\n1. Each entity's `unique_id` will be updated to include the NodeID\n2. Entities will be associated with this integration\n3. **All historical data will be preserved** (graphs, statistics)\n4. Entity IDs will remain unchanged\n\n---\n\n⚠️ **Prerequisites** (confirm before proceeding):\n- I have removed/commented out the YAML package from `configuration.yaml`\n- I have restarted Home Assistant after removing the YAML package\n- I understand this process will modify my entity registry\n\n**This action cannot be undone automatically.** By checking the box below, you confirm you have completed the prerequisites and accept responsibility for this migration.",
         "data": {
           "confirm_migration": "I confirm I have completed the prerequisites and want to proceed"
         }
@@ -73,7 +73,7 @@
       "invalid_topic": "Invalid MQTT topic format",
       "invalid_yaml_topic": "Cannot read from this MQTT topic. Please verify the topic is correct and the device is online.",
       "cannot_connect": "Could not receive messages from this MQTT topic. Verify the topic name and that your device is online.",
-      "no_entities_found": "No orphaned entities found with this prefix. Check that:\n1. You removed the YAML package from configuration.yaml\n2. You restarted Home Assistant\n3. The prefix matches your YAML configuration",
+      "no_entities_found": "No migratable entities found with this prefix. Check that:\n1. The prefix matches your YAML configuration\n2. The entities exist in Home Assistant\n3. The entities are not already owned by this integration",
       "confirmation_required": "You must check the confirmation checkbox to proceed with the migration.",
       "nodeid_configuration_failed": "Failed to configure NodeID on the device."
     },

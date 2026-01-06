@@ -153,8 +153,8 @@ class NeoPoolConfigFlow(ConfigFlow, domain=DOMAIN):
 
                 self._nodeid = nodeid
 
-                # Now try to find orphaned entities
-                return await self._check_orphaned_entities()
+                # Now try to find migratable entities
+                return await self._check_migratable_entities()
 
         # Could not auto-detect, ask user for topic
         _LOGGER.debug("Could not auto-detect NeoPool topic, asking user")
@@ -193,8 +193,8 @@ class NeoPoolConfigFlow(ConfigFlow, domain=DOMAIN):
 
                 self._nodeid = nodeid
 
-                # Now check for orphaned entities
-                return await self._check_orphaned_entities()
+                # Now check for migratable entities
+                return await self._check_migratable_entities()
 
             errors["base"] = "cannot_connect"
 
@@ -208,16 +208,16 @@ class NeoPoolConfigFlow(ConfigFlow, domain=DOMAIN):
             errors=errors,
         )
 
-    async def _check_orphaned_entities(self) -> ConfigFlowResult:
-        """Check for orphaned entities with default prefix, or ask user for custom prefix."""
+    async def _check_migratable_entities(self) -> ConfigFlowResult:
+        """Check for migratable entities with default prefix, or ask user for custom prefix."""
         # Try default prefix first
-        entities = self._find_orphaned_entities(DEFAULT_UNIQUE_ID_PREFIX)
+        entities = self._find_migratable_entities(DEFAULT_UNIQUE_ID_PREFIX)
 
         if entities:
             self._unique_id_prefix = DEFAULT_UNIQUE_ID_PREFIX
             self._migrating_entities = entities
             _LOGGER.info(
-                "Found %d orphaned entities with prefix '%s'",
+                "Found %d migratable entities with prefix '%s'",
                 len(entities),
                 DEFAULT_UNIQUE_ID_PREFIX,
             )
@@ -225,18 +225,24 @@ class NeoPoolConfigFlow(ConfigFlow, domain=DOMAIN):
 
         # No entities found with default prefix, ask user for custom prefix
         _LOGGER.debug(
-            "No orphaned entities found with default prefix '%s', asking user",
+            "No migratable entities found with default prefix '%s', asking user",
             DEFAULT_UNIQUE_ID_PREFIX,
         )
         return await self.async_step_yaml_prefix()
 
-    def _find_orphaned_entities(self, prefix: str) -> list[RegistryEntry]:
-        """Find orphaned entities with given unique_id prefix."""
+    def _find_migratable_entities(self, prefix: str) -> list[RegistryEntry]:
+        """Find migratable entities with given unique_id prefix.
+
+        Finds entities that match the prefix and are either:
+        - Orphaned (no config_entry_id), OR
+        - Owned by a different platform (e.g., "mqtt" from YAML package)
+        """
         entity_registry = er.async_get(self.hass)
         return [
             entity
             for entity in entity_registry.entities.values()
-            if entity.unique_id.startswith(prefix) and entity.config_entry_id is None
+            if entity.unique_id.startswith(prefix)
+            and (entity.config_entry_id is None or entity.platform != DOMAIN)
         ]
 
     def _format_entity_list(self, entities: list[RegistryEntry]) -> str:
@@ -256,13 +262,13 @@ class NeoPoolConfigFlow(ConfigFlow, domain=DOMAIN):
             prefix = user_input.get(CONF_UNIQUE_ID_PREFIX, "")
 
             if prefix:
-                entities = self._find_orphaned_entities(prefix)
+                entities = self._find_migratable_entities(prefix)
 
                 if entities:
                     self._unique_id_prefix = prefix
                     self._migrating_entities = entities
                     _LOGGER.info(
-                        "Found %d orphaned entities with custom prefix '%s'",
+                        "Found %d migratable entities with custom prefix '%s'",
                         len(entities),
                         prefix,
                     )

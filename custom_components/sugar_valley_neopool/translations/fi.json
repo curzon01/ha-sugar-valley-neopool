@@ -3,111 +3,104 @@
     "step": {
       "user": {
         "title": "Sugar Valley NeoPool -asetukset",
-        "description": "Määritä Sugar Valley NeoPool -allasohjaimen asetukset, joka on yhdistetty Tasmota MQTT:n kautta.",
+        "description": "Määritä NeoPool-laitteesi, joka on yhdistetty Tasmota MQTT:n kautta.\n\nLisätietoja on [Tasmota NeoPool -dokumentaatiossa]({docs_url}).",
         "data": {
-          "mqtt_topic": "Tasmota-laitteen MQTT-aihe",
-          "name": "Laitteen nimi"
+          "device_name": "Laitteen nimi",
+          "discovery_prefix": "Tasmota-laitteen aihe (esim. SmartPool)"
         },
         "data_description": {
-          "mqtt_topic": "Tasmota-laitteeseen määritetty MQTT-aihe (esim. 'SmartPool'). Integraatio tilaa automaattisesti anturipäivitykset.",
-          "name": "Kutsumanimi NeoPool-allasohjaimeellesi."
+          "device_name": "Ystävällinen nimi allasohjaimeellesi",
+          "discovery_prefix": "Tasmota-laitteesi käyttämä MQTT-aihe (löytyy Tasmota-verkkokäyttöliittymästä MQTT-asetuksista)"
+        }
+      },
+      "mqtt_confirm": {
+        "title": "NeoPool-laite löydetty",
+        "description": "NeoPool-laite löydettiin MQTT-aiheesta: **{device}**",
+        "data": {
+          "device_name": "Laitteen nimi"
         }
       },
       "yaml_migration": {
-        "title": "Määritystapa",
-        "description": "Valitse, miten tämä integraatio määritetään.\n\nJos siirryt YAML-pakettikokoonpanosta, valitse alla oleva ruutu siirtääksesi historialliset tiedot uuteen käyttöliittymäintegraatioon.\n\nJos tämä on uusi asennus, jätä ruutu valitsematta.",
+        "title": "YAML-paketin siirto",
+        "description": "Siirrytkö YAML-pakettikokoonpanosta?\n\nValitse tämä ruutu, jos käytät tällä hetkellä `ha_neopool_mqtt_package.yaml`-tiedostoa.",
         "data": {
-          "migrate_yaml": "Siirrä YAML-paketista"
-        },
-        "data_description": {
-          "migrate_yaml": "Valitse tämä, jos sinulla on olemassa olevia entiteettejä YAML-pakettikokoonpanosta, jotka haluat siirtää."
+          "migrate_yaml": "Siirry YAML-paketista"
         }
       },
       "yaml_topic": {
-        "title": "YAML-paketin MQTT-aihe",
-        "description": "Syötä MQTT-aihe olemassa olevasta YAML-pakettikokoonpanostasi.\n\n**Tärkeää:** Integraatio määrittää automaattisesti Tasmota-laitteesi paljastamaan NodeID:n, jos sitä ei ole jo tehty.",
+        "title": "MQTT-aihe",
+        "description": "NeoPool-laitettasi ei voitu tunnistaa automaattisesti.\n\nSyötä Tasmota-laitteeseen määritetty MQTT-aihe.",
         "data": {
-          "mqtt_topic": "Tasmota-laitteen MQTT-aihe"
-        },
-        "data_description": {
-          "mqtt_topic": "Tasmota-laitteeseen määritetty MQTT-aihe (esim. 'SmartPool')."
+          "yaml_topic": "MQTT-aihe (esim. SmartPool)"
+        }
+      },
+      "yaml_prefix": {
+        "title": "Mukautettu entiteettietuliite",
+        "description": "Oletusetuliitteellä `neopool_mqtt_` ei löytynyt entiteettejä.\n\nJos mukautit `unique_id`-etuliitteen YAML-paketissasi, syötä se alla.",
+        "data": {
+          "unique_id_prefix": "Yksilöllisen tunnuksen etuliite"
         }
       },
       "yaml_confirm": {
-        "title": "Vahvista YAML-siirto",
-        "description": "Valmis siirtymään YAML-paketista.\n\n**MQTT-aihe:** `{mqtt_topic}`\n**Laitteen NodeID:** `{nodeid}`\n\nMäärityksen jälkeen:\n1. Olemassa olevat entiteettisi siirretään uuteen integraatioon\n2. Kaikki historialliset tiedot säilytetään\n3. Voit poistaa YAML-pakettikokoonpanosi\n\nNapsauta **Lähetä** viimeistelläksesi siirron."
-      },
-      "discover_device": {
-        "title": "Määritä NeoPool-laite",
-        "description": "Syötä Tasmota NeoPool -laitteesi tiedot.",
+        "title": "Vahvista siirto",
+        "description": "## Siirron yhteenveto\n\nSeuraavat on vahvistettu:\n\n✓ **MQTT-aihe**: `{topic}`\n✓ **NodeID**: `{nodeid}`\n✓ **Siirrettäviä entiteettejä löytyi**: {entity_count}\n\n### Siirrettävät entiteetit:\n{entity_list}\n\n---\n\n## Mitä tapahtuu:\n\n1. Jokaisen entiteetin `unique_id` päivitetään sisältämään NodeID\n2. Entiteetit liitetään tähän integraatioon\n3. **Kaikki historialliset tiedot säilytetään** (kaaviot, tilastot)\n4. Entiteetti-ID:t pysyvät muuttumattomina\n\n---\n\n⚠️ **Edellytykset** (vahvista ennen jatkamista):\n- Olen poistanut/kommentoinut YAML-paketin `configuration.yaml`-tiedostosta\n- Olen käynnistänyt Home Assistantin uudelleen YAML-paketin poistamisen jälkeen\n- Ymmärrän, että tämä prosessi muuttaa entiteettirekisteriäni\n\n**Tätä toimintoa ei voi kumota automaattisesti.** Valitsemalla alla olevan ruudun vahvistat, että olet täyttänyt edellytykset ja hyväksyt vastuun tästä siirrosta.",
         "data": {
-          "mqtt_topic": "Tasmota-laitteen MQTT-aihe",
-          "name": "Laitteen nimi"
-        },
-        "data_description": {
-          "mqtt_topic": "Tasmota-laitteeseen määritetty MQTT-aihe.",
-          "name": "Kutsumanimi NeoPool-allasohjaimeellesi."
+          "confirm_migration": "Vahvistan, että olen täyttänyt edellytykset ja haluan jatkaa"
         }
       },
-      "mqtt": {
-        "title": "NeoPool-laite löydetty",
-        "description": "Sugar Valley NeoPool -allasohjain löydettiin MQTT:n kautta.\n\n**Aihe:** `{mqtt_topic}`\n**NodeID:** `{nodeid}`\n\nHaluatko määrittää tämän laitteen?"
-      },
-      "mqtt_confirm": {
-        "title": "Vahvista löydetty laite",
-        "description": "Vahvista löydetyn NeoPool-laitteen asetukset.\n\n**MQTT-aihe:** `{mqtt_topic}`\n**NodeID:** `{nodeid}`",
+      "discover_device": {
+        "title": "Manuaalinen asennus",
+        "description": "Syötä NeoPool-laitteesi tiedot.\n\nLisätietoja on [Tasmota NeoPool -dokumentaatiossa]({docs_url}).",
         "data": {
-          "name": "Laitteen nimi"
-        },
-        "data_description": {
-          "name": "Kutsumanimi NeoPool-allasohjaimeellesi."
+          "device_name": "Laitteen nimi",
+          "discovery_prefix": "MQTT-aihe (Tasmota-laitteen nimi)"
         }
       },
       "reconfigure": {
-        "title": "Määritä Sugar Valley NeoPool uudelleen",
-        "description": "Päivitä NeoPool-ohjaimen yhteysasetukset.\n\n**Nykyinen NodeID:** `{nodeid}`\n**Nykyinen MQTT-aihe:** `{mqtt_topic}`",
+        "title": "Määritä NeoPool uudelleen",
+        "description": "Päivitä NeoPool-laitteesi yhteysasetukset.",
         "data": {
-          "mqtt_topic": "Tasmota-laitteen MQTT-aihe",
-          "name": "Laitteen nimi"
+          "device_name": "Laitteen nimi",
+          "discovery_prefix": "MQTT-aihe"
         },
         "data_description": {
-          "mqtt_topic": "Tasmota-laitteeseen määritetty MQTT-aihe.",
-          "name": "Kutsumanimi NeoPool-allasohjaimeellesi."
+          "device_name": "Ystävällinen nimi allasohjaimeellesi",
+          "discovery_prefix": "Tasmota-laitteesi käyttämä MQTT-aihe"
         }
       }
     },
     "error": {
-      "cannot_connect": "MQTT-välittäjään ei saada yhteyttä",
       "invalid_topic": "Virheellinen MQTT-aihemuoto",
-      "no_neopool_data": "NeoPool-tietoja ei vastaanotettu - tarkista aihe ja laitteen yhteys",
-      "timeout": "MQTT-tietojen odotus laitteelta aikakatkaistiin",
-      "unknown": "Odottamaton virhe",
-      "nodeid_required": "NodeID:tä ei voitu hakea laitteelta. Varmista, että Tasmota-laitteesi on verkossa.",
-      "nodeid_configuration_failed": "Tasmota-laitteen määritys NodeID:n paljastamiseksi epäonnistui. Aseta manuaalisesti SetOption157 1 Tasmota-konsolissa."
+      "invalid_yaml_topic": "Tästä MQTT-aiheesta ei voida lukea. Varmista, että aihe on oikein ja laite on verkossa.",
+      "cannot_connect": "Viestejä ei voitu vastaanottaa tästä MQTT-aiheesta. Tarkista aiheen nimi ja että laitteesi on verkossa.",
+      "no_entities_found": "Tällä etuliitteellä ei löytynyt siirrettäviä entiteettejä. Tarkista, että:\n1. Etuliite vastaa YAML-kokoonpanoasi\n2. Entiteetit ovat olemassa Home Assistantissa\n3. Entiteetit eivät jo kuulu tähän integraatioon",
+      "confirmation_required": "Sinun on valittava vahvistusruutu jatkaaksesi siirtoa.",
+      "nodeid_configuration_failed": "NodeID:n määritys laitteella epäonnistui."
     },
     "abort": {
-      "already_configured": "Laite on jo määritetty",
-      "no_devices_found": "NeoPool-laitteita ei löytynyt verkosta",
-      "mqtt_not_available": "MQTT-integraatio ei ole käytettävissä",
-      "reconfigure_successful": "Uudelleenmääritys onnistui"
+      "already_configured": "Tämä laite on jo määritetty",
+      "invalid_discovery_info": "Vastaanotettiin virheellisiä löytötietoja",
+      "not_neopool_device": "Löydetty laite ei ole NeoPool-ohjain",
+      "nodeid_configuration_failed": "NodeID:n määritys epäonnistui. Aseta SetOption157 1 manuaalisesti Tasmota-konsolissa ja yritä uudelleen.",
+      "unique_id_mismatch": "Laitteen NodeID ei vastaa alkuperäistä kokoonpanoa."
     }
   },
   "options": {
     "step": {
       "init": {
-        "title": "Sugar Valley NeoPool -asetukset",
-        "description": "Määritä NeoPool-integraatiosi suoritusajan asetukset.",
+        "title": "NeoPool-ajonaikaiset asetukset",
+        "description": "Määritä ajonaikaiset asetukset.\n\n**Palautusskriptin muuttujat:**\nKun määritetty, palautusskripti saa nämä muuttujat:\n\n- `device_name` : Laitteen nimi\n- `mqtt_topic` : MQTT-aihe\n- `nodeid` : Laitteen NodeID\n- `failures_count` : Peräkkäisten virheiden määrä",
         "data": {
-          "recovery_script": "Palautusskripti",
+          "recovery_script": "Palautusskripti (valinnainen, suoritetaan kun laite lakkaa vastaamasta)",
           "enable_repair_notification": "Ota korjausilmoitukset käyttöön",
-          "failures_threshold": "Virheiden kynnysarvo",
+          "failures_threshold": "Virheet ennen ilmoitusta (1-10)",
           "offline_timeout": "Offline-aikakatkaisu (sekuntia)"
         },
         "data_description": {
-          "recovery_script": "Valinnainen skripti, joka suoritetaan, kun laite palautuu offline-tilasta (esim. 'script.neopool_recovery').",
-          "enable_repair_notification": "Luo korjausongelmia, kun laite on offline pitkään.",
-          "failures_threshold": "Peräkkäisten offline-tarkistusten määrä ennen korjausongelman luomista (1-10).",
-          "offline_timeout": "Aika sekunteina MQTT-tietojen odottamiseen ennen kuin laite katsotaan offline-tilassa olevaksi (60-3600)."
+          "recovery_script": "Skripti, joka suoritetaan kun laite on ollut liian kauan offline-tilassa",
+          "enable_repair_notification": "Luo korjausongelma kun laite menee offline-tilaan",
+          "failures_threshold": "Peräkkäisten LWT offline-viestien määrä ennen ilmoitusten laukaisua",
+          "offline_timeout": "Kuinka kauan laitteen on oltava offline-tilassa ennen ilmoitusten laukaisua"
         }
       }
     }
@@ -115,14 +108,190 @@
   "issues": {
     "device_offline": {
       "title": "NeoPool-laite offline: {device_name}",
-      "description": "NeoPool-laite **{device_name}** (MQTT-aihe: `{mqtt_topic}`) on ollut offline **{offline_duration}**.\n\n## Vianetsintävaiheet\n\n1. Tarkista, että Tasmota-laite on kytketty päälle ja yhdistetty WiFi-verkkoon\n2. Varmista, että MQTT-välittäjä toimii ja on tavoitettavissa\n3. Tarkista Tasmota-laitteen lokit virheiden varalta\n4. Varmista, että NeoPool-ohjain on yhdistetty Tasmota-laitteeseen\n\n## Laitteen tiedot\n\n- **MQTT-aihe:** `{mqtt_topic}`\n- **Offline alkaen:** {offline_since}\n- **Kesto:** {offline_duration}"
+      "description": "NeoPool-laite **{device_name}** on ollut pitkään offline-tilassa.\n\n**MQTT-aihe:** `{mqtt_topic}`\n\nTarkista:\n- Tasmota-laite on päällä\n- Laite on yhdistetty verkkoosi\n- MQTT-välittäjä on käynnissä\n- MQTT-aihe on oikein"
     }
   },
   "device_automation": {
     "trigger_type": {
-      "device_offline": "Laite siirtyi offline-tilaan",
-      "device_online": "Laite palasi online-tilaan",
-      "device_recovered": "Laite palautui pitkäaikaisesta katkoksesta"
+      "device_offline": "Laite meni offline-tilaan",
+      "device_online": "Laite tuli online-tilaan",
+      "device_recovered": "Laite palautui offline-tilasta"
+    }
+  },
+  "entity": {
+    "sensor": {
+      "system_model": {
+        "name": "Järjestelmämalli"
+      },
+      "water_temperature": {
+        "name": "Veden lämpötila"
+      },
+      "ph_data": {
+        "name": "pH"
+      },
+      "ph_state": {
+        "name": "pH-tila"
+      },
+      "ph_pump": {
+        "name": "pH-pumppu"
+      },
+      "redox_data": {
+        "name": "Redox (ORP)"
+      },
+      "hydrolysis_percent": {
+        "name": "Hydrolyysi"
+      },
+      "hydrolysis_data": {
+        "name": "Hydrolyysi (g/h)"
+      },
+      "hydrolysis_state": {
+        "name": "Hydrolyysin tila"
+      },
+      "hydrolysis_runtime_total": {
+        "name": "Hydrolyysin kokonaiskäyntiaika"
+      },
+      "hydrolysis_runtime_part": {
+        "name": "Hydrolyysin osittainen käyntiaika"
+      },
+      "hydrolysis_polarity_changes": {
+        "name": "Hydrolyysin napaisuuden muutokset"
+      },
+      "filtration_mode": {
+        "name": "Suodatustila"
+      },
+      "filtration_speed": {
+        "name": "Suodatusnopeus"
+      },
+      "powerunit_version": {
+        "name": "Virtalähteen versio"
+      },
+      "powerunit_5v": {
+        "name": "Virtalähde 5V"
+      },
+      "powerunit_12v": {
+        "name": "Virtalähde 12V"
+      },
+      "powerunit_24v": {
+        "name": "Virtalähde 24-30V"
+      },
+      "powerunit_4ma": {
+        "name": "Virtalähde 4-20mA"
+      },
+      "connection_requests": {
+        "name": "Yhteyspyynnöt"
+      },
+      "connection_responses": {
+        "name": "Yhteysvastaukset"
+      },
+      "connection_no_response": {
+        "name": "Yhteys ei vastausta"
+      },
+      "powerunit_nodeid": {
+        "name": "Virtalähteen NodeID"
+      }
+    },
+    "binary_sensor": {
+      "modules_ph": {
+        "name": "pH-moduuli"
+      },
+      "modules_redox": {
+        "name": "Redox-moduuli"
+      },
+      "modules_hydrolysis": {
+        "name": "Hydrolyysimoduuli"
+      },
+      "modules_chlorine": {
+        "name": "Kloorimuduli"
+      },
+      "modules_conductivity": {
+        "name": "Johtavuusmoduuli"
+      },
+      "modules_ionization": {
+        "name": "Ionisaatiomoduuli"
+      },
+      "relay_ph_state": {
+        "name": "Rele pH-tila"
+      },
+      "relay_filtration_state": {
+        "name": "Rele suodatustila"
+      },
+      "relay_light_state": {
+        "name": "Rele valotila"
+      },
+      "relay_acid_state": {
+        "name": "Rele happotila"
+      },
+      "ph_fl1": {
+        "name": "pH FL1"
+      },
+      "hydrolysis_fl1": {
+        "name": "Hydrolyysi FL1"
+      },
+      "hydrolysis_water_flow": {
+        "name": "Vesivirtaus"
+      },
+      "ph_tank_level": {
+        "name": "pH-säiliön taso matala"
+      },
+      "redox_tank_level": {
+        "name": "Redox-säiliön taso matala"
+      },
+      "hydrolysis_cover": {
+        "name": "Hydrolyysin kansi"
+      },
+      "hydrolysis_low_production": {
+        "name": "Hydrolyysin alhainen tuotanto"
+      }
+    },
+    "switch": {
+      "filtration": {
+        "name": "Suodatus"
+      },
+      "light": {
+        "name": "Valo"
+      },
+      "aux1": {
+        "name": "AUX1"
+      },
+      "aux2": {
+        "name": "AUX2"
+      },
+      "aux3": {
+        "name": "AUX3"
+      },
+      "aux4": {
+        "name": "AUX4"
+      }
+    },
+    "select": {
+      "filtration_mode": {
+        "name": "Suodatustila"
+      },
+      "filtration_speed": {
+        "name": "Suodatusnopeus"
+      },
+      "boost_mode": {
+        "name": "Tehostustila"
+      }
+    },
+    "number": {
+      "ph_min": {
+        "name": "pH min"
+      },
+      "ph_max": {
+        "name": "pH max"
+      },
+      "redox_setpoint": {
+        "name": "Redox-asetusarvo"
+      },
+      "hydrolysis_setpoint": {
+        "name": "Hydrolyysin asetusarvo"
+      }
+    },
+    "button": {
+      "clear_error": {
+        "name": "Tyhjennä virhetila"
+      }
     }
   }
 }

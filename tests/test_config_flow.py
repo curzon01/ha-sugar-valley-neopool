@@ -928,7 +928,7 @@ class TestYamlMigrationFlow:
         flow._validate_yaml_topic = AsyncMock(
             return_value={"valid": True, "nodeid": "ABC123", "payload": {}}
         )
-        flow._check_orphaned_entities = AsyncMock(
+        flow._check_migratable_entities = AsyncMock(
             return_value={"type": FlowResultType.FORM, "step_id": "yaml_confirm"}
         )
 
@@ -936,7 +936,7 @@ class TestYamlMigrationFlow:
 
         assert flow._yaml_topic == "SmartPool"
         assert flow._nodeid == "ABC123"
-        flow._check_orphaned_entities.assert_called_once()
+        flow._check_migratable_entities.assert_called_once()
 
     async def test_yaml_detect_auto_detection_fails(self, mock_hass: MagicMock) -> None:
         """Test YAML detect falls back to manual when auto-detection fails."""
@@ -962,7 +962,7 @@ class TestYamlMigrationFlow:
         flow._validate_yaml_topic = AsyncMock(
             return_value={"valid": True, "nodeid": "ABC123", "payload": {}}
         )
-        flow._check_orphaned_entities = AsyncMock(
+        flow._check_migratable_entities = AsyncMock(
             return_value={"type": FlowResultType.FORM, "step_id": "yaml_confirm"}
         )
 
@@ -1017,28 +1017,33 @@ class TestYamlMigrationFlow:
         assert result["data"]["migrate_yaml"] is True
 
 
-class TestFindOrphanedEntities:
-    """Tests for _find_orphaned_entities and related methods."""
+class TestFindMigratableEntities:
+    """Tests for _find_migratable_entities and related methods."""
 
-    def test_find_orphaned_entities_with_matches(self, mock_hass: MagicMock) -> None:
-        """Test finding orphaned entities with matching prefix."""
+    def test_find_migratable_entities_with_matches(self, mock_hass: MagicMock) -> None:
+        """Test finding migratable entities with matching prefix."""
         flow = NeoPoolConfigFlow()
         flow.hass = mock_hass
 
-        # Create mock entities
+        # Create mock entities - migratable (no config_entry_id or different platform)
         entity1 = MagicMock()
         entity1.unique_id = "neopool_mqtt_water_temperature"
         entity1.config_entry_id = None
+        entity1.platform = "mqtt"
         entity1.entity_id = "sensor.neopool_water_temperature"
 
+        # Owned by mqtt platform (should be migratable)
         entity2 = MagicMock()
         entity2.unique_id = "neopool_mqtt_ph_data"
-        entity2.config_entry_id = None
+        entity2.config_entry_id = "mqtt_entry_id"
+        entity2.platform = "mqtt"
         entity2.entity_id = "sensor.neopool_ph"
 
+        # Different prefix (should not match)
         entity3 = MagicMock()
         entity3.unique_id = "other_entity"
         entity3.config_entry_id = None
+        entity3.platform = "other"
         entity3.entity_id = "sensor.other"
 
         mock_registry = MagicMock()
@@ -1048,20 +1053,22 @@ class TestFindOrphanedEntities:
             "homeassistant.helpers.entity_registry.async_get",
             return_value=mock_registry,
         ):
-            result = flow._find_orphaned_entities("neopool_mqtt_")
+            result = flow._find_migratable_entities("neopool_mqtt_")
 
         assert len(result) == 2
         assert entity1 in result
         assert entity2 in result
 
-    def test_find_orphaned_entities_excludes_configured(self, mock_hass: MagicMock) -> None:
-        """Test that entities with config_entry_id are excluded."""
+    def test_find_migratable_entities_excludes_own_platform(self, mock_hass: MagicMock) -> None:
+        """Test that entities already owned by this integration are excluded."""
         flow = NeoPoolConfigFlow()
         flow.hass = mock_hass
 
+        # Entity already owned by sugar_valley_neopool (should be excluded)
         entity1 = MagicMock()
         entity1.unique_id = "neopool_mqtt_temp"
-        entity1.config_entry_id = "existing_entry"  # Already configured
+        entity1.config_entry_id = "existing_entry"
+        entity1.platform = "sugar_valley_neopool"
 
         mock_registry = MagicMock()
         mock_registry.entities.values.return_value = [entity1]
@@ -1070,7 +1077,7 @@ class TestFindOrphanedEntities:
             "homeassistant.helpers.entity_registry.async_get",
             return_value=mock_registry,
         ):
-            result = flow._find_orphaned_entities("neopool_mqtt_")
+            result = flow._find_migratable_entities("neopool_mqtt_")
 
         assert len(result) == 0
 

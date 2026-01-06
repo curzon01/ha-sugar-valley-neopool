@@ -181,17 +181,20 @@ async def async_migrate_yaml_entities(
 
     entity_registry = er.async_get(hass)
 
-    # Find all orphaned entities with the prefix
+    # Find all migratable entities with the prefix
+    # Includes orphaned entities (no config_entry_id) and entities owned by other platforms
+    # (e.g., "mqtt" from YAML package)
     yaml_entities = [
         entity
         for entity in entity_registry.entities.values()
-        if entity.unique_id.startswith(prefix) and entity.config_entry_id is None
+        if entity.unique_id.startswith(prefix)
+        and (entity.config_entry_id is None or entity.platform != DOMAIN)
     ]
 
     summary["entities_found"] = len(yaml_entities)
     summary["steps"].append(
         {
-            "name": "Find orphaned entities",
+            "name": "Find migratable entities",
             "status": "success" if yaml_entities else "skipped",
             "detail": f"Found {len(yaml_entities)} entities with prefix '{prefix}'",
         }

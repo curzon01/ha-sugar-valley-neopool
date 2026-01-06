@@ -381,11 +381,11 @@ async def async_migrate_yaml_entities(
     """Migrate YAML package entities to new unique_id format."""
     entity_registry = er.async_get(hass)
 
-    # Find YAML entities (no config_entry_id, starts with "neopool_mqtt_")
+    # Find migratable entities (orphaned or owned by other platforms like "mqtt")
     yaml_entities = [
         entity for entity in entity_registry.entities.values()
         if entity.unique_id.startswith("neopool_mqtt_")
-        and entity.config_entry_id is None
+        and (entity.config_entry_id is None or entity.platform != DOMAIN)
     ]
 
     # Update each entity

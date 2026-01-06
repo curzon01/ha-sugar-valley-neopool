@@ -3,111 +3,104 @@
     "step": {
       "user": {
         "title": "Sugar Valley NeoPool-konfiguration",
-        "description": "Konfigurera din Sugar Valley NeoPool poolkontroller ansluten via Tasmota MQTT.",
+        "description": "Konfigurera din NeoPool-enhet ansluten via Tasmota MQTT.\n\nFör mer information, se [Tasmota NeoPool-dokumentationen]({docs_url}).",
         "data": {
-          "mqtt_topic": "Tasmota-enhetens MQTT-ämne",
-          "name": "Enhetsnamn"
+          "device_name": "Enhetsnamn",
+          "discovery_prefix": "Tasmota-enhetens ämne (t.ex. SmartPool)"
         },
         "data_description": {
-          "mqtt_topic": "MQTT-ämnet konfigurerat i din Tasmota-enhet (t.ex. 'SmartPool'). Integrationen prenumererar automatiskt på sensoruppdateringar.",
-          "name": "Ett vänligt namn för din NeoPool poolkontroller."
+          "device_name": "Ett vänligt namn för din poolkontroller",
+          "discovery_prefix": "MQTT-ämnet som används av din Tasmota-enhet (finns i Tasmota-webbgränssnittet under MQTT-inställningar)"
+        }
+      },
+      "mqtt_confirm": {
+        "title": "NeoPool-enhet upptäckt",
+        "description": "En NeoPool-enhet upptäcktes på MQTT-ämnet: **{device}**",
+        "data": {
+          "device_name": "Enhetsnamn"
         }
       },
       "yaml_migration": {
-        "title": "Konfigurationsmetod",
-        "description": "Välj hur du vill konfigurera denna integration.\n\nOm du migrerar från en YAML-paketkonfiguration, kryssa i rutan nedan för att överföra dina historiska data till den nya UI-integrationen.\n\nOm detta är en ny installation, lämna rutan omarkerad.",
+        "title": "YAML-paketmigrering",
+        "description": "Migrerar du från YAML-paketkonfigurationen?\n\nKryssa i denna ruta om du för närvarande använder `ha_neopool_mqtt_package.yaml`-filen.",
         "data": {
-          "migrate_yaml": "Migrera från YAML-paket"
-        },
-        "data_description": {
-          "migrate_yaml": "Kryssa i detta om du har befintliga entiteter från en YAML-paketkonfiguration som du vill migrera."
+          "migrate_yaml": "Migrerar från YAML-paket"
         }
       },
       "yaml_topic": {
-        "title": "YAML-paket MQTT-ämne",
-        "description": "Ange MQTT-ämnet från din befintliga YAML-paketkonfiguration.\n\n**Viktigt:** Integrationen kommer automatiskt att konfigurera din Tasmota-enhet för att exponera NodeID om det inte redan är gjort.",
+        "title": "MQTT-ämne",
+        "description": "Kunde inte automatiskt upptäcka din NeoPool-enhet.\n\nAnge MQTT-ämnet som är konfigurerat i din Tasmota-enhet.",
         "data": {
-          "mqtt_topic": "Tasmota-enhetens MQTT-ämne"
-        },
-        "data_description": {
-          "mqtt_topic": "MQTT-ämnet konfigurerat i din Tasmota-enhet (t.ex. 'SmartPool')."
+          "yaml_topic": "MQTT-ämne (t.ex. SmartPool)"
+        }
+      },
+      "yaml_prefix": {
+        "title": "Anpassat entitetsprefix",
+        "description": "Inga entiteter hittades med standardprefixet `neopool_mqtt_`.\n\nOm du anpassade `unique_id`-prefixet i ditt YAML-paket, ange det nedan.",
+        "data": {
+          "unique_id_prefix": "Unikt ID-prefix"
         }
       },
       "yaml_confirm": {
-        "title": "Bekräfta YAML-migrering",
-        "description": "Redo att migrera från YAML-paket.\n\n**MQTT-ämne:** `{mqtt_topic}`\n**Enhetens NodeID:** `{nodeid}`\n\nEfter konfiguration:\n1. Dina befintliga entiteter kommer att migreras till den nya integrationen\n2. All historisk data bevaras\n3. Du kan ta bort din YAML-paketkonfiguration\n\nKlicka på **Skicka** för att slutföra migreringen."
-      },
-      "discover_device": {
-        "title": "Konfigurera NeoPool-enhet",
-        "description": "Ange detaljerna för din Tasmota NeoPool-enhet.",
+        "title": "Bekräfta migrering",
+        "description": "## Migreringssammanfattning\n\nFöljande har validerats:\n\n✓ **MQTT-ämne**: `{topic}`\n✓ **NodeID**: `{nodeid}`\n✓ **Migrerbara entiteter hittades**: {entity_count}\n\n### Entiteter att migrera:\n{entity_list}\n\n---\n\n## Vad som kommer att hända:\n\n1. Varje entitets `unique_id` kommer att uppdateras för att inkludera NodeID\n2. Entiteter kommer att associeras med denna integration\n3. **All historisk data kommer att bevaras** (grafer, statistik)\n4. Entitets-ID:n förblir oförändrade\n\n---\n\n⚠️ **Förutsättningar** (bekräfta innan du fortsätter):\n- Jag har tagit bort/kommenterat ut YAML-paketet från `configuration.yaml`\n- Jag har startat om Home Assistant efter att ha tagit bort YAML-paketet\n- Jag förstår att denna process kommer att ändra mitt entitetsregister\n\n**Denna åtgärd kan inte ångras automatiskt.** Genom att kryssa i rutan nedan bekräftar du att du har slutfört förutsättningarna och accepterar ansvaret för denna migrering.",
         "data": {
-          "mqtt_topic": "Tasmota-enhetens MQTT-ämne",
-          "name": "Enhetsnamn"
-        },
-        "data_description": {
-          "mqtt_topic": "MQTT-ämnet konfigurerat i din Tasmota-enhet.",
-          "name": "Ett vänligt namn för din NeoPool poolkontroller."
+          "confirm_migration": "Jag bekräftar att jag har slutfört förutsättningarna och vill fortsätta"
         }
       },
-      "mqtt": {
-        "title": "NeoPool-enhet upptäckt",
-        "description": "En Sugar Valley NeoPool poolkontroller upptäcktes via MQTT.\n\n**Ämne:** `{mqtt_topic}`\n**NodeID:** `{nodeid}`\n\nVill du konfigurera denna enhet?"
-      },
-      "mqtt_confirm": {
-        "title": "Bekräfta upptäckt enhet",
-        "description": "Bekräfta konfigurationen av den upptäckta NeoPool-enheten.\n\n**MQTT-ämne:** `{mqtt_topic}`\n**NodeID:** `{nodeid}`",
+      "discover_device": {
+        "title": "Manuell installation",
+        "description": "Ange dina NeoPool-enhetsuppgifter.\n\nFör mer information, se [Tasmota NeoPool-dokumentationen]({docs_url}).",
         "data": {
-          "name": "Enhetsnamn"
-        },
-        "data_description": {
-          "name": "Ett vänligt namn för din NeoPool poolkontroller."
+          "device_name": "Enhetsnamn",
+          "discovery_prefix": "MQTT-ämne (Tasmota-enhetsnamn)"
         }
       },
       "reconfigure": {
-        "title": "Omkonfigurera Sugar Valley NeoPool",
-        "description": "Uppdatera anslutningsinställningarna för din NeoPool-kontroller.\n\n**Aktuellt NodeID:** `{nodeid}`\n**Aktuellt MQTT-ämne:** `{mqtt_topic}`",
+        "title": "Omkonfigurera NeoPool",
+        "description": "Uppdatera dina NeoPool-enhets anslutningsinställningar.",
         "data": {
-          "mqtt_topic": "Tasmota-enhetens MQTT-ämne",
-          "name": "Enhetsnamn"
+          "device_name": "Enhetsnamn",
+          "discovery_prefix": "MQTT-ämne"
         },
         "data_description": {
-          "mqtt_topic": "MQTT-ämnet konfigurerat i din Tasmota-enhet.",
-          "name": "Ett vänligt namn för din NeoPool poolkontroller."
+          "device_name": "Ett vänligt namn för din poolkontroller",
+          "discovery_prefix": "MQTT-ämnet som används av din Tasmota-enhet"
         }
       }
     },
     "error": {
-      "cannot_connect": "Kunde inte ansluta till MQTT-mäklare",
       "invalid_topic": "Ogiltigt MQTT-ämnesformat",
-      "no_neopool_data": "Inga NeoPool-data mottagna - kontrollera ämne och enhetsanslutning",
-      "timeout": "Timeout vid väntan på MQTT-data från enhet",
-      "unknown": "Oväntat fel",
-      "nodeid_required": "Kunde inte hämta NodeID från enheten. Vänligen se till att din Tasmota-enhet är online.",
-      "nodeid_configuration_failed": "Kunde inte konfigurera Tasmota-enheten för att exponera NodeID. Vänligen ställ in SetOption157 1 manuellt i Tasmota-konsolen."
+      "invalid_yaml_topic": "Kan inte läsa från detta MQTT-ämne. Verifiera att ämnet är korrekt och att enheten är online.",
+      "cannot_connect": "Kunde inte ta emot meddelanden från detta MQTT-ämne. Kontrollera ämnesnamnet och att din enhet är online.",
+      "no_entities_found": "Inga migrerbara entiteter hittades med detta prefix. Kontrollera att:\n1. Prefixet matchar din YAML-konfiguration\n2. Entiteterna finns i Home Assistant\n3. Entiteterna inte redan ägs av denna integration",
+      "confirmation_required": "Du måste kryssa i bekräftelserutan för att fortsätta med migreringen.",
+      "nodeid_configuration_failed": "Misslyckades med att konfigurera NodeID på enheten."
     },
     "abort": {
-      "already_configured": "Enheten är redan konfigurerad",
-      "no_devices_found": "Inga NeoPool-enheter hittades på nätverket",
-      "mqtt_not_available": "MQTT-integrationen är inte tillgänglig",
-      "reconfigure_successful": "Omkonfigurering lyckades"
+      "already_configured": "Denna enhet är redan konfigurerad",
+      "invalid_discovery_info": "Ogiltig upptäcktsinformation mottagen",
+      "not_neopool_device": "Den upptäckta enheten är inte en NeoPool-kontroller",
+      "nodeid_configuration_failed": "Misslyckades med att konfigurera NodeID. Ställ in SetOption157 1 manuellt i Tasmota-konsolen och försök igen.",
+      "unique_id_mismatch": "Enhetens NodeID matchar inte den ursprungliga konfigurationen."
     }
   },
   "options": {
     "step": {
       "init": {
-        "title": "Sugar Valley NeoPool-alternativ",
-        "description": "Konfigurera körtidsinställningar för din NeoPool-integration.",
+        "title": "NeoPool körtidsalternativ",
+        "description": "Konfigurera körtidsalternativ.\n\n**Återställningsskriptvariabler:**\nNär det är konfigurerat får återställningsskriptet dessa variabler:\n\n- `device_name` : Enhetsnamn\n- `mqtt_topic` : MQTT-ämne\n- `nodeid` : Enhetens NodeID\n- `failures_count` : Antal på varandra följande fel",
         "data": {
-          "recovery_script": "Återställningsskript",
-          "enable_repair_notification": "Aktivera reparationsmeddelanden",
-          "failures_threshold": "Feltröskel",
+          "recovery_script": "Återställningsskript (valfritt, körs när enheten slutar svara)",
+          "enable_repair_notification": "Aktivera reparationsaviseringar",
+          "failures_threshold": "Fel innan avisering (1-10)",
           "offline_timeout": "Offline-timeout (sekunder)"
         },
         "data_description": {
-          "recovery_script": "Valfritt skript att köra när enheten återhämtar sig efter att ha varit offline (t.ex. 'script.neopool_recovery').",
-          "enable_repair_notification": "Skapa reparationsproblem när enheten är offline under längre tid.",
-          "failures_threshold": "Antal på varandra följande offline-kontroller innan ett reparationsproblem skapas (1-10).",
-          "offline_timeout": "Tid i sekunder att vänta på MQTT-data innan enheten anses vara offline (60-3600)."
+          "recovery_script": "Skript att köra när enheten är offline för länge",
+          "enable_repair_notification": "Skapa ett reparationsproblem när enheten går offline",
+          "failures_threshold": "Antal på varandra följande LWT offline-meddelanden innan aviseringar utlöses",
+          "offline_timeout": "Hur länge enheten måste vara offline innan aviseringar utlöses"
         }
       }
     }
@@ -115,14 +108,190 @@
   "issues": {
     "device_offline": {
       "title": "NeoPool-enhet offline: {device_name}",
-      "description": "NeoPool-enheten **{device_name}** (MQTT-ämne: `{mqtt_topic}`) har varit offline i **{offline_duration}**.\n\n## Felsökningssteg\n\n1. Kontrollera att Tasmota-enheten har ström och är ansluten till WiFi\n2. Verifiera att MQTT-mäklaren körs och är tillgänglig\n3. Kontrollera Tasmota-enhetsloggar för fel\n4. Se till att NeoPool-kontrollern är ansluten till Tasmota-enheten\n\n## Enhetsdetaljer\n\n- **MQTT-ämne:** `{mqtt_topic}`\n- **Offline sedan:** {offline_since}\n- **Varaktighet:** {offline_duration}"
+      "description": "NeoPool-enheten **{device_name}** har varit offline under en längre period.\n\n**MQTT-ämne:** `{mqtt_topic}`\n\nKontrollera:\n- Tasmota-enheten är påslagen\n- Enheten är ansluten till ditt nätverk\n- MQTT-mäklaren körs\n- MQTT-ämnet är korrekt"
     }
   },
   "device_automation": {
     "trigger_type": {
       "device_offline": "Enheten gick offline",
-      "device_online": "Enheten kom tillbaka online",
-      "device_recovered": "Enheten återhämtade sig efter långvarigt avbrott"
+      "device_online": "Enheten kom online",
+      "device_recovered": "Enheten återhämtade sig efter att ha varit offline"
+    }
+  },
+  "entity": {
+    "sensor": {
+      "system_model": {
+        "name": "Systemmodell"
+      },
+      "water_temperature": {
+        "name": "Vattentemperatur"
+      },
+      "ph_data": {
+        "name": "pH"
+      },
+      "ph_state": {
+        "name": "pH-status"
+      },
+      "ph_pump": {
+        "name": "pH-pump"
+      },
+      "redox_data": {
+        "name": "Redox (ORP)"
+      },
+      "hydrolysis_percent": {
+        "name": "Hydrolys"
+      },
+      "hydrolysis_data": {
+        "name": "Hydrolys (g/h)"
+      },
+      "hydrolysis_state": {
+        "name": "Hydrolysstatus"
+      },
+      "hydrolysis_runtime_total": {
+        "name": "Hydrolys total körtid"
+      },
+      "hydrolysis_runtime_part": {
+        "name": "Hydrolys delvis körtid"
+      },
+      "hydrolysis_polarity_changes": {
+        "name": "Hydrolys polaritetsändringar"
+      },
+      "filtration_mode": {
+        "name": "Filtreringsläge"
+      },
+      "filtration_speed": {
+        "name": "Filtreringshastighet"
+      },
+      "powerunit_version": {
+        "name": "Kraftenhetsversion"
+      },
+      "powerunit_5v": {
+        "name": "Kraftenhet 5V"
+      },
+      "powerunit_12v": {
+        "name": "Kraftenhet 12V"
+      },
+      "powerunit_24v": {
+        "name": "Kraftenhet 24-30V"
+      },
+      "powerunit_4ma": {
+        "name": "Kraftenhet 4-20mA"
+      },
+      "connection_requests": {
+        "name": "Anslutningsförfrågningar"
+      },
+      "connection_responses": {
+        "name": "Anslutningssvar"
+      },
+      "connection_no_response": {
+        "name": "Anslutning inget svar"
+      },
+      "powerunit_nodeid": {
+        "name": "Kraftenhet NodeID"
+      }
+    },
+    "binary_sensor": {
+      "modules_ph": {
+        "name": "pH-modul"
+      },
+      "modules_redox": {
+        "name": "Redox-modul"
+      },
+      "modules_hydrolysis": {
+        "name": "Hydrolysmodul"
+      },
+      "modules_chlorine": {
+        "name": "Klormodul"
+      },
+      "modules_conductivity": {
+        "name": "Konduktivitetsmodul"
+      },
+      "modules_ionization": {
+        "name": "Joniseringsmodul"
+      },
+      "relay_ph_state": {
+        "name": "Relä pH-status"
+      },
+      "relay_filtration_state": {
+        "name": "Relä filtreringsstatus"
+      },
+      "relay_light_state": {
+        "name": "Relä ljusstatus"
+      },
+      "relay_acid_state": {
+        "name": "Relä syrastatus"
+      },
+      "ph_fl1": {
+        "name": "pH FL1"
+      },
+      "hydrolysis_fl1": {
+        "name": "Hydrolys FL1"
+      },
+      "hydrolysis_water_flow": {
+        "name": "Vattenflöde"
+      },
+      "ph_tank_level": {
+        "name": "pH-tanknivå låg"
+      },
+      "redox_tank_level": {
+        "name": "Redox-tanknivå låg"
+      },
+      "hydrolysis_cover": {
+        "name": "Hydrolyslucka"
+      },
+      "hydrolysis_low_production": {
+        "name": "Hydrolys låg produktion"
+      }
+    },
+    "switch": {
+      "filtration": {
+        "name": "Filtrering"
+      },
+      "light": {
+        "name": "Ljus"
+      },
+      "aux1": {
+        "name": "AUX1"
+      },
+      "aux2": {
+        "name": "AUX2"
+      },
+      "aux3": {
+        "name": "AUX3"
+      },
+      "aux4": {
+        "name": "AUX4"
+      }
+    },
+    "select": {
+      "filtration_mode": {
+        "name": "Filtreringsläge"
+      },
+      "filtration_speed": {
+        "name": "Filtreringshastighet"
+      },
+      "boost_mode": {
+        "name": "Boostläge"
+      }
+    },
+    "number": {
+      "ph_min": {
+        "name": "pH min"
+      },
+      "ph_max": {
+        "name": "pH max"
+      },
+      "redox_setpoint": {
+        "name": "Redox börvärde"
+      },
+      "hydrolysis_setpoint": {
+        "name": "Hydrolys börvärde"
+      }
+    },
+    "button": {
+      "clear_error": {
+        "name": "Rensa felstatus"
+      }
     }
   }
 }

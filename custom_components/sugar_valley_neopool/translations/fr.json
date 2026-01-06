@@ -3,111 +3,104 @@
     "step": {
       "user": {
         "title": "Configuration de Sugar Valley NeoPool",
-        "description": "Configurez votre contrôleur de piscine Sugar Valley NeoPool connecté via Tasmota MQTT.",
+        "description": "Configurez votre appareil NeoPool connecté via Tasmota MQTT.\n\nPour plus d'informations, consultez la [documentation Tasmota NeoPool]({docs_url}).",
         "data": {
-          "mqtt_topic": "Sujet MQTT du dispositif Tasmota",
-          "name": "Nom de l'appareil"
+          "device_name": "Nom de l'appareil",
+          "discovery_prefix": "Sujet du dispositif Tasmota (par ex., SmartPool)"
         },
         "data_description": {
-          "mqtt_topic": "Le sujet MQTT configuré dans votre dispositif Tasmota (par ex. 'SmartPool'). L'intégration s'abonnera automatiquement aux mises à jour des capteurs.",
-          "name": "Un nom convivial pour votre contrôleur de piscine NeoPool."
+          "device_name": "Un nom convivial pour votre contrôleur de piscine",
+          "discovery_prefix": "Le sujet MQTT utilisé par votre dispositif Tasmota (trouvé dans l'interface Web Tasmota sous les paramètres MQTT)"
+        }
+      },
+      "mqtt_confirm": {
+        "title": "Appareil NeoPool découvert",
+        "description": "Un appareil NeoPool a été découvert sur le sujet MQTT : **{device}**",
+        "data": {
+          "device_name": "Nom de l'appareil"
         }
       },
       "yaml_migration": {
-        "title": "Méthode de configuration",
-        "description": "Choisissez comment configurer cette intégration.\n\nSi vous migrez depuis une configuration par package YAML, cochez la case ci-dessous pour transférer vos données historiques vers la nouvelle intégration UI.\n\nSi c'est une nouvelle installation, laissez la case décochée.",
+        "title": "Migration du package YAML",
+        "description": "Migrez-vous depuis la configuration du package YAML ?\n\nCochez cette case si vous utilisez actuellement le fichier `ha_neopool_mqtt_package.yaml`.",
         "data": {
-          "migrate_yaml": "Migrer depuis le package YAML"
-        },
-        "data_description": {
-          "migrate_yaml": "Cochez cette option si vous avez des entités existantes d'une configuration par package YAML que vous souhaitez migrer."
+          "migrate_yaml": "Migration depuis le package YAML"
         }
       },
       "yaml_topic": {
-        "title": "Sujet MQTT du package YAML",
-        "description": "Entrez le sujet MQTT de votre configuration de package YAML existante.\n\n**Important :** L'intégration configurera automatiquement votre dispositif Tasmota pour exposer le NodeID si ce n'est pas déjà fait.",
+        "title": "Sujet MQTT",
+        "description": "Impossible de détecter automatiquement votre appareil NeoPool.\n\nVeuillez entrer le sujet MQTT configuré dans votre dispositif Tasmota.",
         "data": {
-          "mqtt_topic": "Sujet MQTT du dispositif Tasmota"
-        },
-        "data_description": {
-          "mqtt_topic": "Le sujet MQTT configuré dans votre dispositif Tasmota (par ex. 'SmartPool')."
+          "yaml_topic": "Sujet MQTT (par ex., SmartPool)"
+        }
+      },
+      "yaml_prefix": {
+        "title": "Préfixe d'entité personnalisé",
+        "description": "Aucune entité trouvée avec le préfixe par défaut `neopool_mqtt_`.\n\nSi vous avez personnalisé le préfixe `unique_id` dans votre package YAML, saisissez-le ci-dessous.",
+        "data": {
+          "unique_id_prefix": "Préfixe d'ID unique"
         }
       },
       "yaml_confirm": {
-        "title": "Confirmer la migration YAML",
-        "description": "Prêt à migrer depuis le package YAML.\n\n**Sujet MQTT :** `{mqtt_topic}`\n**NodeID de l'appareil :** `{nodeid}`\n\nAprès la configuration :\n1. Vos entités existantes seront migrées vers la nouvelle intégration\n2. Toutes les données historiques seront préservées\n3. Vous pouvez supprimer votre configuration de package YAML\n\nCliquez sur **Soumettre** pour terminer la migration."
-      },
-      "discover_device": {
-        "title": "Configurer l'appareil NeoPool",
-        "description": "Entrez les détails de votre dispositif Tasmota NeoPool.",
+        "title": "Confirmer la migration",
+        "description": "## Résumé de la migration\n\nLes éléments suivants ont été validés :\n\n✓ **Sujet MQTT** : `{topic}`\n✓ **NodeID** : `{nodeid}`\n✓ **Entités migrables trouvées** : {entity_count}\n\n### Entités à migrer :\n{entity_list}\n\n---\n\n## Ce qui va se passer :\n\n1. Le `unique_id` de chaque entité sera mis à jour pour inclure le NodeID\n2. Les entités seront associées à cette intégration\n3. **Toutes les données historiques seront préservées** (graphiques, statistiques)\n4. Les ID d'entité resteront inchangés\n\n---\n\n⚠️ **Prérequis** (confirmez avant de continuer) :\n- J'ai supprimé/commenté le package YAML dans `configuration.yaml`\n- J'ai redémarré Home Assistant après avoir supprimé le package YAML\n- Je comprends que ce processus modifiera mon registre d'entités\n\n**Cette action ne peut pas être annulée automatiquement.** En cochant la case ci-dessous, vous confirmez avoir complété les prérequis et acceptez la responsabilité de cette migration.",
         "data": {
-          "mqtt_topic": "Sujet MQTT du dispositif Tasmota",
-          "name": "Nom de l'appareil"
-        },
-        "data_description": {
-          "mqtt_topic": "Le sujet MQTT configuré dans votre dispositif Tasmota.",
-          "name": "Un nom convivial pour votre contrôleur de piscine NeoPool."
+          "confirm_migration": "Je confirme avoir effectué les prérequis et vouloir continuer"
         }
       },
-      "mqtt": {
-        "title": "Appareil NeoPool découvert",
-        "description": "Un contrôleur de piscine Sugar Valley NeoPool a été découvert via MQTT.\n\n**Sujet :** `{mqtt_topic}`\n**NodeID :** `{nodeid}`\n\nVoulez-vous configurer cet appareil ?"
-      },
-      "mqtt_confirm": {
-        "title": "Confirmer l'appareil découvert",
-        "description": "Confirmez la configuration de l'appareil NeoPool découvert.\n\n**Sujet MQTT :** `{mqtt_topic}`\n**NodeID :** `{nodeid}`",
+      "discover_device": {
+        "title": "Configuration manuelle",
+        "description": "Saisissez les détails de votre appareil NeoPool.\n\nPour plus d'informations, consultez la [documentation Tasmota NeoPool]({docs_url}).",
         "data": {
-          "name": "Nom de l'appareil"
-        },
-        "data_description": {
-          "name": "Un nom convivial pour votre contrôleur de piscine NeoPool."
+          "device_name": "Nom de l'appareil",
+          "discovery_prefix": "Sujet MQTT (nom du dispositif Tasmota)"
         }
       },
       "reconfigure": {
-        "title": "Reconfigurer Sugar Valley NeoPool",
-        "description": "Mettez à jour les paramètres de connexion pour votre contrôleur NeoPool.\n\n**NodeID actuel :** `{nodeid}`\n**Sujet MQTT actuel :** `{mqtt_topic}`",
+        "title": "Reconfigurer NeoPool",
+        "description": "Mettez à jour les paramètres de connexion de votre appareil NeoPool.",
         "data": {
-          "mqtt_topic": "Sujet MQTT du dispositif Tasmota",
-          "name": "Nom de l'appareil"
+          "device_name": "Nom de l'appareil",
+          "discovery_prefix": "Sujet MQTT"
         },
         "data_description": {
-          "mqtt_topic": "Le sujet MQTT configuré dans votre dispositif Tasmota.",
-          "name": "Un nom convivial pour votre contrôleur de piscine NeoPool."
+          "device_name": "Un nom convivial pour votre contrôleur de piscine",
+          "discovery_prefix": "Le sujet MQTT utilisé par votre dispositif Tasmota"
         }
       }
     },
     "error": {
-      "cannot_connect": "Impossible de se connecter au broker MQTT",
       "invalid_topic": "Format de sujet MQTT invalide",
-      "no_neopool_data": "Aucune donnée NeoPool reçue - vérifiez le sujet et la connectivité de l'appareil",
-      "timeout": "Délai d'attente pour les données MQTT de l'appareil",
-      "unknown": "Erreur inattendue",
-      "nodeid_required": "Impossible d'obtenir le NodeID du dispositif. Veuillez vous assurer que votre dispositif Tasmota est en ligne.",
-      "nodeid_configuration_failed": "Impossible de configurer le dispositif Tasmota pour exposer le NodeID. Veuillez définir manuellement SetOption157 1 dans la console Tasmota."
+      "invalid_yaml_topic": "Impossible de lire depuis ce sujet MQTT. Veuillez vérifier que le sujet est correct et que l'appareil est en ligne.",
+      "cannot_connect": "Impossible de recevoir des messages depuis ce sujet MQTT. Vérifiez le nom du sujet et que votre appareil est en ligne.",
+      "no_entities_found": "Aucune entité migrable trouvée avec ce préfixe. Vérifiez que :\n1. Le préfixe correspond à votre configuration YAML\n2. Les entités existent dans Home Assistant\n3. Les entités ne sont pas déjà possédées par cette intégration",
+      "confirmation_required": "Vous devez cocher la case de confirmation pour procéder à la migration.",
+      "nodeid_configuration_failed": "Échec de la configuration du NodeID sur l'appareil."
     },
     "abort": {
-      "already_configured": "L'appareil est déjà configuré",
-      "no_devices_found": "Aucun appareil NeoPool trouvé sur le réseau",
-      "mqtt_not_available": "L'intégration MQTT n'est pas disponible",
-      "reconfigure_successful": "Reconfiguration réussie"
+      "already_configured": "Cet appareil est déjà configuré",
+      "invalid_discovery_info": "Informations de découverte invalides reçues",
+      "not_neopool_device": "L'appareil découvert n'est pas un contrôleur NeoPool",
+      "nodeid_configuration_failed": "Échec de la configuration du NodeID. Veuillez définir manuellement SetOption157 1 dans la console Tasmota et réessayer.",
+      "unique_id_mismatch": "Le NodeID de l'appareil ne correspond pas à la configuration d'origine."
     }
   },
   "options": {
     "step": {
       "init": {
-        "title": "Options de Sugar Valley NeoPool",
-        "description": "Configurez les paramètres d'exécution pour votre intégration NeoPool.",
+        "title": "Options d'exécution NeoPool",
+        "description": "Configurez les options d'exécution.\n\n**Variables du script de récupération :**\nLorsqu'il est configuré, le script de récupération reçoit ces variables :\n\n- `device_name` : Nom de l'appareil\n- `mqtt_topic` : Sujet MQTT\n- `nodeid` : NodeID de l'appareil\n- `failures_count` : Nombre d'échecs consécutifs",
         "data": {
-          "recovery_script": "Script de récupération",
+          "recovery_script": "Script de récupération (optionnel, s'exécute lorsque l'appareil cesse de répondre)",
           "enable_repair_notification": "Activer les notifications de réparation",
-          "failures_threshold": "Seuil d'échecs",
-          "offline_timeout": "Délai hors ligne (secondes)"
+          "failures_threshold": "Échecs avant notification (1-10)",
+          "offline_timeout": "Délai d'expiration hors ligne (secondes)"
         },
         "data_description": {
-          "recovery_script": "Script optionnel à exécuter lorsque l'appareil se rétablit après avoir été hors ligne (par ex. 'script.neopool_recovery').",
-          "enable_repair_notification": "Créer des problèmes de réparation lorsque l'appareil est hors ligne pendant une période prolongée.",
-          "failures_threshold": "Nombre de vérifications consécutives hors ligne avant de créer un problème de réparation (1-10).",
-          "offline_timeout": "Temps en secondes d'attente de données MQTT avant de considérer l'appareil hors ligne (60-3600)."
+          "recovery_script": "Script à exécuter lorsque l'appareil est hors ligne trop longtemps",
+          "enable_repair_notification": "Créer un problème de réparation lorsque l'appareil passe hors ligne",
+          "failures_threshold": "Nombre de messages LWT hors ligne consécutifs avant de déclencher les notifications",
+          "offline_timeout": "Durée pendant laquelle l'appareil doit être hors ligne avant de déclencher les notifications"
         }
       }
     }
@@ -115,14 +108,190 @@
   "issues": {
     "device_offline": {
       "title": "Appareil NeoPool hors ligne : {device_name}",
-      "description": "L'appareil NeoPool **{device_name}** (sujet MQTT : `{mqtt_topic}`) est hors ligne depuis **{offline_duration}**.\n\n## Étapes de dépannage\n\n1. Vérifiez que le dispositif Tasmota est alimenté et connecté au WiFi\n2. Vérifiez que le broker MQTT fonctionne et est accessible\n3. Vérifiez les journaux du dispositif Tasmota pour les erreurs\n4. Assurez-vous que le contrôleur NeoPool est connecté au dispositif Tasmota\n\n## Détails de l'appareil\n\n- **Sujet MQTT :** `{mqtt_topic}`\n- **Hors ligne depuis :** {offline_since}\n- **Durée :** {offline_duration}"
+      "description": "L'appareil NeoPool **{device_name}** est hors ligne depuis une période prolongée.\n\n**Sujet MQTT :** `{mqtt_topic}`\n\nVeuillez vérifier :\n- Le dispositif Tasmota est alimenté\n- L'appareil est connecté à votre réseau\n- Le broker MQTT est en cours d'exécution\n- Le sujet MQTT est correct"
     }
   },
   "device_automation": {
     "trigger_type": {
       "device_offline": "L'appareil est passé hors ligne",
       "device_online": "L'appareil est revenu en ligne",
-      "device_recovered": "L'appareil s'est rétabli après une panne prolongée"
+      "device_recovered": "L'appareil s'est rétabli après avoir été hors ligne"
+    }
+  },
+  "entity": {
+    "sensor": {
+      "system_model": {
+        "name": "Modèle du système"
+      },
+      "water_temperature": {
+        "name": "Température de l'eau"
+      },
+      "ph_data": {
+        "name": "pH"
+      },
+      "ph_state": {
+        "name": "État du pH"
+      },
+      "ph_pump": {
+        "name": "Pompe pH"
+      },
+      "redox_data": {
+        "name": "Redox (ORP)"
+      },
+      "hydrolysis_percent": {
+        "name": "Hydrolyse"
+      },
+      "hydrolysis_data": {
+        "name": "Hydrolyse (g/h)"
+      },
+      "hydrolysis_state": {
+        "name": "État de l'hydrolyse"
+      },
+      "hydrolysis_runtime_total": {
+        "name": "Durée totale d'hydrolyse"
+      },
+      "hydrolysis_runtime_part": {
+        "name": "Durée partielle d'hydrolyse"
+      },
+      "hydrolysis_polarity_changes": {
+        "name": "Changements de polarité d'hydrolyse"
+      },
+      "filtration_mode": {
+        "name": "Mode de filtration"
+      },
+      "filtration_speed": {
+        "name": "Vitesse de filtration"
+      },
+      "powerunit_version": {
+        "name": "Version de l'unité d'alimentation"
+      },
+      "powerunit_5v": {
+        "name": "Unité d'alimentation 5V"
+      },
+      "powerunit_12v": {
+        "name": "Unité d'alimentation 12V"
+      },
+      "powerunit_24v": {
+        "name": "Unité d'alimentation 24-30V"
+      },
+      "powerunit_4ma": {
+        "name": "Unité d'alimentation 4-20mA"
+      },
+      "connection_requests": {
+        "name": "Demandes de connexion"
+      },
+      "connection_responses": {
+        "name": "Réponses de connexion"
+      },
+      "connection_no_response": {
+        "name": "Connexion sans réponse"
+      },
+      "powerunit_nodeid": {
+        "name": "NodeID de l'unité d'alimentation"
+      }
+    },
+    "binary_sensor": {
+      "modules_ph": {
+        "name": "Module pH"
+      },
+      "modules_redox": {
+        "name": "Module Redox"
+      },
+      "modules_hydrolysis": {
+        "name": "Module d'hydrolyse"
+      },
+      "modules_chlorine": {
+        "name": "Module de chlore"
+      },
+      "modules_conductivity": {
+        "name": "Module de conductivité"
+      },
+      "modules_ionization": {
+        "name": "Module d'ionisation"
+      },
+      "relay_ph_state": {
+        "name": "État du relais pH"
+      },
+      "relay_filtration_state": {
+        "name": "État du relais de filtration"
+      },
+      "relay_light_state": {
+        "name": "État du relais de lumière"
+      },
+      "relay_acid_state": {
+        "name": "État du relais d'acide"
+      },
+      "ph_fl1": {
+        "name": "pH FL1"
+      },
+      "hydrolysis_fl1": {
+        "name": "Hydrolyse FL1"
+      },
+      "hydrolysis_water_flow": {
+        "name": "Débit d'eau"
+      },
+      "ph_tank_level": {
+        "name": "Niveau du réservoir pH bas"
+      },
+      "redox_tank_level": {
+        "name": "Niveau du réservoir Redox bas"
+      },
+      "hydrolysis_cover": {
+        "name": "Couvercle d'hydrolyse"
+      },
+      "hydrolysis_low_production": {
+        "name": "Production d'hydrolyse faible"
+      }
+    },
+    "switch": {
+      "filtration": {
+        "name": "Filtration"
+      },
+      "light": {
+        "name": "Lumière"
+      },
+      "aux1": {
+        "name": "AUX1"
+      },
+      "aux2": {
+        "name": "AUX2"
+      },
+      "aux3": {
+        "name": "AUX3"
+      },
+      "aux4": {
+        "name": "AUX4"
+      }
+    },
+    "select": {
+      "filtration_mode": {
+        "name": "Mode de filtration"
+      },
+      "filtration_speed": {
+        "name": "Vitesse de filtration"
+      },
+      "boost_mode": {
+        "name": "Mode boost"
+      }
+    },
+    "number": {
+      "ph_min": {
+        "name": "pH Min"
+      },
+      "ph_max": {
+        "name": "pH Max"
+      },
+      "redox_setpoint": {
+        "name": "Point de consigne Redox"
+      },
+      "hydrolysis_setpoint": {
+        "name": "Point de consigne d'hydrolyse"
+      }
+    },
+    "button": {
+      "clear_error": {
+        "name": "Effacer l'état d'erreur"
+      }
     }
   }
 }

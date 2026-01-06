@@ -144,8 +144,8 @@ If you're currently using the YAML package
 > integration to avoid duplicate entities.
 
 1. **Remove/comment out** the YAML package from your `configuration.yaml`
-1. **Restart Home Assistant** - entities will become "orphaned" but remain
-   in the registry with all historical data intact
+1. **Restart Home Assistant** - entities will remain in the registry with all
+   historical data intact (owned by the MQTT integration)
 1. **Install** this custom integration through HACS or manually (see above)
 1. **Add the integration** in Home Assistant:
    - Go to **Settings** → **Devices & Services** → **Add Integration**
@@ -153,7 +153,7 @@ If you're currently using the YAML package
    - Check the box **"Migrating from YAML package"**
 1. **Auto-detection**: The integration will attempt to:
    - Auto-detect your MQTT topic (falls back to asking you if not found)
-   - Auto-detect orphaned entities with prefix `neopool_mqtt_`
+   - Auto-detect migratable entities with prefix `neopool_mqtt_`
    - Configure Tasmota with `SetOption157 1` to expose NodeID
 1. **Review and confirm**: Before migration, you'll see:
    - Summary of validated settings (topic, NodeID)
@@ -185,11 +185,11 @@ create stable unique identifiers:
 - Check the topic name matches exactly (case-sensitive)
 - Verify MQTT broker is working: look for `tele/{topic}/SENSOR` messages
 
-**Problem**: "No orphaned entities found"
+**Problem**: "No migratable entities found"
 
-- Make sure you removed the YAML package from `configuration.yaml`
-- Make sure you restarted Home Assistant after removing the YAML package
-- If you used a custom `unique_id` prefix, enter it when prompted
+- Verify entities with the `neopool_mqtt_` prefix exist in your entity registry
+- If you used a custom `unique_id` prefix in your YAML, enter it when prompted
+- Entities already owned by this integration cannot be migrated again
 
 **Problem**: "Failed to configure NodeID"
 

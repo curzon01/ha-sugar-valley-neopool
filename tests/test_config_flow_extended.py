@@ -89,7 +89,7 @@ class TestYamlMigrationExtended:
             return_value={"success": True, "nodeid": "NEWID123"}
         )
 
-        flow._check_orphaned_entities = AsyncMock(
+        flow._check_migratable_entities = AsyncMock(
             return_value={"type": FlowResultType.FORM, "step_id": "yaml_confirm"}
         )
 
@@ -130,7 +130,7 @@ class TestYamlMigrationExtended:
         flow._auto_configure_nodeid = AsyncMock(
             return_value={"success": True, "nodeid": "AUTOCONFIG123"}
         )
-        flow._check_orphaned_entities = AsyncMock(
+        flow._check_migratable_entities = AsyncMock(
             return_value={"type": FlowResultType.FORM, "step_id": "yaml_confirm"}
         )
 
@@ -421,46 +421,46 @@ class TestWaitForNodeidExtended:
         assert result is None
 
 
-class TestCheckOrphanedEntities:
-    """Tests for _check_orphaned_entities method."""
+class TestCheckMigratableEntities:
+    """Tests for _check_migratable_entities method."""
 
-    async def test_check_with_no_orphans_goes_to_prefix(self, mock_hass: MagicMock) -> None:
-        """Test check orphaned entities with no orphans asks for custom prefix."""
+    async def test_check_with_no_migratable_goes_to_prefix(self, mock_hass: MagicMock) -> None:
+        """Test check migratable entities with none found asks for custom prefix."""
         flow = NeoPoolConfigFlow()
         flow.hass = mock_hass
         flow._yaml_topic = "SmartPool"
         flow._nodeid = "ABC123"
         flow.context = {"source": config_entries.SOURCE_USER}
 
-        flow._find_orphaned_entities = MagicMock(return_value=[])
+        flow._find_migratable_entities = MagicMock(return_value=[])
         flow.async_step_yaml_prefix = AsyncMock(
             return_value={"type": FlowResultType.FORM, "step_id": "yaml_prefix"}
         )
 
-        result = await flow._check_orphaned_entities()
+        result = await flow._check_migratable_entities()
 
-        # When no orphans found with default prefix, asks user for custom prefix
+        # When no migratable entities found with default prefix, asks for custom prefix
         assert result["step_id"] == "yaml_prefix"
 
-    async def test_check_with_orphans_found(self, mock_hass: MagicMock) -> None:
-        """Test check orphaned entities with orphans found."""
+    async def test_check_with_migratable_found(self, mock_hass: MagicMock) -> None:
+        """Test check migratable entities with entities found."""
         flow = NeoPoolConfigFlow()
         flow.hass = mock_hass
         flow._yaml_topic = "SmartPool"
         flow._nodeid = "ABC123"
         flow.context = {"source": config_entries.SOURCE_USER}
 
-        # Create mock orphaned entities
+        # Create mock migratable entities
         entity1 = MagicMock()
         entity1.entity_id = "sensor.neopool_temp"
         entity1.unique_id = "neopool_mqtt_temp"
 
-        flow._find_orphaned_entities = MagicMock(return_value=[entity1])
+        flow._find_migratable_entities = MagicMock(return_value=[entity1])
         flow.async_step_yaml_confirm = AsyncMock(
             return_value={"type": FlowResultType.FORM, "step_id": "yaml_confirm"}
         )
 
-        result = await flow._check_orphaned_entities()
+        result = await flow._check_migratable_entities()
 
         # Should set _migrating_entities and go to confirm
         assert len(flow._migrating_entities) == 1
