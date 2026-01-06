@@ -1202,12 +1202,22 @@ class TestYamlMigrationResultStep:
         flow._yaml_topic = "SmartPool"
         flow._nodeid = "ABC123"
         flow._unique_id_prefix = "neopool_mqtt_"
+        # Provide entity_id_mapping so device name extraction works
+        # "neopool_smartpool_ph_data" with key "ph_data" -> "Neopool Smartpool"
         flow._migration_result = {
             "entities_found": 3,
             "entities_migrated": 3,
             "entities_failed": [],
-            "migrated_list": ["sensor.a", "sensor.b", "sensor.c"],
-            "entity_id_mapping": {},
+            "migrated_list": [
+                "sensor.neopool_smartpool_ph_data",
+                "sensor.neopool_smartpool_redox_data",
+                "sensor.neopool_smartpool_water_temperature",
+            ],
+            "entity_id_mapping": {
+                "ph_data": "neopool_smartpool_ph_data",
+                "redox_data": "neopool_smartpool_redox_data",
+                "water_temperature": "neopool_smartpool_water_temperature",
+            },
         }
         flow.async_set_unique_id = AsyncMock()
         flow._abort_if_unique_id_configured = MagicMock()
@@ -1215,7 +1225,9 @@ class TestYamlMigrationResultStep:
         result = await flow.async_step_yaml_migration_result({})
 
         assert result["type"] == FlowResultType.CREATE_ENTRY
-        assert result["title"] == "NeoPool SmartPool"
+        # Device name is extracted from entity_id_mapping:
+        # "neopool_smartpool_ph_data" - "ph_data" = "neopool_smartpool" -> "Neopool Smartpool"
+        assert result["title"] == "Neopool Smartpool"
         assert result["data"]["nodeid"] == "ABC123"
         assert result["data"]["migrate_yaml"] is True
         # Production code includes entity_id_mapping, not migration_completed
