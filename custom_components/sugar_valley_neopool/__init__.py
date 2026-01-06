@@ -30,6 +30,7 @@ from .const import (
     MANUFACTURER,
     PLATFORMS,
     VERSION,
+    YAML_TO_INTEGRATION_KEY_MAP,
 )
 
 if TYPE_CHECKING:
@@ -212,9 +213,13 @@ async def _apply_entity_id_mapping(
     # Entity domains to search - integration creates entities across these platforms
     domains = ["sensor", "binary_sensor", "switch", "select", "number", "button"]
 
-    for entity_key, target_object_id in entity_id_mapping.items():
+    for yaml_entity_key, target_object_id in entity_id_mapping.items():
+        # Translate YAML entity key to integration entity key
+        # YAML package uses different naming (e.g., "filtration_switch" vs "filtration")
+        integration_key = YAML_TO_INTEGRATION_KEY_MAP.get(yaml_entity_key, yaml_entity_key)
+
         # Find the entity by its unique_id (NodeID-based pattern)
-        unique_id = f"neopool_mqtt_{nodeid}_{entity_key}"
+        unique_id = f"neopool_mqtt_{nodeid}_{integration_key}"
 
         # Search across all possible domains since entity_key doesn't indicate domain
         current_entity_id = None
@@ -225,7 +230,12 @@ async def _apply_entity_id_mapping(
                 break
 
         if current_entity_id is None:
-            _LOGGER.debug("Entity with unique_id %s not found in registry, skipping", unique_id)
+            _LOGGER.debug(
+                "Entity with unique_id %s not found (yaml_key=%s, integration_key=%s)",
+                unique_id,
+                yaml_entity_key,
+                integration_key,
+            )
             continue
 
         # Determine domain from current entity_id

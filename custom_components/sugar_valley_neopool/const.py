@@ -198,3 +198,33 @@ JSON_PATH_CONNECTION_REQUESTS: Final = "NeoPool.Connection.MBRequests"
 JSON_PATH_CONNECTION_NOERROR: Final = "NeoPool.Connection.MBNoError"
 JSON_PATH_CONNECTION_NORESPONSE: Final = "NeoPool.Connection.MBNoResponse"
 JSON_PATH_CONNECTION_OUTOFRANGE: Final = "NeoPool.Connection.DataOutOfRange"
+
+# YAML to Integration entity key translation map
+# Maps YAML package entity keys to integration entity keys
+# Used during migration to find the correct integration entity
+YAML_TO_INTEGRATION_KEY_MAP: Final[dict[str, str]] = {
+    # Switches - YAML uses "_switch" suffix
+    "filtration_switch": "filtration",
+    "light_switch": "light",
+    "aux1_switch": "aux1",
+    "aux2_switch": "aux2",
+    "aux3_switch": "aux3",
+    "aux4_switch": "aux4",
+    # Button - YAML uses "_state" suffix
+    "clear_error_state": "clear_error",
+    # Sensors - hydrolysis naming differences
+    "hydrolysis_data_g_h": "hydrolysis_data",
+    "hydrolysis_runtime_polarity_changes": "hydrolysis_polarity_changes",
+    # Binary sensors - modules naming (YAML: *_module, Integration: modules_*)
+    "ph_module": "modules_ph",
+    "redox_module": "modules_redox",
+    "hydrolysis_module": "modules_hydrolysis",
+    "chlorine_module": "modules_chlorine",
+    "conductivity_module": "modules_conductivity",
+    "ionization_module": "modules_ionization",
+    # Sensors - connection naming (YAML has "_system_" in name)
+    "connection_system_requests": "connection_requests",
+    "connection_system_responses": "connection_responses",
+    "connection_missed_system_responses": "connection_no_response",
+    "connection_out_of_range_system_responses": "connection_out_of_range",
+}
