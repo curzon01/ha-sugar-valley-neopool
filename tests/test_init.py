@@ -515,23 +515,26 @@ class TestAsyncMigrateYamlEntities:
         assert len(result["steps"]) >= 1
 
     @pytest.mark.asyncio
-    async def test_excludes_already_configured_entities(self, hass: HomeAssistant) -> None:
-        """Test that entities with config_entry_id are excluded."""
-        # Create another config entry
-        other_entry = MockConfigEntry(
-            domain="other_domain",
-            data={},
+    async def test_excludes_own_platform_entities(self, hass: HomeAssistant) -> None:
+        """Test that entities owned by our platform are excluded from migration."""
+        # Create a config entry for our platform
+        our_entry = MockConfigEntry(
+            domain=DOMAIN,
+            data={
+                CONF_DEVICE_NAME: "Existing Pool",
+                CONF_NODEID: "EXISTING123",
+            },
         )
-        other_entry.add_to_hass(hass)
+        our_entry.add_to_hass(hass)
 
-        # Create entity already associated with a config entry
+        # Create entity already owned by our platform (should be excluded)
         entity_registry = er.async_get(hass)
         entity_registry.async_get_or_create(
             domain="sensor",
-            platform="mqtt",
-            unique_id="neopool_mqtt_configured_sensor",
-            suggested_object_id="configured_sensor",
-            config_entry=other_entry,
+            platform=DOMAIN,  # Our platform - should be EXCLUDED
+            unique_id="neopool_mqtt_our_sensor",
+            suggested_object_id="our_sensor",
+            config_entry=our_entry,
         )
 
         entry = MockConfigEntry(
@@ -547,7 +550,7 @@ class TestAsyncMigrateYamlEntities:
 
         result = await async_migrate_yaml_entities(hass, entry, "ABC123")
 
-        # Should not find the already-configured entity
+        # Should not find the entity owned by our platform
         assert result["entities_found"] == 0
 
     @pytest.mark.asyncio

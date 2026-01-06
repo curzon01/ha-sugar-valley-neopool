@@ -482,12 +482,49 @@ in manifest.json and const.py.
 | 4    | Bash           | `git add . && git commit -m "..."`                                      |
 | 5    | Bash           | `git push`                                                              |
 | 6    | **STOP**       | Wait for user "tag and release" command                                 |
-| 7    | **Checklist**  | Display Release Readiness Checklist (see below)                         |
-| 8    | Bash           | `git tag -a vX.Y.Z -m "Release vX.Y.Z"`                                 |
-| 9    | Bash           | `git push --tags`                                                       |
-| 10   | gh CLI         | `gh release create vX.Y.Z --title "vX.Y.Z" --notes "$(RELEASE_NOTES)"`  |
-| 11   | GitHub Actions | Validates versions match, then auto-uploads ZIP asset                   |
-| 12   | Edit           | Bump versions in `manifest.json` and `const.py` to next version         |
+| 7    | **CI Check**   | Verify ALL CI workflows pass (see CI Verification below)                |
+| 8    | **Checklist**  | Display Release Readiness Checklist (see below)                         |
+| 9    | Bash           | `git tag -a vX.Y.Z -m "Release vX.Y.Z"`                                 |
+| 10   | Bash           | `git push --tags`                                                       |
+| 11   | gh CLI         | `gh release create vX.Y.Z --title "vX.Y.Z" --notes "$(RELEASE_NOTES)"`  |
+| 12   | GitHub Actions | Validates versions match, then auto-uploads ZIP asset                   |
+| 13   | Edit           | Bump versions in `manifest.json` and `const.py` to next version         |
+
+### CI Verification (MANDATORY)
+
+> **CRITICAL: Before tagging/releasing, ALWAYS verify ALL CI workflows are passing.**
+> Use GitHub MCP tools to check workflow status. NEVER proceed if any workflow is failing.
+
+**Verification steps:**
+
+1. Use `mcp__GitHub_MCP_Remote__actions_list` to list recent workflow runs:
+
+   ```text
+   actions_list(method="list_workflow_runs", owner, repo)
+   ```
+
+1. Check that ALL workflows show `conclusion: "success"`:
+   - Lint workflow
+   - Validate workflow
+   - Tests workflow
+
+1. If any workflow is failing, use `mcp__GitHub_MCP_Remote__get_job_logs` to get failure details:
+
+   ```text
+   get_job_logs(owner, repo, run_id=<id>, failed_only=true, tail_lines=2000)
+   ```
+
+1. Fix failing tests/issues, commit, push, and re-verify before proceeding
+
+**Example CI Status Check:**
+
+| Workflow | Status |
+|----------|--------|
+| Lint | ✅ PASSED |
+| Validate | ✅ PASSED |
+| Tests | ✅ PASSED |
+
+If ANY workflow shows ❌ FAILED, DO NOT proceed with tagging until fixed.
 
 ### Release Notes Format (MANDATORY)
 
