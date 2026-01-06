@@ -68,7 +68,7 @@
         "default": "mdi:source-branch-check"
       },
       "powerunit_nodeid": {
-        "default": "mdi:identifier"
+        "default": "mdi:information-outline"
       }
     },
     "binary_sensor": {
@@ -109,7 +109,7 @@
         "default": "mdi:water-pump"
       },
       "hydrolysis_water_flow": {
-        "default": "mdi:water-pump"
+        "default": "mdi:air-filter"
       },
       "ph_tank_level": {
         "default": "mdi:cup-water"
