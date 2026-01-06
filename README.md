@@ -140,12 +140,21 @@ or topic will not affect your historical data or automations.
 If you're currently using the YAML package
 ([`ha_neopool_mqtt_package.yaml`](docs/ha_neopool_mqtt_package.yaml)):
 
-> **Important**: You must remove the YAML package **before** adding this
-> integration to avoid duplicate entities.
+> ⚠️ **CRITICAL**: You **MUST** remove the YAML package and restart Home
+> Assistant **BEFORE** adding this integration. If you skip this step:
+>
+> - You will get **duplicate entities** (both YAML and integration entities)
+> - Both sets will be active and receiving updates simultaneously
+> - You'll need to manually clean up the mess afterward
+>
+> The YAML package creates entities dynamically - they won't "transfer" to the
+> integration automatically. The migration only updates the entity registry
+> entries, not the live entity instances.
 
 1. **Remove/comment out** the YAML package from your `configuration.yaml`
-1. **Restart Home Assistant** - entities will remain in the registry with all
-   historical data intact (owned by the MQTT integration)
+1. **Restart Home Assistant** - this is essential! After restart, the entities
+   will remain in the registry with all historical data intact, but they'll be
+   "orphaned" (no longer receiving updates from the YAML package)
 1. **Install** this custom integration through HACS or manually (see above)
 1. **Add the integration** in Home Assistant:
    - Go to **Settings** → **Devices & Services** → **Add Integration**
@@ -188,8 +197,16 @@ create stable unique identifiers:
 **Problem**: "No migratable entities found"
 
 - Verify entities with the `neopool_mqtt_` prefix exist in your entity registry
-- If you used a custom `unique_id` prefix in your YAML, enter it when prompted
 - Entities already owned by this integration cannot be migrated again
+- If you used a custom `unique_id` prefix in your YAML package, you'll be
+  prompted to enter it. To find your prefix:
+  1. Go to **Developer Tools** → **States**
+  2. Find any NeoPool entity (e.g., `sensor.neopool_water_temperature`)
+  3. Click on it and look at the **Entity ID** attribute
+  4. Go to **Settings** → **Devices & Services** → **Entities** tab
+  5. Search for the entity and click the gear icon to see its **Unique ID**
+  6. The prefix is everything before the entity key (e.g., if unique_id is
+     `my_pool_water_temperature`, the prefix is `my_pool_`)
 
 **Problem**: "Failed to configure NodeID"
 
@@ -199,9 +216,18 @@ create stable unique identifiers:
 **Problem**: Entities appear duplicated
 
 - This happens if you didn't remove the YAML package before adding the
-  integration
-- Remove the YAML package from `configuration.yaml` and restart Home Assistant
-- The duplicates should be resolved after restart
+  integration. The YAML package creates entities dynamically via MQTT, so:
+  - The old YAML entities continue to receive updates (active)
+  - The new integration creates its own entities with the migrated unique_ids
+  - Both sets of entities appear and update simultaneously
+- **To fix**:
+  1. Remove/comment out the YAML package from `configuration.yaml`
+  2. Restart Home Assistant
+  3. The YAML-created entities will become unavailable
+  4. You may need to manually delete the orphaned entities from
+     **Settings** → **Devices & Services** → **Entities** tab
+- **Prevention**: Always remove the YAML package and restart HA **before**
+  running the migration wizard
 
 ## Device Triggers
 
