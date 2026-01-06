@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.1] - 2026-01-06
+
+### Changed
+
+- Improved YAML migration entity detection: now finds entities owned by other platforms (e.g., mqtt)
+  in addition to orphaned entities
+- Renamed internal methods from "orphaned" to "migratable" for clarity
+- Updated all 10 translation files with "migratable" terminology
+
+### Fixed
+
+- Fixed entity detection during YAML migration - entities from YAML packages are now correctly found
+- Fixed test for migratable entity detection logic
+
 ## [0.2.0] - 2026-01-05
 
 ### Added
