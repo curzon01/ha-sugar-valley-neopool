@@ -100,14 +100,18 @@
     "step": {
       "init": {
         "title": "Options d'exécution NeoPool",
-        "description": "Configurez les options d'exécution.\n\n**Variables du script de récupération :**\nLorsqu'il est configuré, le script de récupération reçoit ces variables :\n\n- `device_name` : Nom de l'appareil\n- `mqtt_topic` : Sujet MQTT\n- `nodeid` : NodeID de l'appareil\n- `failures_count` : Nombre d'échecs consécutifs",
+        "description": "Configurez les options de l'appareil et d'exécution.\n\n**Variables du script de récupération :**\nLorsqu'il est configuré, le script de récupération reçoit ces variables :\n\n- `device_name` : Nom de l'appareil\n- `mqtt_topic` : Sujet MQTT\n- `nodeid` : NodeID de l'appareil\n- `failures_count` : Nombre d'échecs consécutifs",
         "data": {
+          "device_name": "Nom de l'appareil",
+          "regenerate_entity_ids": "Régénérer les IDs d'entités",
           "recovery_script": "Script de récupération (optionnel, s'exécute lorsque l'appareil cesse de répondre)",
           "enable_repair_notification": "Activer les notifications de réparation",
           "failures_threshold": "Échecs avant notification (1-10)",
           "offline_timeout": "Délai d'expiration hors ligne (secondes)"
         },
         "data_description": {
+          "device_name": "Nom personnalisé pour l'appareil (utilisé dans les noms d'entités)",
+          "regenerate_entity_ids": "Mettre à jour les IDs d'entités pour correspondre au nouveau nom de l'appareil (uniquement lors du changement de nom)",
           "recovery_script": "Script à exécuter lorsque l'appareil est hors ligne trop longtemps",
           "enable_repair_notification": "Créer un problème de réparation lorsque l'appareil passe hors ligne",
           "failures_threshold": "Nombre de messages LWT hors ligne consécutifs avant de déclencher les notifications",

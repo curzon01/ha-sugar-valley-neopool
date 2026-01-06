@@ -28,6 +28,7 @@ from homeassistant.helpers.selector import (
     NumberSelectorMode,
 )
 from homeassistant.helpers.service_info.mqtt import MqttServiceInfo
+from homeassistant.util import slugify
 
 from .const import (
     CONF_CONFIRM_MIGRATION,
@@ -39,6 +40,7 @@ from .const import (
     CONF_NODEID,
     CONF_OFFLINE_TIMEOUT,
     CONF_RECOVERY_SCRIPT,
+    CONF_REGENERATE_ENTITY_IDS,
     CONF_UNIQUE_ID_PREFIX,
     DEFAULT_DEVICE_NAME,
     DEFAULT_ENABLE_REPAIR_NOTIFICATION,
@@ -881,18 +883,49 @@ class NeoPoolOptionsFlow(OptionsFlowWithReload):
     async def async_step_init(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
         """Manage the options."""
         if user_input is not None:
+            # Pop regenerate flag - it's a one-time action, not persisted
+            regenerate = user_input.pop(CONF_REGENERATE_ENTITY_IDS, False)
+
+            # Extract device name from user input
+            new_device_name = user_input.pop(CONF_DEVICE_NAME, None)
+            old_device_name = self.config_entry.data.get(CONF_DEVICE_NAME)
+
+            # Regenerate entity IDs if requested and device name changed
+            regenerated_count = 0
+            if regenerate and new_device_name and new_device_name != old_device_name:
+                regenerated_count = await self._regenerate_entity_ids(new_device_name)
+                _LOGGER.info(
+                    "Regenerated %d entity IDs for new device name: %s",
+                    regenerated_count,
+                    new_device_name,
+                )
+
+            # Update config entry data if device name changed
+            if new_device_name and new_device_name != old_device_name:
+                new_data = {**self.config_entry.data, CONF_DEVICE_NAME: new_device_name}
+                self.hass.config_entries.async_update_entry(
+                    self.config_entry,
+                    title=new_device_name,
+                    data=new_data,
+                )
+
             _LOGGER.debug(
-                "Options updated: enable_repair=%s, failures_threshold=%s, "
-                "offline_timeout=%s, recovery_script=%s",
+                "Options updated: device_name=%s, enable_repair=%s, failures_threshold=%s, "
+                "offline_timeout=%s, recovery_script=%s, regenerated=%d",
+                new_device_name,
                 user_input.get(CONF_ENABLE_REPAIR_NOTIFICATION),
                 user_input.get(CONF_FAILURES_THRESHOLD),
                 user_input.get(CONF_OFFLINE_TIMEOUT),
                 user_input.get(CONF_RECOVERY_SCRIPT),
+                regenerated_count,
             )
             return self.async_create_entry(data=user_input)
 
-        # Get current options with defaults
+        # Get current data and options with defaults
+        current_data = self.config_entry.data
         current_options = self.config_entry.options
+
+        device_name = current_data.get(CONF_DEVICE_NAME, DEFAULT_DEVICE_NAME)
         enable_repair = current_options.get(
             CONF_ENABLE_REPAIR_NOTIFICATION, DEFAULT_ENABLE_REPAIR_NOTIFICATION
         )
@@ -906,19 +939,29 @@ class NeoPoolOptionsFlow(OptionsFlowWithReload):
             step_id="init",
             data_schema=vol.Schema(
                 {
-                    # 1. Recovery script (runs when device goes offline after threshold)
+                    # 1. Device name (from config entry data)
+                    vol.Required(
+                        CONF_DEVICE_NAME,
+                        default=device_name,
+                    ): cv.string,
+                    # 2. Regenerate entity IDs checkbox (one-time action)
+                    vol.Optional(
+                        CONF_REGENERATE_ENTITY_IDS,
+                        default=False,
+                    ): cv.boolean,
+                    # 3. Recovery script (runs when device goes offline after threshold)
                     vol.Optional(
                         CONF_RECOVERY_SCRIPT,
                         default=recovery_script,
                     ): EntitySelector(
                         EntitySelectorConfig(domain="script"),
                     ),
-                    # 2. Enable repair notifications checkbox
+                    # 4. Enable repair notifications checkbox
                     vol.Required(
                         CONF_ENABLE_REPAIR_NOTIFICATION,
                         default=enable_repair,
                     ): cv.boolean,
-                    # 3. Failures threshold as input box (not slider)
+                    # 5. Failures threshold as input box (not slider)
                     vol.Required(
                         CONF_FAILURES_THRESHOLD,
                         default=failures_threshold,
@@ -929,7 +972,7 @@ class NeoPoolOptionsFlow(OptionsFlowWithReload):
                             mode=NumberSelectorMode.BOX,
                         )
                     ),
-                    # 4. Offline timeout (how long device must be offline before notification)
+                    # 6. Offline timeout (how long device must be offline before notification)
                     vol.Required(
                         CONF_OFFLINE_TIMEOUT,
                         default=offline_timeout,
@@ -944,3 +987,43 @@ class NeoPoolOptionsFlow(OptionsFlowWithReload):
                 },
             ),
         )
+
+    async def _regenerate_entity_ids(self, new_device_name: str) -> int:
+        """Regenerate entity IDs based on new device name.
+
+        Returns the number of entities that were updated.
+        """
+        registry = er.async_get(self.hass)
+        entities = er.async_entries_for_config_entry(registry, self.config_entry.entry_id)
+
+        regenerated_count = 0
+        for entity_entry in entities:
+            # Extract entity_key from unique_id: neopool_mqtt_{nodeid}_{entity_key}
+            unique_id_parts = entity_entry.unique_id.split("_")
+            if len(unique_id_parts) >= 4:
+                # Everything after "neopool_mqtt_{nodeid}_" is the entity_key
+                entity_key = "_".join(unique_id_parts[3:])
+                domain = entity_entry.entity_id.split(".")[0]
+                new_entity_id = f"{domain}.{slugify(new_device_name)}_{entity_key}"
+
+                if entity_entry.entity_id != new_entity_id:
+                    # Check if the new entity_id is available
+                    if not registry.async_get(new_entity_id):
+                        registry.async_update_entity(
+                            entity_entry.entity_id,
+                            new_entity_id=new_entity_id,
+                        )
+                        _LOGGER.debug(
+                            "Regenerated entity ID: %s -> %s",
+                            entity_entry.entity_id,
+                            new_entity_id,
+                        )
+                        regenerated_count += 1
+                    else:
+                        _LOGGER.warning(
+                            "Cannot regenerate entity ID %s -> %s: target already exists",
+                            entity_entry.entity_id,
+                            new_entity_id,
+                        )
+
+        return regenerated_count

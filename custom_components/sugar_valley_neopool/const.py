@@ -38,6 +38,7 @@ CONF_ENABLE_REPAIR_NOTIFICATION: Final = "enable_repair_notification"
 CONF_FAILURES_THRESHOLD: Final = "failures_threshold"
 CONF_RECOVERY_SCRIPT: Final = "recovery_script"
 CONF_OFFLINE_TIMEOUT: Final = "offline_timeout"
+CONF_REGENERATE_ENTITY_IDS: Final = "regenerate_entity_ids"
 
 # Default values
 DEFAULT_DEVICE_NAME: Final = "NeoPool"

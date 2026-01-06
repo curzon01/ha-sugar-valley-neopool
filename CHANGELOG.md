@@ -7,9 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Device name configuration in Options flow: users can now customize the device name
+- Entity ID regeneration option: checkbox to update entity IDs when device name changes
+- DIAGNOSTIC entity category added to connection sensors (requests, responses, no_response)
+
+### Changed
+
+- `powerunit_nodeid` sensor is now enabled by default (was disabled by default)
+
 ### Fixed
 
 - Fixed blank `yaml_migration_result` step in config flow - migration results now display properly
+- Fixed invalid icon `mdi:flash-circle` on conductivity module - changed to `mdi:resistor`
 
 ## [0.2.2] - 2026-01-06
 

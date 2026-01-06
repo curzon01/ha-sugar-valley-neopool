@@ -100,14 +100,18 @@
     "step": {
       "init": {
         "title": "NeoPool Runtime Options",
-        "description": "Configure runtime options.\n\n**Recovery Script Variables:**\nWhen configured, the recovery script receives these variables:\n\n- `device_name` : Device name\n- `mqtt_topic` : MQTT topic\n- `nodeid` : Device NodeID\n- `failures_count` : Number of consecutive failures",
+        "description": "Configure device and runtime options.\n\n**Recovery Script Variables:**\nWhen configured, the recovery script receives these variables:\n\n- `device_name` : Device name\n- `mqtt_topic` : MQTT topic\n- `nodeid` : Device NodeID\n- `failures_count` : Number of consecutive failures",
         "data": {
+          "device_name": "Device Name",
+          "regenerate_entity_ids": "Regenerate entity IDs",
           "recovery_script": "Recovery script (optional, runs when device stops responding)",
           "enable_repair_notification": "Enable repair notifications",
           "failures_threshold": "Failures before notification (1-10)",
           "offline_timeout": "Offline timeout (seconds)"
         },
         "data_description": {
+          "device_name": "Custom name for the device (used in entity names)",
+          "regenerate_entity_ids": "Update entity IDs to match the new device name (only when device name changes)",
           "recovery_script": "Script to run when device is offline for too long",
           "enable_repair_notification": "Create a repair issue when device goes offline",
           "failures_threshold": "Number of consecutive LWT offline messages before triggering notifications",

@@ -100,14 +100,18 @@
     "step": {
       "init": {
         "title": "Opzioni runtime NeoPool",
-        "description": "Configura le opzioni runtime.\n\n**Variabili script di ripristino:**\nQuando configurato, lo script di ripristino riceve queste variabili:\n\n- `device_name` : Nome dispositivo\n- `mqtt_topic` : Topic MQTT\n- `nodeid` : NodeID dispositivo\n- `failures_count` : Numero di fallimenti consecutivi",
+        "description": "Configura le opzioni del dispositivo e runtime.\n\n**Variabili script di ripristino:**\nQuando configurato, lo script di ripristino riceve queste variabili:\n\n- `device_name` : Nome dispositivo\n- `mqtt_topic` : Topic MQTT\n- `nodeid` : NodeID dispositivo\n- `failures_count` : Numero di fallimenti consecutivi",
         "data": {
+          "device_name": "Nome dispositivo",
+          "regenerate_entity_ids": "Rigenera ID entità",
           "recovery_script": "Script di ripristino (opzionale, eseguito quando il dispositivo smette di rispondere)",
           "enable_repair_notification": "Abilita notifiche di riparazione",
           "failures_threshold": "Fallimenti prima della notifica (1-10)",
           "offline_timeout": "Timeout offline (secondi)"
         },
         "data_description": {
+          "device_name": "Nome personalizzato per il dispositivo (usato nei nomi delle entità)",
+          "regenerate_entity_ids": "Aggiorna gli ID delle entità per corrispondere al nuovo nome del dispositivo (solo quando cambia il nome)",
           "recovery_script": "Script da eseguire quando il dispositivo è offline troppo a lungo",
           "enable_repair_notification": "Crea un problema di riparazione quando il dispositivo va offline",
           "failures_threshold": "Numero di messaggi LWT offline consecutivi prima di attivare le notifiche",

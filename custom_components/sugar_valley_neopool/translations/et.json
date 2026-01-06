@@ -100,14 +100,18 @@
     "step": {
       "init": {
         "title": "NeoPool käitusaja valikud",
-        "description": "Seadistage käitusaja valikud.\n\n**Taastamise skripti muutujad:**\nKui on seadistatud, saab taastamise skript need muutujad:\n\n- `device_name` : Seadme nimi\n- `mqtt_topic` : MQTT teema\n- `nodeid` : Seadme NodeID\n- `failures_count` : Järjestikuste tõrgete arv",
+        "description": "Seadistage seadme ja käitusaja valikud.\n\n**Taastamise skripti muutujad:**\nKui on seadistatud, saab taastamise skript need muutujad:\n\n- `device_name` : Seadme nimi\n- `mqtt_topic` : MQTT teema\n- `nodeid` : Seadme NodeID\n- `failures_count` : Järjestikuste tõrgete arv",
         "data": {
+          "device_name": "Seadme nimi",
+          "regenerate_entity_ids": "Taasgenereeri olemi ID-d",
           "recovery_script": "Taastamise skript (valikuline, käivitub kui seade lõpetab vastamise)",
           "enable_repair_notification": "Luba paranduse teavitused",
           "failures_threshold": "Tõrked enne teavitust (1-10)",
           "offline_timeout": "Võrguühenduseta aegumine (sekundites)"
         },
         "data_description": {
+          "device_name": "Kohandatud nimi seadmele (kasutatakse olemi nimedes)",
+          "regenerate_entity_ids": "Uuenda olemi ID-d vastama uuele seadme nimele (ainult nime muutmisel)",
           "recovery_script": "Skript, mida käivitada kui seade on liiga kaua võrguühenduseta",
           "enable_repair_notification": "Loo paranduse probleem kui seade läheb võrguühenduseta",
           "failures_threshold": "Järjestikuste LWT võrguühenduseta sõnumite arv enne teavituste käivitamist",

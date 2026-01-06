@@ -247,6 +247,7 @@ SENSOR_DESCRIPTIONS: tuple[NeoPoolSensorEntityDescription, ...] = (
         state_class=SensorStateClass.TOTAL_INCREASING,
         json_path="NeoPool.Connection.MBRequests",
         value_fn=safe_int,
+        entity_category=EntityCategory.DIAGNOSTIC,
         entity_registry_enabled_default=False,
     ),
     NeoPoolSensorEntityDescription(
@@ -257,6 +258,7 @@ SENSOR_DESCRIPTIONS: tuple[NeoPoolSensorEntityDescription, ...] = (
         state_class=SensorStateClass.TOTAL_INCREASING,
         json_path="NeoPool.Connection.MBNoError",
         value_fn=safe_int,
+        entity_category=EntityCategory.DIAGNOSTIC,
         entity_registry_enabled_default=False,
     ),
     NeoPoolSensorEntityDescription(
@@ -267,6 +269,7 @@ SENSOR_DESCRIPTIONS: tuple[NeoPoolSensorEntityDescription, ...] = (
         state_class=SensorStateClass.TOTAL_INCREASING,
         json_path="NeoPool.Connection.MBNoResponse",
         value_fn=safe_int,
+        entity_category=EntityCategory.DIAGNOSTIC,
         entity_registry_enabled_default=False,
     ),
     # Diagnostic sensors
@@ -277,7 +280,6 @@ SENSOR_DESCRIPTIONS: tuple[NeoPoolSensorEntityDescription, ...] = (
         icon="mdi:identifier",
         json_path="NeoPool.Powerunit.NodeID",
         entity_category=EntityCategory.DIAGNOSTIC,
-        entity_registry_enabled_default=False,
     ),
 )
 

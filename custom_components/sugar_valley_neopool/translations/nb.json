@@ -100,14 +100,18 @@
     "step": {
       "init": {
         "title": "NeoPool kjøretidsalternativer",
-        "description": "Konfigurer kjøretidsalternativer.\n\n**Gjenopprettingsskriptvariabler:**\nNår konfigurert, mottar gjenopprettingsskriptet disse variablene:\n\n- `device_name` : Enhetsnavn\n- `mqtt_topic` : MQTT-emne\n- `nodeid` : Enhetens NodeID\n- `failures_count` : Antall påfølgende feil",
+        "description": "Konfigurer enhets- og kjøretidsalternativer.\n\n**Gjenopprettingsskriptvariabler:**\nNår konfigurert, mottar gjenopprettingsskriptet disse variablene:\n\n- `device_name` : Enhetsnavn\n- `mqtt_topic` : MQTT-emne\n- `nodeid` : Enhetens NodeID\n- `failures_count` : Antall påfølgende feil",
         "data": {
+          "device_name": "Enhetsnavn",
+          "regenerate_entity_ids": "Regenerer entitets-ID-er",
           "recovery_script": "Gjenopprettingsskript (valgfritt, kjøres når enheten slutter å svare)",
           "enable_repair_notification": "Aktiver reparasjonsvarsler",
           "failures_threshold": "Feil før varsling (1-10)",
           "offline_timeout": "Frakoblet tidsavbrudd (sekunder)"
         },
         "data_description": {
+          "device_name": "Egendefinert navn for enheten (brukes i entitetsnavn)",
+          "regenerate_entity_ids": "Oppdater entitets-ID-er for å matche det nye enhetsnavnet (kun når navnet endres)",
           "recovery_script": "Skript som skal kjøres når enheten er frakoblet for lenge",
           "enable_repair_notification": "Opprett et reparasjonsproblem når enheten går frakoblet",
           "failures_threshold": "Antall påfølgende LWT frakoblede meldinger før varsling utløses",
