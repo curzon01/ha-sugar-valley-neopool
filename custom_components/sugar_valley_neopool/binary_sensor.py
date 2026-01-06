@@ -190,7 +190,7 @@ class NeoPoolBinarySensor(NeoPoolMQTTEntity, BinarySensorEntity):
         description: NeoPoolBinarySensorEntityDescription,
     ) -> None:
         """Initialize the binary sensor."""
-        super().__init__(config_entry, description.key, "binary_sensor")
+        super().__init__(config_entry, description.key)
         self.entity_description = description
         self._attr_is_on: bool | None = None
 

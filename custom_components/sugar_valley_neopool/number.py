@@ -118,7 +118,7 @@ class NeoPoolNumber(NeoPoolMQTTEntity, NumberEntity):
         description: NeoPoolNumberEntityDescription,
     ) -> None:
         """Initialize the number."""
-        super().__init__(config_entry, description.key, "number")
+        super().__init__(config_entry, description.key)
         self.entity_description = description
         self._attr_native_value: float | None = None
 

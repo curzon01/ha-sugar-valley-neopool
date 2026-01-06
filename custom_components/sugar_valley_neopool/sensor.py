@@ -295,7 +295,7 @@ class NeoPoolSensor(NeoPoolMQTTEntity, SensorEntity):
         description: NeoPoolSensorEntityDescription,
     ) -> None:
         """Initialize the sensor."""
-        super().__init__(config_entry, description.key, "sensor")
+        super().__init__(config_entry, description.key)
         self.entity_description = description
         self._attr_native_value = None
 
