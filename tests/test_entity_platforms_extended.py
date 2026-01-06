@@ -39,8 +39,8 @@ class TestNeoPoolEntityMigration:
         """Test entity initializes with correct attributes."""
         entity = NeoPoolEntity(mock_config_entry, "water_temperature")
 
-        # Verify unique_id is set correctly with NodeID
-        assert entity._attr_unique_id == "neopool_mqtt_TEST123_water_temperature"
+        # Verify unique_id is set correctly with NodeID (ABC123 from conftest fixture)
+        assert entity._attr_unique_id == "neopool_mqtt_ABC123_water_temperature"
         # Entity should start unavailable
         assert entity._attr_available is False
         # Device info should be set
@@ -55,11 +55,11 @@ class TestNeoPoolEntityMigration:
 
     def test_entity_unique_id_uses_nodeid(self, mock_config_entry: MagicMock) -> None:
         """Test entity unique_id includes NodeID from runtime_data."""
-        # Default NodeID is TEST123 from mock
+        # Default NodeID is ABC123 from conftest fixture
         entity = NeoPoolEntity(mock_config_entry, "ph_data")
 
-        assert "TEST123" in entity._attr_unique_id
-        assert entity._attr_unique_id == "neopool_mqtt_TEST123_ph_data"
+        assert "ABC123" in entity._attr_unique_id
+        assert entity._attr_unique_id == "neopool_mqtt_ABC123_ph_data"
 
     def test_entity_no_entity_id_set_by_constructor(self, mock_config_entry: MagicMock) -> None:
         """Test entity_id is not set by constructor (HA auto-generates or migration applies)."""
@@ -85,8 +85,8 @@ class TestNeoPoolMQTTEntityMigration:
         """Test MQTT entity initializes correctly."""
         entity = NeoPoolMQTTEntity(mock_config_entry, "ph_data")
 
-        # Verify unique_id is set correctly with NodeID
-        assert entity._attr_unique_id == "neopool_mqtt_TEST123_ph_data"
+        # Verify unique_id is set correctly with NodeID (ABC123 from conftest fixture)
+        assert entity._attr_unique_id == "neopool_mqtt_ABC123_ph_data"
         # Entity should start unavailable
         assert entity._attr_available is False
 
