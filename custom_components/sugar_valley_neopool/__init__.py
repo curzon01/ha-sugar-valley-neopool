@@ -163,6 +163,9 @@ async def async_migrate_yaml_entities(
 
     This preserves historical data by updating entity unique_ids in the registry.
     Returns a summary dict with migration results.
+
+    Note: Migration may have already been performed during config flow.
+    This function handles legacy entries and edge cases.
     """
     summary: dict[str, Any] = {
         "steps": [],
@@ -170,6 +173,11 @@ async def async_migrate_yaml_entities(
         "entities_migrated": 0,
         "errors": [],
     }
+
+    # Skip if migration was already performed during config flow
+    if entry.data.get("migration_completed", False):
+        _LOGGER.debug("Migration already completed during config flow, skipping")
+        return summary
 
     # Only run if YAML migration was requested
     if not entry.data.get(CONF_MIGRATE_YAML, False):

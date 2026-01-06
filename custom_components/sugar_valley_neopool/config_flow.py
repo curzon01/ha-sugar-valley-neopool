@@ -96,6 +96,7 @@ class NeoPoolConfigFlow(ConfigFlow, domain=DOMAIN):
         self._migrate_yaml: bool = False
         self._unique_id_prefix: str = DEFAULT_UNIQUE_ID_PREFIX
         self._migrating_entities: list[RegistryEntry] = []
+        self._migration_result: dict[str, Any] | None = None
 
     async def async_step_user(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
         """Handle the initial step - ask about YAML migration first."""
@@ -299,23 +300,11 @@ class NeoPoolConfigFlow(ConfigFlow, domain=DOMAIN):
             if not user_input.get(CONF_CONFIRM_MIGRATION):
                 errors["base"] = "confirmation_required"
             else:
-                # User confirmed - proceed with migration
-                device_name = f"NeoPool {self._yaml_topic}"
+                # User confirmed - perform migration NOW (before entry creation)
+                self._migration_result = await self._perform_migration()
 
-                # Set unique ID based on NodeID
-                await self.async_set_unique_id(f"{DOMAIN}_{self._nodeid}")
-                self._abort_if_unique_id_configured()
-
-                return self.async_create_entry(
-                    title=device_name,
-                    data={
-                        CONF_DEVICE_NAME: device_name,
-                        CONF_DISCOVERY_PREFIX: self._yaml_topic,
-                        CONF_NODEID: self._nodeid,
-                        CONF_UNIQUE_ID_PREFIX: self._unique_id_prefix,
-                        CONF_MIGRATE_YAML: True,
-                    },
-                )
+                # Show results step
+                return await self.async_step_yaml_migration_result()
 
         # Build entity list for display
         entity_list = self._format_entity_list(self._migrating_entities)
@@ -334,6 +323,102 @@ class NeoPoolConfigFlow(ConfigFlow, domain=DOMAIN):
                 "entity_list": entity_list,
             },
             errors=errors,
+        )
+
+    async def _perform_migration(self) -> dict[str, Any]:
+        """Execute entity migration and return results."""
+        summary: dict[str, Any] = {
+            "entities_found": len(self._migrating_entities),
+            "entities_migrated": 0,
+            "entities_failed": [],
+            "migrated_list": [],
+        }
+
+        entity_registry = er.async_get(self.hass)
+
+        for entity in self._migrating_entities:
+            old_unique_id = entity.unique_id
+            entity_key = old_unique_id.replace(self._unique_id_prefix, "", 1)
+            new_unique_id = f"neopool_mqtt_{self._nodeid}_{entity_key}"
+
+            try:
+                entity_registry.async_update_entity(
+                    entity.entity_id,
+                    new_unique_id=new_unique_id,
+                )
+                summary["entities_migrated"] += 1
+                summary["migrated_list"].append(entity.entity_id)
+                _LOGGER.info(
+                    "Migrated entity %s: %s -> %s",
+                    entity.entity_id,
+                    old_unique_id,
+                    new_unique_id,
+                )
+            except Exception as e:  # noqa: BLE001
+                error_msg = f"{entity.entity_id}: {e}"
+                summary["entities_failed"].append(error_msg)
+                _LOGGER.error("Failed to migrate entity %s: %s", entity.entity_id, e)
+
+        return summary
+
+    def _format_migrated_entity_list(self, entity_ids: list[str]) -> str:
+        """Format migrated entity list for display (first 5 + count)."""
+        lines = [f"• `{entity_id}`" for entity_id in entity_ids[:5]]
+        if len(entity_ids) > 5:
+            lines.append(f"• ...and {len(entity_ids) - 5} more")
+        return "\n".join(lines) if lines else "None"
+
+    async def async_step_yaml_migration_result(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
+        """Show migration results and complete setup."""
+        if user_input is not None:
+            # User acknowledged results, create entry
+            device_name = f"NeoPool {self._yaml_topic}"
+
+            # Set unique ID based on NodeID
+            await self.async_set_unique_id(f"{DOMAIN}_{self._nodeid}")
+            self._abort_if_unique_id_configured()
+
+            return self.async_create_entry(
+                title=device_name,
+                data={
+                    CONF_DEVICE_NAME: device_name,
+                    CONF_DISCOVERY_PREFIX: self._yaml_topic,
+                    CONF_NODEID: self._nodeid,
+                    CONF_UNIQUE_ID_PREFIX: self._unique_id_prefix,
+                    CONF_MIGRATE_YAML: True,
+                    "migration_completed": True,
+                },
+            )
+
+        # Format results for display
+        result = self._migration_result or {}
+        migrated_list = self._format_migrated_entity_list(result.get("migrated_list", []))
+        failed_entries = result.get("entities_failed", [])
+        failed_list = "\n".join(f"• {e}" for e in failed_entries[:5])
+        if len(failed_entries) > 5:
+            failed_list += f"\n• ...and {len(failed_entries) - 5} more"
+
+        # Determine status
+        if not failed_entries:
+            status = "✓ Success"
+        elif result.get("entities_migrated", 0) > 0:
+            status = "⚠️ Partial Success"
+        else:
+            status = "✗ Failed"
+
+        return self.async_show_form(
+            step_id="yaml_migration_result",
+            data_schema=vol.Schema({}),
+            description_placeholders={
+                "status": status,
+                "entities_found": str(result.get("entities_found", 0)),
+                "entities_migrated": str(result.get("entities_migrated", 0)),
+                "entities_failed": str(len(failed_entries)),
+                "migrated_list": migrated_list,
+                "failed_list": failed_list or "None",
+            },
         )
 
     async def async_step_discover_device(

@@ -1017,6 +1017,227 @@ class TestYamlMigrationFlow:
         assert result["data"]["migrate_yaml"] is True
 
 
+class TestPerformMigration:
+    """Tests for _perform_migration method."""
+
+    async def test_perform_migration_success(self, mock_hass: MagicMock) -> None:
+        """Test successful entity migration."""
+        flow = NeoPoolConfigFlow()
+        flow.hass = mock_hass
+        flow._nodeid = "ABC123"
+        flow._unique_id_prefix = "neopool_mqtt_"
+
+        # Create mock entities to migrate
+        entity1 = MagicMock()
+        entity1.unique_id = "neopool_mqtt_water_temp"
+        entity1.entity_id = "sensor.neopool_water_temp"
+
+        entity2 = MagicMock()
+        entity2.unique_id = "neopool_mqtt_ph_data"
+        entity2.entity_id = "sensor.neopool_ph_data"
+
+        flow._migrating_entities = [entity1, entity2]
+
+        mock_registry = MagicMock()
+        mock_registry.async_update_entity = MagicMock()
+
+        with patch(
+            "homeassistant.helpers.entity_registry.async_get",
+            return_value=mock_registry,
+        ):
+            result = await flow._perform_migration()
+
+        assert result["entities_found"] == 2
+        assert result["entities_migrated"] == 2
+        assert len(result["entities_failed"]) == 0
+        assert "sensor.neopool_water_temp" in result["migrated_list"]
+        assert "sensor.neopool_ph_data" in result["migrated_list"]
+
+    async def test_perform_migration_partial_failure(self, mock_hass: MagicMock) -> None:
+        """Test migration with some failures."""
+        flow = NeoPoolConfigFlow()
+        flow.hass = mock_hass
+        flow._nodeid = "ABC123"
+        flow._unique_id_prefix = "neopool_mqtt_"
+
+        entity1 = MagicMock()
+        entity1.unique_id = "neopool_mqtt_water_temp"
+        entity1.entity_id = "sensor.neopool_water_temp"
+
+        entity2 = MagicMock()
+        entity2.unique_id = "neopool_mqtt_ph_data"
+        entity2.entity_id = "sensor.neopool_ph_data"
+
+        flow._migrating_entities = [entity1, entity2]
+
+        mock_registry = MagicMock()
+        # First call succeeds, second fails
+        mock_registry.async_update_entity = MagicMock(
+            side_effect=[None, ValueError("Update failed")]
+        )
+
+        with patch(
+            "homeassistant.helpers.entity_registry.async_get",
+            return_value=mock_registry,
+        ):
+            result = await flow._perform_migration()
+
+        assert result["entities_found"] == 2
+        assert result["entities_migrated"] == 1
+        assert len(result["entities_failed"]) == 1
+        assert "sensor.neopool_ph_data" in result["entities_failed"][0]
+
+    async def test_perform_migration_empty_list(self, mock_hass: MagicMock) -> None:
+        """Test migration with empty entity list."""
+        flow = NeoPoolConfigFlow()
+        flow.hass = mock_hass
+        flow._nodeid = "ABC123"
+        flow._unique_id_prefix = "neopool_mqtt_"
+        flow._migrating_entities = []
+
+        mock_registry = MagicMock()
+
+        with patch(
+            "homeassistant.helpers.entity_registry.async_get",
+            return_value=mock_registry,
+        ):
+            result = await flow._perform_migration()
+
+        assert result["entities_found"] == 0
+        assert result["entities_migrated"] == 0
+        assert len(result["entities_failed"]) == 0
+
+
+class TestYamlMigrationResultStep:
+    """Tests for async_step_yaml_migration_result."""
+
+    async def test_migration_result_shows_form(self, mock_hass: MagicMock) -> None:
+        """Test migration result step shows form with results."""
+        flow = NeoPoolConfigFlow()
+        flow.hass = mock_hass
+        flow.context = {"source": config_entries.SOURCE_USER}
+        flow._yaml_topic = "SmartPool"
+        flow._nodeid = "ABC123"
+        flow._migration_result = {
+            "entities_found": 5,
+            "entities_migrated": 5,
+            "entities_failed": [],
+            "migrated_list": ["sensor.a", "sensor.b", "sensor.c"],
+        }
+
+        result = await flow.async_step_yaml_migration_result(None)
+
+        assert result["type"] == FlowResultType.FORM
+        assert result["step_id"] == "yaml_migration_result"
+        assert result["description_placeholders"]["status"] == "✓ Success"
+        assert result["description_placeholders"]["entities_found"] == "5"
+        assert result["description_placeholders"]["entities_migrated"] == "5"
+
+    async def test_migration_result_partial_success(self, mock_hass: MagicMock) -> None:
+        """Test migration result shows partial success status."""
+        flow = NeoPoolConfigFlow()
+        flow.hass = mock_hass
+        flow.context = {"source": config_entries.SOURCE_USER}
+        flow._yaml_topic = "SmartPool"
+        flow._nodeid = "ABC123"
+        flow._migration_result = {
+            "entities_found": 5,
+            "entities_migrated": 3,
+            "entities_failed": ["sensor.a: Error 1", "sensor.b: Error 2"],
+            "migrated_list": ["sensor.c", "sensor.d", "sensor.e"],
+        }
+
+        result = await flow.async_step_yaml_migration_result(None)
+
+        assert result["description_placeholders"]["status"] == "⚠️ Partial Success"
+        assert result["description_placeholders"]["entities_failed"] == "2"
+
+    async def test_migration_result_all_failed(self, mock_hass: MagicMock) -> None:
+        """Test migration result shows failed status when all fail."""
+        flow = NeoPoolConfigFlow()
+        flow.hass = mock_hass
+        flow.context = {"source": config_entries.SOURCE_USER}
+        flow._yaml_topic = "SmartPool"
+        flow._nodeid = "ABC123"
+        flow._migration_result = {
+            "entities_found": 2,
+            "entities_migrated": 0,
+            "entities_failed": ["sensor.a: Error 1", "sensor.b: Error 2"],
+            "migrated_list": [],
+        }
+
+        result = await flow.async_step_yaml_migration_result(None)
+
+        assert result["description_placeholders"]["status"] == "✗ Failed"
+
+    async def test_migration_result_creates_entry(self, mock_hass: MagicMock) -> None:
+        """Test migration result creates entry when user submits."""
+        flow = NeoPoolConfigFlow()
+        flow.hass = mock_hass
+        flow.context = {"source": config_entries.SOURCE_USER}
+        flow._yaml_topic = "SmartPool"
+        flow._nodeid = "ABC123"
+        flow._unique_id_prefix = "neopool_mqtt_"
+        flow._migration_result = {
+            "entities_found": 3,
+            "entities_migrated": 3,
+            "entities_failed": [],
+            "migrated_list": ["sensor.a", "sensor.b", "sensor.c"],
+        }
+        flow.async_set_unique_id = AsyncMock()
+        flow._abort_if_unique_id_configured = MagicMock()
+
+        result = await flow.async_step_yaml_migration_result({})
+
+        assert result["type"] == FlowResultType.CREATE_ENTRY
+        assert result["title"] == "NeoPool SmartPool"
+        assert result["data"]["nodeid"] == "ABC123"
+        assert result["data"]["migrate_yaml"] is True
+        assert result["data"]["migration_completed"] is True
+
+
+class TestFormatMigratedEntityList:
+    """Tests for _format_migrated_entity_list method."""
+
+    def test_format_migrated_entity_list_empty(self, mock_hass: MagicMock) -> None:
+        """Test formatting empty entity list."""
+        flow = NeoPoolConfigFlow()
+        flow.hass = mock_hass
+
+        result = flow._format_migrated_entity_list([])
+
+        assert result == "None"
+
+    def test_format_migrated_entity_list_few(self, mock_hass: MagicMock) -> None:
+        """Test formatting list with few entities."""
+        flow = NeoPoolConfigFlow()
+        flow.hass = mock_hass
+
+        entity_ids = ["sensor.a", "sensor.b", "sensor.c"]
+        result = flow._format_migrated_entity_list(entity_ids)
+
+        assert "sensor.a" in result
+        assert "sensor.b" in result
+        assert "sensor.c" in result
+        assert "more" not in result
+
+    def test_format_migrated_entity_list_many(self, mock_hass: MagicMock) -> None:
+        """Test formatting list with many entities."""
+        flow = NeoPoolConfigFlow()
+        flow.hass = mock_hass
+
+        entity_ids = [f"sensor.entity_{i}" for i in range(10)]
+        result = flow._format_migrated_entity_list(entity_ids)
+
+        # Should show first 5
+        assert "sensor.entity_0" in result
+        assert "sensor.entity_4" in result
+        # Should not show beyond 5
+        assert "sensor.entity_5" not in result
+        # Should show "and X more"
+        assert "5 more" in result
+
+
 class TestFindMigratableEntities:
     """Tests for _find_migratable_entities and related methods."""
 

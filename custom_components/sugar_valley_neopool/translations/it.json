@@ -48,6 +48,11 @@
           "confirm_migration": "Confermo di aver completato i prerequisiti e voglio procedere"
         }
       },
+      "yaml_migration_result": {
+        "title": "Migrazione completata",
+        "description": "## Risultati della migrazione\n\n**Stato:** {status}\n\n### Riepilogo:\n- Entità trovate: **{entities_found}**\n- Entità migrate: **{entities_migrated}**\n- Errori: **{entities_failed}**\n\n### Entità migrate:\n{migrated_list}\n\n### Errori:\n{failed_list}\n\n---\n\nClicca su **Invia** per completare la configurazione.",
+        "data": {}
+      },
       "discover_device": {
         "title": "Configurazione manuale",
         "description": "Inserisci i dettagli del dispositivo NeoPool.\n\nPer maggiori informazioni, consulta la [documentazione Tasmota NeoPool]({docs_url}).",

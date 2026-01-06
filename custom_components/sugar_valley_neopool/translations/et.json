@@ -48,6 +48,11 @@
           "confirm_migration": "Kinnitan, et olen eeltingimused täitnud ja soovin jätkata"
         }
       },
+      "yaml_migration_result": {
+        "title": "Migratsioon lõpetatud",
+        "description": "## Migratsiooni tulemused\n\n**Olek:** {status}\n\n### Kokkuvõte:\n- Leitud olemeid: **{entities_found}**\n- Migreeritud olemeid: **{entities_migrated}**\n- Vigu: **{entities_failed}**\n\n### Migreeritud olemid:\n{migrated_list}\n\n### Vead:\n{failed_list}\n\n---\n\nKlõpsake **Esita**, et lõpetada seadistamine.",
+        "data": {}
+      },
       "discover_device": {
         "title": "Käsitsi seadistamine",
         "description": "Sisestage oma NeoPool seadme andmed.\n\nLisateabe saamiseks vaadake [Tasmota NeoPool dokumentatsiooni]({docs_url}).",

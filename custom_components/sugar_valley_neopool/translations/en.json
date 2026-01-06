@@ -48,6 +48,11 @@
           "confirm_migration": "I confirm I have completed the prerequisites and want to proceed"
         }
       },
+      "yaml_migration_result": {
+        "title": "Migration Complete",
+        "description": "## Migration Results\n\n**Status:** {status}\n\n### Summary:\n- Entities found: **{entities_found}**\n- Entities migrated: **{entities_migrated}**\n- Errors: **{entities_failed}**\n\n### Migrated Entities:\n{migrated_list}\n\n### Errors:\n{failed_list}\n\n---\n\nClick **Submit** to complete the setup.",
+        "data": {}
+      },
       "discover_device": {
         "title": "Manual Setup",
         "description": "Enter your NeoPool device details.\n\nFor more information, see the [Tasmota NeoPool documentation]({docs_url}).",
