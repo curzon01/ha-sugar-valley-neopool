@@ -12,10 +12,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Device name configuration in Options flow: users can now customize the device name
 - Entity ID regeneration option: checkbox to update entity IDs when device name changes
 - DIAGNOSTIC entity category added to connection sensors (requests, responses, no_response)
+- **Enhanced YAML migration with history preservation**:
+  - Migration now uses DELETE approach to remove old MQTT entities from registry
+  - New entities are created with the same `entity_id` to preserve historical data
+  - Config flow shows "what will happen" before migration and "what was done" after
+  - Persistent notification with final verification assessment after setup completes
+  - History verification checks if entities have data older than 1 hour
+  - Clear status indicators: ✅ Successful, ⚠️ Partial, ℹ️ No History, ❌ Failed
 
 ### Changed
 
 - `powerunit_nodeid` sensor is now enabled by default (was disabled by default)
+- Migration now runs entirely in config flow (before entry creation) for better user feedback
+- Updated all 10 translation files with `yaml_migration_result` step
 
 ### Fixed
 

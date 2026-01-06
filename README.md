@@ -148,8 +148,10 @@ If you're currently using the YAML package
 > - You'll need to manually clean up the mess afterward
 >
 > The YAML package creates entities dynamically - they won't "transfer" to the
-> integration automatically. The migration only updates the entity registry
-> entries, not the live entity instances.
+> integration automatically. The migration deletes the old MQTT entities and
+> recreates them with the same entity IDs to preserve history.
+
+### Migration Steps
 
 1. **Remove/comment out** the YAML package from your `configuration.yaml`
 1. **Restart Home Assistant** - this is essential! After restart, the entities
@@ -159,20 +161,40 @@ If you're currently using the YAML package
 1. **Add the integration** in Home Assistant:
    - Go to **Settings** → **Devices & Services** → **Add Integration**
    - Search for "Sugar Valley NeoPool"
-   - Check the box **"Migrating from YAML package"**
+   - Check the box **"I have removed the YAML package and restarted Home
+     Assistant"**
 1. **Auto-detection**: The integration will attempt to:
    - Auto-detect your MQTT topic (falls back to asking you if not found)
    - Auto-detect migratable entities with prefix `neopool_mqtt_`
    - Configure Tasmota with `SetOption157 1` to expose NodeID
-1. **Review and confirm**: Before migration, you'll see:
+1. **Review "What will happen"**: Before migration, you'll see:
    - Summary of validated settings (topic, NodeID)
    - List of entities to be migrated
    - Confirmation checkbox (required to proceed)
-1. **Verify migration**:
-   - Check the persistent notification for migration results
-   - All your entities should appear in the new integration
-   - Historical data should be intact (graphs show continuous data)
-   - Test that controls (switches, selects, numbers) work correctly
+1. **Review "What was done"**: After confirming, you'll see:
+   - Number of entities processed and migrated
+   - List of migrated entities
+   - Any errors that occurred
+1. **Final verification**: After setup completes, check the **persistent
+   notification** for the final assessment:
+   - ✅ **Migration Successful**: History was verified and preserved
+   - ⚠️ **Partially Successful**: Some entities verified, some could not be
+   - ℹ️ **Complete (No History)**: Migration done but no old history to verify
+   - ❌ **Verification Failed**: Check errors in notification
+
+### How History Preservation Works
+
+The migration process preserves your historical data by:
+
+1. **Finding** your old MQTT entities by their `unique_id` prefix
+1. **Extracting** the actual `entity_id` from each entity (handles custom names)
+1. **Deleting** the old MQTT entities from the entity registry
+1. **Creating** new entities with the **same `entity_id`** as the deleted ones
+1. **Verifying** that historical data (older than 1 hour) is accessible
+
+Since Home Assistant's recorder indexes history by `entity_id`, your graphs,
+statistics, and long-term data are preserved when the new entity uses the
+same `entity_id` as the old one.
 
 ### Why NodeID?
 
