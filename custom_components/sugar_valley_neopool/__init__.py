@@ -258,8 +258,9 @@ async def async_migrate_yaml_entities(
             summary["errors"].append(f"{entity.entity_id}: {e}")
             _LOGGER.error("Failed to delete entity %s: %s", entity.entity_id, e)
 
-    # Store mapping in runtime_data for entity creation
-    entry.runtime_data.entity_id_mapping = entity_id_mapping
+    # Store mapping in runtime_data for entity creation (if runtime_data exists)
+    if hasattr(entry, "runtime_data") and entry.runtime_data is not None:
+        entry.runtime_data.entity_id_mapping = entity_id_mapping
 
     summary["steps"].append(
         {

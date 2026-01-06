@@ -245,7 +245,7 @@ class TestAsyncMigrateYamlEntitiesExtended:
 
     @pytest.mark.asyncio
     async def test_migrate_multiple_entities_same_domain(self, hass: HomeAssistant) -> None:
-        """Test migration of multiple entities in same domain."""
+        """Test migration of multiple entities in same domain (delete-and-recreate)."""
         entity_registry = er.async_get(hass)
 
         # Create multiple sensor entities
@@ -273,12 +273,17 @@ class TestAsyncMigrateYamlEntitiesExtended:
         assert result["entities_found"] == 5
         assert result["entities_migrated"] == 5
 
+        # Verify entities were DELETED (new behavior)
+        for i in range(5):
+            deleted_entity = entity_registry.async_get(f"sensor.sensor_{i}")
+            assert deleted_entity is None
+
     @pytest.mark.asyncio
     async def test_migrate_mixed_platforms(self, hass: HomeAssistant) -> None:
-        """Test migration of entities across different platforms."""
+        """Test migration of entities across different domains (delete-and-recreate)."""
         entity_registry = er.async_get(hass)
 
-        # Create entities in different platforms
+        # Create entities in different domains (all on mqtt platform)
         entity_registry.async_get_or_create(
             domain="sensor",
             platform="mqtt",
@@ -313,6 +318,11 @@ class TestAsyncMigrateYamlEntitiesExtended:
 
         assert result["entities_found"] == 3
         assert result["entities_migrated"] == 3
+
+        # Verify all entities were DELETED (new behavior)
+        assert entity_registry.async_get("sensor.temperature") is None
+        assert entity_registry.async_get("binary_sensor.pump_running") is None
+        assert entity_registry.async_get("switch.filtration") is None
 
 
 class TestNeoPoolDataExtended:

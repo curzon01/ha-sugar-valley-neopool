@@ -424,7 +424,7 @@ class TestAsyncMigrateYamlEntities:
 
     @pytest.mark.asyncio
     async def test_migrate_entities_success(self, hass: HomeAssistant) -> None:
-        """Test successful entity migration."""
+        """Test successful entity migration (new delete-and-recreate approach)."""
         # Create migratable entities in registry (owned by mqtt platform)
         entity_registry = er.async_get(hass)
         entity_registry.async_get_or_create(
@@ -457,10 +457,9 @@ class TestAsyncMigrateYamlEntities:
         assert result["entities_migrated"] == 2
         assert len(result["errors"]) == 0
 
-        # Verify entities were updated
-        updated_entity = entity_registry.async_get("sensor.neopool_water_temperature")
-        assert updated_entity.unique_id == "neopool_mqtt_XYZ789_water_temperature"
-        assert updated_entity.config_entry_id == entry.entry_id
+        # Verify entities were DELETED (new behavior - entities are recreated by platforms)
+        deleted_entity = entity_registry.async_get("sensor.neopool_water_temperature")
+        assert deleted_entity is None  # Entity should be deleted, will be recreated by platform
 
     @pytest.mark.asyncio
     async def test_migrate_with_custom_prefix(self, hass: HomeAssistant) -> None:
@@ -490,9 +489,9 @@ class TestAsyncMigrateYamlEntities:
         assert result["entities_found"] == 1
         assert result["entities_migrated"] == 1
 
-        # Verify entity was updated with correct new unique_id
-        updated_entity = entity_registry.async_get("sensor.custom_temp")
-        assert updated_entity.unique_id == "neopool_mqtt_ABC123_temperature"
+        # Verify entity was DELETED (new behavior - will be recreated with same entity_id)
+        deleted_entity = entity_registry.async_get("sensor.custom_temp")
+        assert deleted_entity is None
 
     @pytest.mark.asyncio
     async def test_no_migratable_entities_found(self, hass: HomeAssistant) -> None:
@@ -581,8 +580,8 @@ class TestAsyncMigrateYamlEntities:
         # Verify steps are recorded
         assert len(result["steps"]) >= 2
         step_names = [step["name"] for step in result["steps"]]
-        assert "Find migratable entities" in step_names
-        assert "Migrate entities" in step_names
+        assert "Find MQTT entities" in step_names
+        assert "Delete and map entities" in step_names
 
     @pytest.mark.asyncio
     async def test_shows_persistent_notification(self, hass: HomeAssistant) -> None:
