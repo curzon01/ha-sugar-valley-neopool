@@ -42,28 +42,24 @@ BINARY_SENSOR_DESCRIPTIONS: tuple[NeoPoolBinarySensorEntityDescription, ...] = (
         key="modules_ph",
         translation_key="modules_ph",
         name="pH Module",
-        icon="mdi:ph",
         json_path="NeoPool.Modules.pH",
     ),
     NeoPoolBinarySensorEntityDescription(
         key="modules_redox",
         translation_key="modules_redox",
         name="Redox Module",
-        icon="mdi:flash",
         json_path="NeoPool.Modules.Redox",
     ),
     NeoPoolBinarySensorEntityDescription(
         key="modules_hydrolysis",
         translation_key="modules_hydrolysis",
         name="Hydrolysis Module",
-        icon="mdi:water-opacity",
         json_path="NeoPool.Modules.Hydrolysis",
     ),
     NeoPoolBinarySensorEntityDescription(
         key="modules_chlorine",
         translation_key="modules_chlorine",
         name="Chlorine Module",
-        icon="mdi:beaker",
         json_path="NeoPool.Modules.Chlorine",
     ),
     NeoPoolBinarySensorEntityDescription(
@@ -76,7 +72,6 @@ BINARY_SENSOR_DESCRIPTIONS: tuple[NeoPoolBinarySensorEntityDescription, ...] = (
         key="modules_ionization",
         translation_key="modules_ionization",
         name="Ionization Module",
-        icon="mdi:atom",
         json_path="NeoPool.Modules.Ionization",
     ),
     # Relay state sensors
@@ -84,7 +79,6 @@ BINARY_SENSOR_DESCRIPTIONS: tuple[NeoPoolBinarySensorEntityDescription, ...] = (
         key="relay_ph_state",
         translation_key="relay_ph_state",
         name="Relay pH State",
-        icon="mdi:electric-switch",
         json_path="NeoPool.Relay.State.0",
         value_fn=lambda x: bit_to_bool(x)
         if isinstance(x, (str, int))
@@ -114,7 +108,6 @@ BINARY_SENSOR_DESCRIPTIONS: tuple[NeoPoolBinarySensorEntityDescription, ...] = (
         key="relay_acid_state",
         translation_key="relay_acid_state",
         name="Relay Acid State",
-        icon="mdi:flask",
         json_path="NeoPool.Relay.Acid",
     ),
     # Flow and tank level sensors
@@ -122,14 +115,12 @@ BINARY_SENSOR_DESCRIPTIONS: tuple[NeoPoolBinarySensorEntityDescription, ...] = (
         key="ph_fl1",
         translation_key="ph_fl1",
         name="pH FL1",
-        icon="mdi:waves-arrow-right",
         json_path="NeoPool.pH.FL1",
     ),
     NeoPoolBinarySensorEntityDescription(
         key="hydrolysis_fl1",
         translation_key="hydrolysis_fl1",
         name="Hydrolysis FL1",
-        icon="mdi:waves-arrow-right",
         json_path="NeoPool.Hydrolysis.FL1",
     ),
     NeoPoolBinarySensorEntityDescription(
@@ -160,7 +151,6 @@ BINARY_SENSOR_DESCRIPTIONS: tuple[NeoPoolBinarySensorEntityDescription, ...] = (
         key="hydrolysis_cover",
         translation_key="hydrolysis_cover",
         name="Hydrolysis Cover",
-        icon="mdi:pool",
         json_path="NeoPool.Hydrolysis.Cover",
     ),
     NeoPoolBinarySensorEntityDescription(

@@ -20,7 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Fixed blank `yaml_migration_result` step in config flow - migration results now display properly
-- Removed inline icon override on conductivity module - now uses `icons.json` (`mdi:flash-triangle`)
+- Removed all inline `icon=` attributes from entity descriptions - icons now exclusively use `icons.json`
 
 ## [0.2.2] - 2026-01-06
 

@@ -34,7 +34,6 @@ BUTTON_DESCRIPTIONS: tuple[NeoPoolButtonEntityDescription, ...] = (
         key="clear_error",
         translation_key="clear_error",
         name="Clear Error State",
-        icon="mdi:alert-remove",
         entity_category=EntityCategory.CONFIG,
         command=CMD_ESCAPE,
     ),
