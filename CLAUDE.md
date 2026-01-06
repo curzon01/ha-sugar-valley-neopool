@@ -493,14 +493,15 @@ in manifest.json and const.py.
 ### CI Verification (MANDATORY)
 
 > **CRITICAL: Before tagging/releasing, ALWAYS verify ALL CI workflows are passing.**
-> Use GitHub MCP tools to check workflow status. NEVER proceed if any workflow is failing.
+> Use GitHub MCP tools to list workflow runs, then use `gh` CLI to get detailed logs if needed.
+> NEVER proceed if any workflow is failing.
 
 **Verification steps:**
 
 1. Use `mcp__GitHub_MCP_Remote__actions_list` to list recent workflow runs:
 
    ```text
-   actions_list(method="list_workflow_runs", owner, repo)
+   actions_list(method="list_workflow_runs", owner="alexdelprete", repo="ha-sugar-valley-neopool")
    ```
 
 1. Check that ALL workflows show `conclusion: "success"`:
@@ -508,10 +509,14 @@ in manifest.json and const.py.
    - Validate workflow
    - Tests workflow
 
-1. If any workflow is failing, use `mcp__GitHub_MCP_Remote__get_job_logs` to get failure details:
+1. If any workflow is failing, use `gh` CLI to get detailed failure logs:
 
-   ```text
-   get_job_logs(owner, repo, run_id=<id>, failed_only=true, tail_lines=2000)
+   ```bash
+   # View failed run logs (replace <run_id> with actual ID from step 1)
+   gh run view <run_id> --log-failed
+
+   # Or view full logs for a specific run
+   gh run view <run_id> --log
    ```
 
 1. Fix failing tests/issues, commit, push, and re-verify before proceeding
