@@ -1137,9 +1137,11 @@ class TestYamlMigrationResultStep:
 
         assert result["type"] == FlowResultType.FORM
         assert result["step_id"] == "yaml_migration_result"
-        assert result["description_placeholders"]["status"] == "✓ Success"
-        assert result["description_placeholders"]["entities_found"] == "5"
-        assert result["description_placeholders"]["entities_migrated"] == "5"
+        # Production code uses single 'description' placeholder with formatted content
+        description = result["description_placeholders"]["description"]
+        assert "✓ Success" in description
+        assert "Entities found: **5**" in description
+        assert "Entities migrated: **5**" in description
 
     async def test_migration_result_partial_success(self, mock_hass: MagicMock) -> None:
         """Test migration result shows partial success status."""
@@ -1157,8 +1159,10 @@ class TestYamlMigrationResultStep:
 
         result = await flow.async_step_yaml_migration_result(None)
 
-        assert result["description_placeholders"]["status"] == "⚠️ Partial Success"
-        assert result["description_placeholders"]["entities_failed"] == "2"
+        # Production code uses single 'description' placeholder with formatted content
+        description = result["description_placeholders"]["description"]
+        assert "⚠️ Partial Success" in description
+        assert "Errors: **2**" in description
 
     async def test_migration_result_all_failed(self, mock_hass: MagicMock) -> None:
         """Test migration result shows failed status when all fail."""
@@ -1176,7 +1180,9 @@ class TestYamlMigrationResultStep:
 
         result = await flow.async_step_yaml_migration_result(None)
 
-        assert result["description_placeholders"]["status"] == "✗ Failed"
+        # Production code uses single 'description' placeholder with formatted content
+        description = result["description_placeholders"]["description"]
+        assert "✗ Failed" in description
 
     async def test_migration_result_creates_entry(self, mock_hass: MagicMock) -> None:
         """Test migration result creates entry when user submits."""
