@@ -613,15 +613,54 @@ class NeoPoolConfigFlow(ConfigFlow, domain=DOMAIN):
             lines.append(f"• ...and {len(entity_ids) - 5} more")
         return "\n".join(lines) if lines else "None"
 
+    def _extract_device_name_from_migration(self) -> str:
+        """Extract device name from migrated entity IDs.
+
+        Analyzes the entity_id_mapping to determine the device name prefix
+        used in the original YAML entities. This preserves user customizations.
+
+        Example:
+            "sensor.neopool_mqtt_ph_data" with key "ph_data" -> "NeoPool MQTT"
+            "sensor.my_pool_ph_data" with key "ph_data" -> "My Pool"
+
+        Returns:
+            Extracted device name, or DEFAULT_DEVICE_NAME as fallback.
+        """
+        result = self._migration_result or {}
+        entity_id_mapping = result.get("entity_id_mapping", {})
+
+        if not entity_id_mapping:
+            return DEFAULT_DEVICE_NAME
+
+        # Try to extract from first entity
+        for entity_key, object_id in entity_id_mapping.items():
+            # object_id is like "neopool_mqtt_ph_data", entity_key is "ph_data"
+            # We need to extract "neopool_mqtt" and convert to "NeoPool MQTT"
+            if object_id.endswith(f"_{entity_key}"):
+                prefix = object_id[: -len(f"_{entity_key}")]
+                # Convert slug to title: "neopool_mqtt" -> "NeoPool MQTT"
+                # Replace underscores with spaces and title case
+                device_name = prefix.replace("_", " ").title()
+                _LOGGER.debug(
+                    "Extracted device name '%s' from entity %s (key: %s)",
+                    device_name,
+                    object_id,
+                    entity_key,
+                )
+                return device_name
+
+        return DEFAULT_DEVICE_NAME
+
     async def async_step_yaml_migration_result(
         self, user_input: dict[str, Any] | None = None
     ) -> ConfigFlowResult:
         """Show migration results and complete setup."""
         if user_input is not None:
             # User acknowledged results, create entry
-            # Use "NeoPool MQTT" to match YAML package entity naming pattern
-            # This preserves entity IDs like sensor.neopool_mqtt_ph_data
-            device_name = "NeoPool MQTT"
+            # Extract device name from migrated entity IDs to preserve user customizations
+            # e.g., "sensor.neopool_mqtt_ph_data" -> "NeoPool MQTT"
+            # e.g., "sensor.my_pool_ph_data" -> "My Pool"
+            device_name = self._extract_device_name_from_migration()
 
             # Set unique ID based on NodeID
             await self.async_set_unique_id(f"{DOMAIN}_{self._nodeid}")
