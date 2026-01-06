@@ -998,8 +998,8 @@ class TestYamlMigrationFlow:
         assert result["type"] == FlowResultType.FORM
         assert result["errors"]["base"] == "confirmation_required"
 
-    async def test_yaml_confirm_creates_entry(self, mock_hass: MagicMock) -> None:
-        """Test YAML confirm creates entry when checkbox checked."""
+    async def test_yaml_confirm_proceeds_to_migration_result(self, mock_hass: MagicMock) -> None:
+        """Test YAML confirm proceeds to migration result step when checkbox checked."""
         flow = NeoPoolConfigFlow()
         flow.hass = mock_hass
         flow.context = {"source": config_entries.SOURCE_USER}
@@ -1007,14 +1007,22 @@ class TestYamlMigrationFlow:
         flow._nodeid = "ABC123"
         flow._unique_id_prefix = "neopool_mqtt_"
         flow._migrating_entities = []
-        flow.async_set_unique_id = AsyncMock()
-        flow._abort_if_unique_id_configured = MagicMock()
 
-        result = await flow.async_step_yaml_confirm({"confirm_migration": True})
+        # Mock entity registry for _perform_migration
+        mock_registry = MagicMock()
+        mock_registry.async_update_entity = MagicMock()
 
-        assert result["type"] == FlowResultType.CREATE_ENTRY
-        assert result["data"]["nodeid"] == "ABC123"
-        assert result["data"]["migrate_yaml"] is True
+        with patch(
+            "homeassistant.helpers.entity_registry.async_get",
+            return_value=mock_registry,
+        ):
+            result = await flow.async_step_yaml_confirm({"confirm_migration": True})
+
+        # Now redirects to yaml_migration_result step instead of creating entry directly
+        assert result["type"] == FlowResultType.FORM
+        assert result["step_id"] == "yaml_migration_result"
+        # Migration result should be stored
+        assert flow._migration_result is not None
 
 
 class TestPerformMigration:
