@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.3] - 2026-01-06
+
 ### Added
 
 - Device name configuration in Options flow: users can now customize the device name
@@ -19,6 +21,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Persistent notification with final verification assessment after setup completes
   - History verification checks if entities have data older than 1 hour
   - Clear status indicators: ✅ Successful, ⚠️ Partial, ℹ️ No History, ❌ Failed
+- **Comprehensive test suite**: Achieved 99% code coverage with extended tests for all modules
 
 ### Changed
 
@@ -30,6 +33,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Fixed blank `yaml_migration_result` step in config flow - migration results now display properly
 - Removed all inline `icon=` attributes from entity descriptions - icons now exclusively use `icons.json`
+- Fixed test patch targets for recorder history functions
 
 ## [0.2.2] - 2026-01-06
 
