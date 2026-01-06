@@ -11,6 +11,7 @@ from pytest_homeassistant_custom_component.common import MockConfigEntry
 from custom_components.sugar_valley_neopool import (
     CONFIG_ENTRY_VERSION,
     NeoPoolData,
+    _show_migration_complete_notification,
     _show_migration_verification_result,
     async_migrate_entry,
     async_register_device,
@@ -22,6 +23,7 @@ from custom_components.sugar_valley_neopool.const import (
     CONF_DEVICE_NAME,
     CONF_DISCOVERY_PREFIX,
     CONF_NODEID,
+    CONF_PENDING_MIGRATION_VERIFICATION,
     DOMAIN,
 )
 from homeassistant.core import HomeAssistant
@@ -79,8 +81,10 @@ class TestAsyncSetupEntryExtended:
             await async_setup_entry(hass, entry)
 
     @pytest.mark.asyncio
-    async def test_setup_entry_with_entity_id_mapping(self, hass: HomeAssistant) -> None:
-        """Test setup entry with entity_id_mapping triggers verification."""
+    async def test_setup_entry_with_entity_id_mapping_first_setup(
+        self, hass: HomeAssistant
+    ) -> None:
+        """Test first setup after migration sets pending flag and shows immediate notification."""
         entry = MockConfigEntry(
             domain=DOMAIN,
             data={
@@ -89,6 +93,42 @@ class TestAsyncSetupEntryExtended:
                 CONF_NODEID: "ABC123",
                 "entity_id_mapping": {"water_temp": "neopool_water_temp"},
             },
+            options={},  # No pending verification flag yet
+        )
+        entry.add_to_hass(hass)
+
+        with (
+            patch(
+                "homeassistant.components.mqtt.async_wait_for_mqtt_client",
+                return_value=True,
+            ),
+            patch.object(hass.config_entries, "async_forward_entry_setups", return_value=True),
+            patch(
+                "custom_components.sugar_valley_neopool._show_migration_complete_notification"
+            ) as mock_show_complete,
+            patch("custom_components.sugar_valley_neopool.async_verify_migration") as mock_verify,
+        ):
+            await async_setup_entry(hass, entry)
+
+        # Verification should NOT run on first setup (deferred to next restart)
+        mock_verify.assert_not_called()
+        # Immediate notification should be shown
+        mock_show_complete.assert_called_once_with(hass, 1, "Test Pool")
+        # Pending flag should be set in options
+        assert entry.options.get(CONF_PENDING_MIGRATION_VERIFICATION) is True
+
+    @pytest.mark.asyncio
+    async def test_setup_entry_with_pending_verification_flag(self, hass: HomeAssistant) -> None:
+        """Test restart with pending flag runs verification and clears flag."""
+        entry = MockConfigEntry(
+            domain=DOMAIN,
+            data={
+                CONF_DEVICE_NAME: "Test Pool",
+                CONF_DISCOVERY_PREFIX: "SmartPool",
+                CONF_NODEID: "ABC123",
+                "entity_id_mapping": {"water_temp": "neopool_water_temp"},
+            },
+            options={CONF_PENDING_MIGRATION_VERIFICATION: True},  # Flag set from previous run
         )
         entry.add_to_hass(hass)
 
@@ -104,12 +144,21 @@ class TestAsyncSetupEntryExtended:
             ) as mock_verify,
             patch(
                 "custom_components.sugar_valley_neopool._show_migration_verification_result"
-            ) as mock_show,
+            ) as mock_show_result,
+            patch(
+                "custom_components.sugar_valley_neopool._show_migration_complete_notification"
+            ) as mock_show_complete,
         ):
             await async_setup_entry(hass, entry)
 
+        # Verification should run on restart when flag is present
         mock_verify.assert_called_once()
-        mock_show.assert_called_once()
+        # Verification results should be shown
+        mock_show_result.assert_called_once()
+        # Immediate notification should NOT be shown (only on first setup)
+        mock_show_complete.assert_not_called()
+        # Pending flag should be cleared
+        assert entry.options.get(CONF_PENDING_MIGRATION_VERIFICATION) is None
 
 
 class TestAsyncUnloadEntryExtended:
@@ -474,6 +523,52 @@ class TestShowMigrationVerificationResult:
         message = call_args.kwargs.get("message") or call_args[1].get("message")
         # Should show first 5 and indicate more
         assert "5 more" in message
+
+
+class TestShowMigrationCompleteNotification:
+    """Tests for _show_migration_complete_notification function."""
+
+    @pytest.mark.asyncio
+    async def test_show_migration_complete_notification(self, hass: HomeAssistant) -> None:
+        """Test showing migration complete notification."""
+        with patch(
+            "custom_components.sugar_valley_neopool.persistent_notification.async_create"
+        ) as mock_notify:
+            await _show_migration_complete_notification(hass, 58, "Test Pool")
+
+        mock_notify.assert_called_once()
+        call_args = mock_notify.call_args
+        message = call_args.kwargs.get("message") or call_args[1].get("message")
+        title = call_args.kwargs.get("title") or call_args[1].get("title")
+        notification_id = call_args.kwargs.get("notification_id") or call_args[1].get(
+            "notification_id"
+        )
+
+        # Check message content
+        assert "Test Pool" in message
+        assert "58" in message
+        assert "next Home Assistant restart" in message
+        # Check title
+        assert "Migration Complete" in title
+        # Check notification_id
+        assert notification_id == "neopool_migration_complete_Test Pool"
+
+    @pytest.mark.asyncio
+    async def test_show_migration_complete_notification_single_entity(
+        self, hass: HomeAssistant
+    ) -> None:
+        """Test showing migration complete notification with single entity."""
+        with patch(
+            "custom_components.sugar_valley_neopool.persistent_notification.async_create"
+        ) as mock_notify:
+            await _show_migration_complete_notification(hass, 1, "My Pool")
+
+        mock_notify.assert_called_once()
+        call_args = mock_notify.call_args
+        message = call_args.kwargs.get("message") or call_args[1].get("message")
+
+        assert "1" in message
+        assert "My Pool" in message
 
 
 class TestAsyncRegisterDeviceExtended:

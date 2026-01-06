@@ -19,6 +19,7 @@ from .const import (
     CONF_FAILURES_THRESHOLD,
     CONF_NODEID,
     CONF_OFFLINE_TIMEOUT,
+    CONF_PENDING_MIGRATION_VERIFICATION,
     CONF_RECOVERY_SCRIPT,
     DEFAULT_DEVICE_NAME,
     DEFAULT_ENABLE_REPAIR_NOTIFICATION,
@@ -91,17 +92,37 @@ async def async_setup_entry(hass: HomeAssistant, entry: NeoPoolConfigEntry) -> b
     if entity_id_mapping:
         await _apply_entity_id_mapping(hass, entry, entity_id_mapping)
 
-    # Verify migration and show results if applicable
+    # Handle migration verification (deferred to next restart for reliable results)
     if entry.runtime_data.entity_id_mapping:
-        verification = await async_verify_migration(hass, entry.runtime_data.entity_id_mapping)
-        _LOGGER.info(
-            "Migration verification: %d verified, %d no history, %d failed",
-            verification["verified"],
-            verification["no_history"],
-            len(verification["failed"]),
-        )
-        # Show persistent notification with final migration assessment
-        await _show_migration_verification_result(hass, verification, device_name)
+        if entry.options.get(CONF_PENDING_MIGRATION_VERIFICATION):
+            # This is a restart after migration - recorder is now fully initialized
+            # Run verification and show results
+            verification = await async_verify_migration(hass, entry.runtime_data.entity_id_mapping)
+            _LOGGER.info(
+                "Migration verification: %d verified, %d no history, %d failed",
+                verification["verified"],
+                verification["no_history"],
+                len(verification["failed"]),
+            )
+            # Show verification results
+            await _show_migration_verification_result(hass, verification, device_name)
+
+            # Clear the pending verification flag
+            new_options = dict(entry.options)
+            new_options.pop(CONF_PENDING_MIGRATION_VERIFICATION, None)
+            hass.config_entries.async_update_entry(entry, options=new_options)
+            _LOGGER.debug("Cleared pending migration verification flag")
+        else:
+            # First setup after migration - set flag for verification on next restart
+            # Verification won't work now because recorder metadata isn't synced yet
+            new_options = dict(entry.options)
+            new_options[CONF_PENDING_MIGRATION_VERIFICATION] = True
+            hass.config_entries.async_update_entry(entry, options=new_options)
+            _LOGGER.debug("Set pending migration verification flag for next restart")
+
+            # Show immediate notification that migration completed
+            entity_count = len(entry.runtime_data.entity_id_mapping)
+            await _show_migration_complete_notification(hass, entity_count, device_name)
 
     # Note: No manual update listener needed - OptionsFlowWithReload handles reload automatically
 
@@ -386,6 +407,33 @@ async def _show_migration_verification_result(
         message="\n".join(lines),
         title="NeoPool YAML Migration Verification",
         notification_id=f"neopool_migration_verification_{device_name}",
+    )
+
+
+async def _show_migration_complete_notification(
+    hass: HomeAssistant,
+    entity_count: int,
+    device_name: str,
+) -> None:
+    """Show immediate migration complete notification.
+
+    This notification is shown right after migration, before verification.
+    Verification is deferred to the next HA restart when the recorder
+    metadata is fully synchronized.
+    """
+    message = (
+        f"**Device**: {device_name}\n\n"
+        f"Successfully migrated **{entity_count}** entities with original entity IDs preserved.\n\n"
+        "Your dashboards, automations, and scripts will continue to work.\n\n"
+        "**Note**: History verification will run automatically on the next "
+        "Home Assistant restart to confirm historical data was preserved."
+    )
+
+    persistent_notification.async_create(
+        hass,
+        message=message,
+        title="NeoPool YAML Migration Complete",
+        notification_id=f"neopool_migration_complete_{device_name}",
     )
 
 

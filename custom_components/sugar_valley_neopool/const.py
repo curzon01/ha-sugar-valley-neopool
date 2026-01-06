@@ -39,6 +39,7 @@ CONF_FAILURES_THRESHOLD: Final = "failures_threshold"
 CONF_RECOVERY_SCRIPT: Final = "recovery_script"
 CONF_OFFLINE_TIMEOUT: Final = "offline_timeout"
 CONF_REGENERATE_ENTITY_IDS: Final = "regenerate_entity_ids"
+CONF_PENDING_MIGRATION_VERIFICATION: Final = "pending_migration_verification"
 
 # Default values
 DEFAULT_DEVICE_NAME: Final = "NeoPool"
