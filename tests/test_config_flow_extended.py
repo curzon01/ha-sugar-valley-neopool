@@ -433,6 +433,15 @@ class TestCheckMigratableEntities:
         flow.context = {"source": config_entries.SOURCE_USER}
 
         flow._find_migratable_entities = MagicMock(return_value=[])
+        # Mock _auto_detect_neopool_prefix to return no prefix (smart detection fails)
+        flow._auto_detect_neopool_prefix = MagicMock(
+            return_value={
+                "prefix": None,
+                "confidence": 0,
+                "matched_signatures": [],
+                "entity_count": 0,
+            }
+        )
         flow.async_step_yaml_prefix = AsyncMock(
             return_value={"type": FlowResultType.FORM, "step_id": "yaml_prefix"}
         )
