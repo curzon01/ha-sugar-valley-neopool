@@ -443,7 +443,7 @@ class TestCheckMigratableEntities:
         assert result["step_id"] == "yaml_prefix"
 
     async def test_check_with_migratable_found(self, mock_hass: MagicMock) -> None:
-        """Test check migratable entities with entities found."""
+        """Test check migratable entities with entities found (no active entities)."""
         flow = NeoPoolConfigFlow()
         flow.hass = mock_hass
         flow._yaml_topic = "SmartPool"
@@ -456,13 +456,15 @@ class TestCheckMigratableEntities:
         entity1.unique_id = "neopool_mqtt_temp"
 
         flow._find_migratable_entities = MagicMock(return_value=[entity1])
+        # Mock _find_active_entities to return empty list (entities are inactive)
+        flow._find_active_entities = MagicMock(return_value=[])
         flow.async_step_yaml_confirm = AsyncMock(
             return_value={"type": FlowResultType.FORM, "step_id": "yaml_confirm"}
         )
 
         result = await flow._check_migratable_entities()
 
-        # Should set _migrating_entities and go to confirm
+        # Should set _migrating_entities and go to confirm (since no active entities)
         assert len(flow._migrating_entities) == 1
         assert result["step_id"] == "yaml_confirm"
 
