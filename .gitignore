@@ -81,3 +81,4 @@ Thumbs.db
 .ruff_cache/
 settings.local.json
 uv.lock
+nul

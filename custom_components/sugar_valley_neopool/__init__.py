@@ -295,6 +295,11 @@ async def async_verify_migration(
         _LOGGER.warning("Recorder not available, skipping migration verification")
         return {"verified": 0, "no_history": 0, "failed": ["Recorder not available"]}
 
+    # Check if recorder component is loaded
+    if "recorder" not in hass.config.components:
+        _LOGGER.warning("Recorder component not loaded, skipping migration verification")
+        return {"verified": 0, "no_history": 0, "failed": ["Recorder not loaded"]}
+
     results: dict[str, Any] = {
         "verified": 0,
         "no_history": 0,
