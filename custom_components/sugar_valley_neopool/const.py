@@ -214,8 +214,12 @@ YAML_TO_INTEGRATION_KEY_MAP: Final[dict[str, str]] = {
     # Button - YAML uses "_state" suffix
     "clear_error_state": "clear_error",
     # Sensors - hydrolysis naming differences
-    "hydrolysis_data_gh": "hydrolysis_data",  # YAML: neopool_mqtt_hydrolysis_data_gh
-    "hydrolysis_data_g_h": "hydrolysis_data",  # Alternative naming
+    # IMPORTANT: YAML has TWO hydrolysis sensors:
+    #   - hydrolysis_data (%) -> maps to integration's hydrolysis_percent
+    #   - hydrolysis_data_gh (g/h) -> maps to integration's hydrolysis_data
+    "hydrolysis_data": "hydrolysis_percent",  # YAML % sensor -> integration percent sensor
+    "hydrolysis_data_gh": "hydrolysis_data",  # YAML g/h sensor -> integration g/h sensor
+    "hydrolysis_data_g_h": "hydrolysis_data",  # Alternative naming for g/h
     "hydrolysis_runtime_pol_changes": "hydrolysis_polarity_changes",  # YAML uses pol_changes
     "hydrolysis_runtime_polarity_changes": "hydrolysis_polarity_changes",  # Alternative
     # Binary sensors - hydrolysis water flow (YAML: hydrolysis_ctrl_fl1_water_flow)

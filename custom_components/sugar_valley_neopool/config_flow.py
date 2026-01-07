@@ -601,12 +601,13 @@ class NeoPoolConfigFlow(ConfigFlow, domain=DOMAIN):
                 if collision_found:
                     continue
 
-                # Map: entity_key -> actual object_id (for entity creation)
-                summary["entity_id_mapping"][entity_key] = object_id
+                # Map: entity_key -> actual entity_id (includes domain for proper matching)
+                # Store full entity_id to preserve domain info (sensor vs select, etc.)
+                summary["entity_id_mapping"][entity_key] = actual_entity_id
                 _LOGGER.debug(
                     "Added to entity_id_mapping: %s -> %s",
                     entity_key,
-                    object_id,
+                    actual_entity_id,
                 )
 
                 # DELETE the old MQTT entity from registry
@@ -639,6 +640,10 @@ class NeoPoolConfigFlow(ConfigFlow, domain=DOMAIN):
         Analyzes the entity_id_mapping to determine the device name prefix
         used in the original YAML entities. This preserves user customizations.
 
+        Supports two mapping formats:
+        - New format: entity_key -> full entity_id (e.g., "sensor.neopool_mqtt_ph_data")
+        - Old format: entity_key -> object_id only (e.g., "neopool_mqtt_ph_data")
+
         Example:
             "sensor.neopool_mqtt_ph_data" with key "ph_data" -> "NeoPool MQTT"
             "sensor.my_pool_ph_data" with key "ph_data" -> "My Pool"
@@ -653,7 +658,15 @@ class NeoPoolConfigFlow(ConfigFlow, domain=DOMAIN):
             return DEFAULT_DEVICE_NAME
 
         # Try to extract from first entity
-        for entity_key, object_id in entity_id_mapping.items():
+        for entity_key, target_value in entity_id_mapping.items():
+            # Handle both formats:
+            # - New format: "sensor.neopool_mqtt_ph_data" -> extract object_id first
+            # - Old format: "neopool_mqtt_ph_data" -> use directly
+            if "." in target_value:
+                object_id = target_value.split(".", 1)[1]
+            else:
+                object_id = target_value
+
             # object_id is like "neopool_mqtt_ph_data", entity_key is "ph_data"
             # We need to extract "neopool_mqtt" and convert to "NeoPool MQTT"
             if object_id.endswith(f"_{entity_key}"):
@@ -664,7 +677,7 @@ class NeoPoolConfigFlow(ConfigFlow, domain=DOMAIN):
                 _LOGGER.debug(
                     "Extracted device name '%s' from entity %s (key: %s)",
                     device_name,
-                    object_id,
+                    target_value,
                     entity_key,
                 )
                 return device_name

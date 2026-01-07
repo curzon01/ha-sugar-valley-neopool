@@ -217,10 +217,14 @@ async def _apply_entity_id_mapping(
     updates the entity registry to use the original YAML entity_ids instead,
     preserving dashboards, automations, and history references.
 
+    The mapping supports two formats for backwards compatibility:
+    - New format: entity_key -> full entity_id (e.g., "sensor.neopool_mqtt_ph_data")
+    - Old format: entity_key -> object_id only (e.g., "neopool_mqtt_ph_data")
+
     Args:
         hass: Home Assistant instance
         entry: Config entry
-        entity_id_mapping: Dict mapping entity_key -> original object_id
+        entity_id_mapping: Dict mapping entity_key -> original entity_id or object_id
     """
     entity_registry = er.async_get(hass)
     nodeid = entry.runtime_data.nodeid
@@ -233,14 +237,29 @@ async def _apply_entity_id_mapping(
     )
 
     # Entity domains to search - integration creates entities across these platforms
-    domains = ["sensor", "binary_sensor", "switch", "select", "number", "button"]
+    all_domains = ["sensor", "binary_sensor", "switch", "select", "number", "button"]
 
-    for yaml_entity_key, target_object_id in entity_id_mapping.items():
+    for yaml_entity_key, target_value in entity_id_mapping.items():
+        # Determine if target_value is full entity_id or just object_id
+        # Full entity_id format: "domain.object_id" (contains a dot)
+        if "." in target_value:
+            # New format: full entity_id with domain
+            target_domain, target_object_id = target_value.split(".", 1)
+            target_entity_id = target_value
+            # Search in specific domain first, then others as fallback
+            domains_to_search = [target_domain] + [d for d in all_domains if d != target_domain]
+        else:
+            # Old format: just object_id (backwards compatibility)
+            target_object_id = target_value
+            target_entity_id = None  # Will be determined after finding entity
+            domains_to_search = all_domains
+
         _LOGGER.debug(
-            "Processing mapping: yaml_key=%s -> target_object_id=%s",
+            "Processing mapping: yaml_key=%s -> target=%s",
             yaml_entity_key,
-            target_object_id,
+            target_value,
         )
+
         # Translate YAML entity key to integration entity key
         # YAML package uses different naming (e.g., "filtration_switch" vs "filtration")
         integration_key = YAML_TO_INTEGRATION_KEY_MAP.get(yaml_entity_key, yaml_entity_key)
@@ -248,9 +267,9 @@ async def _apply_entity_id_mapping(
         # Find the entity by its unique_id (NodeID-based pattern)
         unique_id = f"neopool_mqtt_{nodeid}_{integration_key}"
 
-        # Search across all possible domains since entity_key doesn't indicate domain
+        # Search for entity in domains (prioritizing target domain if known)
         current_entity_id = None
-        for domain in domains:
+        for domain in domains_to_search:
             entity_id = entity_registry.async_get_entity_id(domain, DOMAIN, unique_id)
             if entity_id:
                 current_entity_id = entity_id
@@ -265,9 +284,10 @@ async def _apply_entity_id_mapping(
             )
             continue
 
-        # Determine domain from current entity_id
-        domain = current_entity_id.split(".", 1)[0]
-        target_entity_id = f"{domain}.{target_object_id}"
+        # For old format, build target_entity_id from found entity's domain
+        if target_entity_id is None:
+            domain = current_entity_id.split(".", 1)[0]
+            target_entity_id = f"{domain}.{target_object_id}"
 
         # Skip if already correct
         if current_entity_id == target_entity_id:
