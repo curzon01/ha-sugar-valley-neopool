@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.6] - 2026-01-07
+
 ### Fixed
 
 - Fixed YAML migration translation map with correct YAML package entity keys:
@@ -16,6 +18,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `hydrolysis_boost_mode` → `boost_mode`
   - `conndiag_*` variants for connection sensors
   - Added identity mappings for `modules_*` keys
+
+### Added
+
+- Added comprehensive debug logging for migration troubleshooting
 
 ## [0.2.5] - 2026-01-07
 
