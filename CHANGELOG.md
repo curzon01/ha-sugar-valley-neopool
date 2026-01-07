@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.10] - 2026-01-07
+
+### Fixed
+
+- Fixed `ValueError: New entity ID should be same domain` during YAML migration
+- Home Assistant's entity registry doesn't allow cross-domain entity renames
+  (e.g., `binary_sensor.x` to `switch.x`)
+- Added domain validation check to skip cross-domain mappings gracefully
+- Removed invalid `relay_aux*_state` → `aux*` mappings from `YAML_TO_INTEGRATION_KEY_MAP`
+  (binary_sensor entities cannot be mapped to switch entities)
+
 ## [0.2.9] - 2026-01-07
 
 ### Fixed
