@@ -257,7 +257,6 @@ SENSOR_DESCRIPTIONS: tuple[NeoPoolSensorEntityDescription, ...] = (
         json_path="NeoPool.Connection.MBRequests",
         value_fn=safe_int,
         entity_category=EntityCategory.DIAGNOSTIC,
-        entity_registry_enabled_default=False,
     ),
     NeoPoolSensorEntityDescription(
         key="connection_responses",
@@ -267,7 +266,6 @@ SENSOR_DESCRIPTIONS: tuple[NeoPoolSensorEntityDescription, ...] = (
         json_path="NeoPool.Connection.MBNoError",
         value_fn=safe_int,
         entity_category=EntityCategory.DIAGNOSTIC,
-        entity_registry_enabled_default=False,
     ),
     NeoPoolSensorEntityDescription(
         key="connection_no_response",
@@ -277,7 +275,6 @@ SENSOR_DESCRIPTIONS: tuple[NeoPoolSensorEntityDescription, ...] = (
         json_path="NeoPool.Connection.MBNoResponse",
         value_fn=safe_int,
         entity_category=EntityCategory.DIAGNOSTIC,
-        entity_registry_enabled_default=False,
     ),
     NeoPoolSensorEntityDescription(
         key="connection_out_of_range",
@@ -287,7 +284,6 @@ SENSOR_DESCRIPTIONS: tuple[NeoPoolSensorEntityDescription, ...] = (
         json_path="NeoPool.Connection.DataOutOfRange",
         value_fn=safe_int,
         entity_category=EntityCategory.DIAGNOSTIC,
-        entity_registry_enabled_default=False,
     ),
     # Diagnostic sensors
     NeoPoolSensorEntityDescription(
