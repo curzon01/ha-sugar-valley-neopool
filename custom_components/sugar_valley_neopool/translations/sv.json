@@ -166,6 +166,12 @@
       "hydrolysis_runtime_part": {
         "name": "Hydrolys delvis körtid"
       },
+      "hydrolysis_runtime_pol1": {
+        "name": "Hydrolys körtid Pol1"
+      },
+      "hydrolysis_runtime_pol2": {
+        "name": "Hydrolys körtid Pol2"
+      },
       "hydrolysis_polarity_changes": {
         "name": "Hydrolys polaritetsändringar"
       },
@@ -174,6 +180,9 @@
       },
       "filtration_speed": {
         "name": "Filtreringshastighet"
+      },
+      "boost_mode": {
+        "name": "Boostläge"
       },
       "powerunit_version": {
         "name": "Kraftenhetsversion"
@@ -198,6 +207,9 @@
       },
       "connection_no_response": {
         "name": "Anslutning inget svar"
+      },
+      "connection_out_of_range": {
+        "name": "Anslutning utanför räckvidd"
       },
       "powerunit_nodeid": {
         "name": "Kraftenhet NodeID"

@@ -166,6 +166,12 @@
       "hydrolysis_runtime_part": {
         "name": "Runtime parziale idrolisi"
       },
+      "hydrolysis_runtime_pol1": {
+        "name": "Runtime idrolisi Pol1"
+      },
+      "hydrolysis_runtime_pol2": {
+        "name": "Runtime idrolisi Pol2"
+      },
       "hydrolysis_polarity_changes": {
         "name": "Cambi polarità idrolisi"
       },
@@ -174,6 +180,9 @@
       },
       "filtration_speed": {
         "name": "Velocità filtrazione"
+      },
+      "boost_mode": {
+        "name": "Modalità Boost"
       },
       "powerunit_version": {
         "name": "Versione Powerunit"
@@ -198,6 +207,9 @@
       },
       "connection_no_response": {
         "name": "Nessuna risposta connessione"
+      },
+      "connection_out_of_range": {
+        "name": "Connessione fuori portata"
       },
       "powerunit_nodeid": {
         "name": "NodeID Powerunit"

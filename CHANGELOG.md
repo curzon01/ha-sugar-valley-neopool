@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.8] - 2026-01-07
+
+### Added
+
+- Added `boost_mode` sensor (read-only) to complement the existing `boost_mode` select entity,
+  matching the pattern used by `filtration_mode` and `filtration_speed`
+- Added missing translations for `boost_mode`, `hydrolysis_runtime_pol1`, `hydrolysis_runtime_pol2`,
+  and `connection_out_of_range` sensors to all 10 language files
+
 ## [0.2.7] - 2026-01-07
 
 ### Fixed

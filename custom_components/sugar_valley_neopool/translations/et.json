@@ -166,6 +166,12 @@
       "hydrolysis_runtime_part": {
         "name": "Hüdrolüüsi osaline käitusaeg"
       },
+      "hydrolysis_runtime_pol1": {
+        "name": "Hüdrolüüsi käitusaeg Pol1"
+      },
+      "hydrolysis_runtime_pol2": {
+        "name": "Hüdrolüüsi käitusaeg Pol2"
+      },
       "hydrolysis_polarity_changes": {
         "name": "Hüdrolüüsi polaarsuse muutused"
       },
@@ -174,6 +180,9 @@
       },
       "filtration_speed": {
         "name": "Filtreerimise kiirus"
+      },
+      "boost_mode": {
+        "name": "Võimenduse režiim"
       },
       "powerunit_version": {
         "name": "Toiteüksuse versioon"
@@ -198,6 +207,9 @@
       },
       "connection_no_response": {
         "name": "Ühendus vastuseta"
+      },
+      "connection_out_of_range": {
+        "name": "Ühendus vahemikust väljas"
       },
       "powerunit_nodeid": {
         "name": "Toiteüksuse NodeID"

@@ -166,6 +166,12 @@
       "hydrolysis_runtime_part": {
         "name": "Durée partielle d'hydrolyse"
       },
+      "hydrolysis_runtime_pol1": {
+        "name": "Durée d'hydrolyse Pol1"
+      },
+      "hydrolysis_runtime_pol2": {
+        "name": "Durée d'hydrolyse Pol2"
+      },
       "hydrolysis_polarity_changes": {
         "name": "Changements de polarité d'hydrolyse"
       },
@@ -174,6 +180,9 @@
       },
       "filtration_speed": {
         "name": "Vitesse de filtration"
+      },
+      "boost_mode": {
+        "name": "Mode Boost"
       },
       "powerunit_version": {
         "name": "Version de l'unité d'alimentation"
@@ -198,6 +207,9 @@
       },
       "connection_no_response": {
         "name": "Connexion sans réponse"
+      },
+      "connection_out_of_range": {
+        "name": "Connexion hors de portée"
       },
       "powerunit_nodeid": {
         "name": "NodeID de l'unité d'alimentation"

@@ -166,6 +166,12 @@
       "hydrolysis_runtime_part": {
         "name": "Hydrolyysin osittainen käyntiaika"
       },
+      "hydrolysis_runtime_pol1": {
+        "name": "Hydrolyysin käyntiaika Pol1"
+      },
+      "hydrolysis_runtime_pol2": {
+        "name": "Hydrolyysin käyntiaika Pol2"
+      },
       "hydrolysis_polarity_changes": {
         "name": "Hydrolyysin napaisuuden muutokset"
       },
@@ -174,6 +180,9 @@
       },
       "filtration_speed": {
         "name": "Suodatusnopeus"
+      },
+      "boost_mode": {
+        "name": "Tehostustila"
       },
       "powerunit_version": {
         "name": "Virtalähteen versio"
@@ -198,6 +207,9 @@
       },
       "connection_no_response": {
         "name": "Yhteys ei vastausta"
+      },
+      "connection_out_of_range": {
+        "name": "Yhteys alueen ulkopuolella"
       },
       "powerunit_nodeid": {
         "name": "Virtalähteen NodeID"

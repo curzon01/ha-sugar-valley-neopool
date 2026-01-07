@@ -23,6 +23,7 @@ from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.entity import EntityCategory
 
 from .const import (
+    BOOST_MODE_MAP,
     FILTRATION_MODE_MAP,
     FILTRATION_SPEED_MAP,
     HYDROLYSIS_STATE_MAP,
@@ -200,6 +201,13 @@ SENSOR_DESCRIPTIONS: tuple[NeoPoolSensorEntityDescription, ...] = (
         name="Filtration Speed",
         json_path="NeoPool.Filtration.Speed",
         value_fn=lambda x: FILTRATION_SPEED_MAP.get(safe_int(x, -1), f"Unknown ({x})"),
+    ),
+    NeoPoolSensorEntityDescription(
+        key="boost_mode",
+        translation_key="boost_mode",
+        name="Boost Mode",
+        json_path="NeoPool.Hydrolysis.Boost",
+        value_fn=lambda x: BOOST_MODE_MAP.get(safe_int(x, -1), f"Unknown ({x})"),
     ),
     # Powerunit sensors
     NeoPoolSensorEntityDescription(

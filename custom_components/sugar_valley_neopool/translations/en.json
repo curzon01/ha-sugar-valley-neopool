@@ -173,6 +173,12 @@
       "hydrolysis_runtime_part": {
         "name": "Hydrolysis Runtime Part"
       },
+      "hydrolysis_runtime_pol1": {
+        "name": "Hydrolysis Runtime Pol1"
+      },
+      "hydrolysis_runtime_pol2": {
+        "name": "Hydrolysis Runtime Pol2"
+      },
       "hydrolysis_polarity_changes": {
         "name": "Hydrolysis Polarity Changes"
       },
@@ -181,6 +187,9 @@
       },
       "filtration_speed": {
         "name": "Filtration Speed"
+      },
+      "boost_mode": {
+        "name": "Boost Mode"
       },
       "powerunit_version": {
         "name": "Powerunit Version"
@@ -205,6 +214,9 @@
       },
       "connection_no_response": {
         "name": "Connection No Response"
+      },
+      "connection_out_of_range": {
+        "name": "Connection Out of Range"
       },
       "powerunit_nodeid": {
         "name": "Powerunit NodeID"
