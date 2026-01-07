@@ -252,8 +252,22 @@ async def _apply_entity_id_mapping(
 
         # For old format, build target_entity_id from found entity's domain
         if target_entity_id is None:
-            domain = current_entity_id.split(".", 1)[0]
-            target_entity_id = f"{domain}.{target_object_id}"
+            current_domain = current_entity_id.split(".", 1)[0]
+            target_entity_id = f"{current_domain}.{target_object_id}"
+        else:
+            current_domain = current_entity_id.split(".", 1)[0]
+
+        # Check if domains match - HA doesn't allow cross-domain entity renames
+        target_domain_check = target_entity_id.split(".", 1)[0]
+        if current_domain != target_domain_check:
+            _LOGGER.debug(
+                "Skipping cross-domain mapping: %s -> %s (domains don't match: %s != %s)",
+                current_entity_id,
+                target_entity_id,
+                current_domain,
+                target_domain_check,
+            )
+            continue
 
         # Skip if already correct
         if current_entity_id == target_entity_id:
