@@ -210,10 +210,21 @@ async def _apply_entity_id_mapping(
     nodeid = entry.runtime_data.nodeid
     updated_count = 0
 
+    _LOGGER.debug(
+        "Applying entity_id_mapping with %d entries, nodeid=%s",
+        len(entity_id_mapping),
+        nodeid,
+    )
+
     # Entity domains to search - integration creates entities across these platforms
     domains = ["sensor", "binary_sensor", "switch", "select", "number", "button"]
 
     for yaml_entity_key, target_object_id in entity_id_mapping.items():
+        _LOGGER.debug(
+            "Processing mapping: yaml_key=%s -> target_object_id=%s",
+            yaml_entity_key,
+            target_object_id,
+        )
         # Translate YAML entity key to integration entity key
         # YAML package uses different naming (e.g., "filtration_switch" vs "filtration")
         integration_key = YAML_TO_INTEGRATION_KEY_MAP.get(yaml_entity_key, yaml_entity_key)
@@ -248,11 +259,16 @@ async def _apply_entity_id_mapping(
             continue
 
         # Check if target entity_id is available
-        if entity_registry.async_get(target_entity_id) is not None:
+        existing_entity = entity_registry.async_get(target_entity_id)
+        if existing_entity is not None:
             _LOGGER.warning(
-                "Cannot rename %s to %s - target already exists",
+                "Cannot rename %s to %s - target already exists "
+                "(platform=%s, unique_id=%s, config_entry=%s)",
                 current_entity_id,
                 target_entity_id,
+                existing_entity.platform,
+                existing_entity.unique_id,
+                existing_entity.config_entry_id,
             )
             continue
 
