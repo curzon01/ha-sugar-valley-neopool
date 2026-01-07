@@ -224,6 +224,13 @@ YAML_TO_INTEGRATION_KEY_MAP: Final[dict[str, str]] = {
     # Binary sensors - hydrolysis water flow (YAML: hydrolysis_ctrl_fl1_water_flow)
     "hydrolysis_ctrl_fl1_water_flow": "hydrolysis_water_flow",
     "hydrolysis_ctrl_fl1": "hydrolysis_fl1",
+    # Binary sensors - pH FL1 naming (YAML: ph_ctrl_fl1, Integration: ph_fl1)
+    "ph_ctrl_fl1": "ph_fl1",
+    # Binary sensors -> Switches mapping (YAML relay state binary sensors map to integration switches)
+    "relay_aux1_state": "aux1",
+    "relay_aux2_state": "aux2",
+    "relay_aux3_state": "aux3",
+    "relay_aux4_state": "aux4",
     # Binary sensors - modules naming (YAML: modules_*, Integration: modules_*)
     "modules_ph": "modules_ph",
     "modules_redox": "modules_redox",
