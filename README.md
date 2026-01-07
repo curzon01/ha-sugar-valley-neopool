@@ -155,32 +155,34 @@ If you're currently using the YAML package
 
 1. **Remove/comment out** the YAML package from your `configuration.yaml`
 1. **Restart Home Assistant** - this is essential! After restart, the entities
-   will remain in the registry with all historical data intact, but they'll be
-   "orphaned" (no longer receiving updates from the YAML package)
+   will remain in the registry but become "unavailable" (no longer receiving
+   updates from the YAML package)
 1. **Install** this custom integration through HACS or manually (see above)
 1. **Add the integration** in Home Assistant:
    - Go to **Settings** → **Devices & Services** → **Add Integration**
    - Search for "Sugar Valley NeoPool"
-   - Check the box **"I have removed the YAML package and restarted Home
-     Assistant"**
-1. **Auto-detection**: The integration will attempt to:
-   - Auto-detect your MQTT topic (falls back to asking you if not found)
-   - Auto-detect migratable entities with prefix `neopool_mqtt_`
-   - Configure Tasmota with `SetOption157 1` to expose NodeID
-1. **Review "What will happen"**: Before migration, you'll see:
-   - Summary of validated settings (topic, NodeID)
+   - Check the box **"Migrate from YAML package"**
+1. **Auto-detection**: The integration will automatically:
+   - Scan for NeoPool messages and detect your MQTT topic
+   - Find migratable entities using the default `neopool_mqtt_` prefix
+   - If not found, use smart detection with NeoPool-specific signatures
+   - Configure Tasmota with `SetOption157 1` to expose NodeID (if needed)
+1. **Active entity check**: If the integration detects entities are still
+   receiving updates (YAML package still running), it will warn you and
+   ask you to remove the YAML package first
+1. **Custom prefix support**: If your YAML used a custom `unique_id` prefix:
+   - Smart detection will find entities using NeoPool-specific signatures
+     (hydrolysis_runtime, powerunit_nodeid, etc.)
+   - You'll be asked to confirm the detected prefix
+   - Or you can manually enter your custom prefix
+1. **Review and confirm**: Before migration, you'll see:
+   - Validated MQTT topic and NodeID
    - List of entities to be migrated
    - Confirmation checkbox (required to proceed)
-1. **Review "What was done"**: After confirming, you'll see:
-   - Number of entities processed and migrated
-   - List of migrated entities
+1. **Migration result**: After confirming, you'll see:
+   - Number of entities found and migrated
+   - List of successfully migrated entities
    - Any errors that occurred
-1. **Final verification**: After setup completes, check the **persistent
-   notification** for the final assessment:
-   - ✅ **Migration Successful**: History was verified and preserved
-   - ⚠️ **Partially Successful**: Some entities verified, some could not be
-   - ℹ️ **Complete (No History)**: Migration done but no old history to verify
-   - ❌ **Verification Failed**: Check errors in notification
 
 ### How History Preservation Works
 
@@ -190,11 +192,14 @@ The migration process preserves your historical data by:
 1. **Extracting** the actual `entity_id` from each entity (handles custom names)
 1. **Deleting** the old MQTT entities from the entity registry
 1. **Creating** new entities with the **same `entity_id`** as the deleted ones
-1. **Verifying** that historical data (older than 1 hour) is accessible
 
 Since Home Assistant's recorder indexes history by `entity_id`, your graphs,
 statistics, and long-term data are preserved when the new entity uses the
 same `entity_id` as the old one.
+
+The integration also extracts your device name from the migrated entity IDs
+to preserve any customizations (e.g., if your entities were named
+`sensor.my_pool_ph_data`, the device will be named "My Pool").
 
 ### Why NodeID?
 
@@ -220,15 +225,20 @@ create stable unique identifiers:
 
 - Verify entities with the `neopool_mqtt_` prefix exist in your entity registry
 - Entities already owned by this integration cannot be migrated again
-- If you used a custom `unique_id` prefix in your YAML package, you'll be
-  prompted to enter it. To find your prefix:
-  1. Go to **Developer Tools** → **States**
-  2. Find any NeoPool entity (e.g., `sensor.neopool_water_temperature`)
-  3. Click on it and look at the **Entity ID** attribute
-  4. Go to **Settings** → **Devices & Services** → **Entities** tab
-  5. Search for the entity and click the gear icon to see its **Unique ID**
-  6. The prefix is everything before the entity key (e.g., if unique_id is
-     `my_pool_water_temperature`, the prefix is `my_pool_`)
+- The integration uses smart detection with NeoPool-specific signatures
+  (hydrolysis_runtime, powerunit_nodeid, etc.) to find entities
+- If smart detection finds your entities, you'll be asked to confirm the
+  detected prefix and confidence level
+- If automatic detection fails, you can manually enter your custom prefix
+
+**Problem**: "YAML package still active" warning
+
+- The integration detected entities are still receiving updates
+- This means you haven't removed/commented out the YAML package yet
+- **To fix**:
+  1. Remove/comment out the YAML package from `configuration.yaml`
+  2. Restart Home Assistant
+  3. Click "Retry" in the config flow to check again
 
 **Problem**: "Failed to configure NodeID"
 
@@ -250,6 +260,16 @@ create stable unique identifiers:
      **Settings** → **Devices & Services** → **Entities** tab
 - **Prevention**: Always remove the YAML package and restart HA **before**
   running the migration wizard
+
+**Problem**: Finding your custom unique_id prefix
+
+If you need to find your custom prefix manually:
+
+1. Go to **Settings** → **Devices & Services** → **Entities** tab
+2. Search for any NeoPool entity (e.g., `sensor.neopool_water_temperature`)
+3. Click the entity and then the gear icon to see its **Unique ID**
+4. The prefix is everything before the entity key (e.g., if unique_id is
+   `my_pool_water_temperature`, the prefix is `my_pool_`)
 
 ## Device Triggers
 
