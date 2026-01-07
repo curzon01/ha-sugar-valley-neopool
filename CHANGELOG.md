@@ -7,14 +7,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [0.2.8] - 2026-01-07
-
-### Removed
-
-- Removed migration verification and persistent notifications: the verification was unreliable
-  due to recorder timing issues. Migration results are now summarized in the config flow only,
-  trusting that entity ID preservation works correctly.
-
 ## [0.2.7] - 2026-01-07
 
 ### Fixed
@@ -25,6 +17,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   (with domain) instead of just object_id, allowing correct domain-aware entity lookup
 - Improved `_apply_entity_id_mapping()` to support both old format (object_id only) and new
   format (full entity_id with domain) for backwards compatibility
+
+### Removed
+
+- Removed migration verification and persistent notifications: the verification was unreliable
+  due to recorder timing issues. Migration results are now summarized in the config flow only,
+  trusting that entity ID preservation works correctly
 
 ## [0.2.6] - 2026-01-07
 
