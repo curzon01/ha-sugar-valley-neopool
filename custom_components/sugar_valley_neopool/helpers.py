@@ -195,6 +195,7 @@ def extract_entity_key_from_masked_unique_id(unique_id: str) -> str | None:
 
     The format is: neopool_mqtt_{masked_nodeid}_{entity_key}
     where masked_nodeid contains spaces and 'XXXX' patterns.
+    The masked NodeID ends with 4 hex digits (like '3435').
 
     Args:
         unique_id: The masked unique_id to extract from.
@@ -208,40 +209,46 @@ def extract_entity_key_from_masked_unique_id(unique_id: str) -> str | None:
     # Remove the prefix
     remainder = unique_id[len("neopool_mqtt_") :]
 
-    # The entity_key is the part after the last underscore that follows a digit
-    # Pattern: {masked_nodeid}_{entity_key}
-    # masked_nodeid ends with digits like "3435"
-    # We need to find where the masked NodeID ends and entity_key begins
+    # The masked NodeID pattern is: "XXXX XXXX XXXX XXXX XXXX HHHH" where HHHH is hex
+    # After that comes an underscore and the entity_key
+    # Strategy: Find the last occurrence of a pattern like "XXXX" followed by
+    # spaces/hex and then underscore, and take everything after
 
-    # Split by underscore and find where NodeID ends
-    # NodeID pattern ends with digits, entity_key starts with letters
-    parts = remainder.rsplit("_", 1)
+    # Split by underscore and accumulate parts from the right until we hit
+    # a part that contains "XXXX" or is just hex digits (part of NodeID)
+    parts = remainder.split("_")
 
-    # Keep splitting until we find a part that looks like an entity key
-    # (doesn't contain XXXX and isn't just digits)
-    while len(parts) == 2:
-        potential_key = parts[1]
-        potential_nodeid = parts[0]
+    # Find where the NodeID ends and entity_key begins
+    # NodeID parts contain "XXXX" or are hex digits
+    # Entity key parts are normal words like "ph", "data", "water", "temperature"
+    entity_key_parts = []
 
-        # If the potential_nodeid still contains XXXX or ends with digits followed by _
-        # and potential_key looks like an entity key (no XXXX, not just digits)
-        if "xxxx" not in potential_key.lower() and not potential_key.isdigit():
-            # Check if we need to include more parts in the key
-            # e.g., "hydrolysis_runtime_total" should be the full key
-            if "xxxx" in potential_nodeid.lower():
-                # Found the boundary - potential_key is the start of entity_key
-                # But we may have split too early, need to find the real boundary
-                # The NodeID ends where XXXX pattern ends followed by digits
-                break
+    for i in range(len(parts) - 1, -1, -1):
+        part = parts[i]
+        part_lower = part.lower()
 
-        parts = potential_nodeid.rsplit("_", 1)
-        if len(parts) == 2:
-            parts = [parts[0], parts[1] + "_" + potential_key]
-        else:
+        # Check if this part is part of the NodeID
+        # NodeID parts: contain "xxxx", contain spaces (joined), or are hex-only
+        if "xxxx" in part_lower or " " in part:
+            # This is part of NodeID, stop here
             break
 
-    if len(parts) == 2 and "xxxx" in parts[0].lower():
-        return parts[1]
+        # Check if this is a hex-only part that could be the end of NodeID (like "3435")
+        # But only if it's 4 chars and all hex, AND we haven't found any entity key yet
+        if len(part) == 4 and all(c in "0123456789abcdefABCDEF" for c in part):
+            # This could be the last part of NodeID
+            # Only treat as NodeID if we haven't accumulated any entity key parts
+            # OR if the previous part contains XXXX
+            if not entity_key_parts:
+                # Check if previous parts have XXXX pattern
+                if i > 0 and "xxxx" in "_".join(parts[:i]).lower():
+                    break
+            # Otherwise, it might be a valid entity key part (unlikely but possible)
+
+        entity_key_parts.insert(0, part)
+
+    if entity_key_parts:
+        return "_".join(entity_key_parts)
 
     return None
 
