@@ -101,21 +101,26 @@
   "options": {
     "step": {
       "init": {
-        "title": "Opciones de tiempo de ejecución de NeoPool",
-        "description": "Configure las opciones del dispositivo y de tiempo de ejecución.\n\n**Variables del script de recuperación:**\nCuando está configurado, el script de recuperación recibe estas variables:\n\n- `device_name` : Nombre del dispositivo\n- `mqtt_topic` : Topic MQTT\n- `nodeid` : NodeID del dispositivo\n- `failures_count` : Número de fallos consecutivos",
+        "title": "Opciones de NeoPool",
+        "description": "Configure los ajustes del dispositivo Tasmota y las opciones de tiempo de ejecución.{setoption157_warning}\n\n**Variables del script de recuperación:**\nCuando está configurado, el script de recuperación recibe estas variables:\n\n- `device_name` : Nombre del dispositivo\n- `mqtt_topic` : Topic MQTT\n- `nodeid` : NodeID del dispositivo\n- `failures_count` : Número de fallos consecutivos",
         "data": {
-          "recovery_script": "Script de recuperación (opcional, se ejecuta cuando el dispositivo deja de responder)",
+          "setoption157": "Mostrar datos sensibles de NeoPool (SetOption157)",
+          "recovery_script": "Script de recuperación (opcional)",
           "enable_repair_notification": "Habilitar notificaciones de reparación",
           "failures_threshold": "Fallos antes de notificación (1-10)",
           "offline_timeout": "Tiempo de espera sin conexión (segundos)"
         },
         "data_description": {
+          "setoption157": "Habilitar Tasmota SetOption157 para mostrar el NodeID completo. Requerido para el funcionamiento correcto de esta integración.",
           "recovery_script": "Script a ejecutar cuando el dispositivo está fuera de línea demasiado tiempo",
           "enable_repair_notification": "Crear un problema de reparación cuando el dispositivo se desconecta",
           "failures_threshold": "Número de mensajes LWT fuera de línea consecutivos antes de activar las notificaciones",
           "offline_timeout": "Cuánto tiempo debe estar el dispositivo fuera de línea antes de activar las notificaciones"
         }
       }
+    },
+    "error": {
+      "setoption157_change_failed": "No se pudo cambiar SetOption157. El dispositivo puede estar fuera de línea o no responde."
     }
   },
   "issues": {

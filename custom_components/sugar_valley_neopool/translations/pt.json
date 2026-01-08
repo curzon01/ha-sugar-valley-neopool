@@ -100,21 +100,26 @@
   "options": {
     "step": {
       "init": {
-        "title": "Opções de Execução do NeoPool",
-        "description": "Configure as opções do dispositivo e de execução.\n\n**Variáveis do Script de Recuperação:**\nQuando configurado, o script de recuperação recebe estas variáveis:\n\n- `device_name` : Nome do dispositivo\n- `mqtt_topic` : Tópico MQTT\n- `nodeid` : NodeID do dispositivo\n- `failures_count` : Número de falhas consecutivas",
+        "title": "Opções do NeoPool",
+        "description": "Configure as definições do dispositivo Tasmota e opções de execução.{setoption157_warning}\n\n**Variáveis do Script de Recuperação:**\nQuando configurado, o script de recuperação recebe estas variáveis:\n\n- `device_name` : Nome do dispositivo\n- `mqtt_topic` : Tópico MQTT\n- `nodeid` : NodeID do dispositivo\n- `failures_count` : Número de falhas consecutivas",
         "data": {
-          "recovery_script": "Script de recuperação (opcional, executado quando o dispositivo para de responder)",
+          "setoption157": "Mostrar dados sensíveis do NeoPool (SetOption157)",
+          "recovery_script": "Script de recuperação (opcional)",
           "enable_repair_notification": "Ativar notificações de reparação",
           "failures_threshold": "Falhas antes da notificação (1-10)",
           "offline_timeout": "Tempo limite offline (segundos)"
         },
         "data_description": {
+          "setoption157": "Ativar Tasmota SetOption157 para mostrar o NodeID completo. Necessário para o funcionamento correto desta integração.",
           "recovery_script": "Script a executar quando o dispositivo está offline por muito tempo",
           "enable_repair_notification": "Criar um problema de reparação quando o dispositivo fica offline",
           "failures_threshold": "Número de mensagens LWT offline consecutivas antes de acionar notificações",
           "offline_timeout": "Quanto tempo o dispositivo deve estar offline antes de acionar notificações"
         }
       }
+    },
+    "error": {
+      "setoption157_change_failed": "Falha ao alterar SetOption157. O dispositivo pode estar offline ou não está respondendo."
     }
   },
   "issues": {

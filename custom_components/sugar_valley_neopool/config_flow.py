@@ -41,6 +41,7 @@ from .const import (
     CONF_OFFLINE_TIMEOUT,
     CONF_RECOVERY_SCRIPT,
     CONF_REGENERATE_ENTITY_IDS,
+    CONF_SETOPTION157,
     CONF_UNIQUE_ID_PREFIX,
     DEFAULT_DEVICE_NAME,
     DEFAULT_ENABLE_REPAIR_NOTIFICATION,
@@ -55,7 +56,7 @@ from .const import (
     MIN_FAILURES_THRESHOLD,
     MIN_OFFLINE_TIMEOUT,
 )
-from .helpers import get_nested_value, validate_nodeid
+from .helpers import async_query_setoption157, get_nested_value, normalize_nodeid, validate_nodeid
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -188,7 +189,7 @@ class NeoPoolConfigFlow(ConfigFlow, domain=DOMAIN):
                         # NodeID config failed, ask for topic manually
                         return await self.async_step_yaml_topic()
 
-                self._nodeid = nodeid
+                self._nodeid = normalize_nodeid(nodeid)
 
                 # Now try to find migratable entities
                 return await self._check_migratable_entities()
@@ -228,7 +229,7 @@ class NeoPoolConfigFlow(ConfigFlow, domain=DOMAIN):
                         )
                     nodeid = config_result["nodeid"]
 
-                self._nodeid = nodeid
+                self._nodeid = normalize_nodeid(nodeid)
 
                 # Now check for migratable entities
                 return await self._check_migratable_entities()
@@ -830,13 +831,13 @@ class NeoPoolConfigFlow(ConfigFlow, domain=DOMAIN):
                 )
             nodeid = config_result["nodeid"]
 
-        # Store discovery info and NodeID
+        # Store discovery info and NodeID (normalized for clean unique_ids)
         self._discovery_prefix = device_topic
         self._device_name = f"NeoPool {device_topic}"
-        self._nodeid = nodeid
+        self._nodeid = normalize_nodeid(nodeid)
 
         # Set unique ID based on NodeID to prevent duplicate discoveries
-        await self.async_set_unique_id(f"{DOMAIN}_{nodeid}")
+        await self.async_set_unique_id(f"{DOMAIN}_{self._nodeid}")
         self._abort_if_unique_id_configured()
 
         # Show confirmation form
@@ -959,9 +960,11 @@ class NeoPoolConfigFlow(ConfigFlow, domain=DOMAIN):
 
         Returns dict with 'success' boolean and optionally 'nodeid' or 'error'.
         """
-        _LOGGER.warning("NodeID is hidden. Attempting to configure Tasmota with SetOption157 1")
+        _LOGGER.warning(
+            "NodeID is hidden/masked. Attempting to configure Tasmota with SetOption157 1"
+        )
 
-        # Publish command to enable NodeID
+        # Step 1: Send command to enable SetOption157
         await mqtt.async_publish(
             self.hass,
             f"cmnd/{device_topic}/SetOption157",
@@ -970,16 +973,39 @@ class NeoPoolConfigFlow(ConfigFlow, domain=DOMAIN):
             retain=False,
         )
 
-        # Wait for Tasmota to process and republish
-        await asyncio.sleep(2)
+        # Step 2: Wait for Tasmota to process
+        await asyncio.sleep(1)
 
-        # Try to get NodeID again from next MQTT message
+        # Step 3: Verify SetOption157 was actually set
+        verified_status = await async_query_setoption157(self.hass, device_topic)
+        if verified_status is not True:
+            _LOGGER.error(
+                "SetOption157 verification failed. Expected True, got %s", verified_status
+            )
+            return {
+                "success": False,
+                "error": "Failed to enable SetOption157. Please manually set SetOption157 1 in Tasmota console",
+            }
+
+        _LOGGER.info("SetOption157 successfully enabled, triggering telemetry for NodeID...")
+
+        # Step 4: Trigger immediate telemetry response by sending TelePeriod command
+        # This forces Tasmota to send a SENSOR message immediately
+        await mqtt.async_publish(
+            self.hass,
+            f"cmnd/{device_topic}/TelePeriod",
+            "",  # Empty payload queries current period and triggers immediate telemetry
+            qos=1,
+            retain=False,
+        )
+
+        # Wait for NodeID in the telemetry message
         nodeid = await self._wait_for_nodeid(device_topic)
 
         if not validate_nodeid(nodeid):
             return {
                 "success": False,
-                "error": "Failed to enable NodeID. Please manually set SetOption157 1 in Tasmota console",
+                "error": "SetOption157 enabled but NodeID not received. Please try again or check Tasmota console",
             }
 
         _LOGGER.info("Successfully configured Tasmota SetOption157 1. NodeID: %s", nodeid)
@@ -1163,19 +1189,93 @@ class NeoPoolConfigFlow(ConfigFlow, domain=DOMAIN):
 class NeoPoolOptionsFlow(OptionsFlowWithReload):
     """Config flow options handler with auto-reload."""
 
+    def __init__(self, config_entry: ConfigEntry) -> None:
+        """Initialize options flow."""
+        super().__init__(config_entry)
+        self._setoption157_status: bool | None = None
+
+    async def _query_setoption157(self) -> bool | None:
+        """Query SetOption157 status from Tasmota via MQTT."""
+        mqtt_topic = self.config_entry.data.get(CONF_DISCOVERY_PREFIX, "")
+        return await async_query_setoption157(self.hass, mqtt_topic)
+
+    async def _set_setoption157(self, enabled: bool) -> bool:
+        """Set SetOption157 on Tasmota via MQTT.
+
+        Returns True if command was sent successfully.
+        """
+        mqtt_topic = self.config_entry.data.get(CONF_DISCOVERY_PREFIX, "")
+        if not mqtt_topic:
+            _LOGGER.warning("No MQTT topic configured, cannot set SetOption157")
+            return False
+
+        command_topic = f"cmnd/{mqtt_topic}/SetOption157"
+        payload = "1" if enabled else "0"
+
+        try:
+            await mqtt.async_publish(self.hass, command_topic, payload, qos=1, retain=False)
+        except Exception as err:  # noqa: BLE001
+            _LOGGER.error("Failed to set SetOption157: %s", err)
+            return False
+        else:
+            _LOGGER.info("SetOption157 set to %s", payload)
+            return True
+
     async def async_step_init(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
         """Manage the options."""
+        errors: dict[str, str] = {}
+
         if user_input is not None:
+            # Handle SetOption157 change
+            new_setoption157 = user_input.get(CONF_SETOPTION157, False)
+            if self._setoption157_status is not None:
+                if new_setoption157 != self._setoption157_status:
+                    # Send the command to change SetOption157
+                    if await self._set_setoption157(new_setoption157):
+                        # Wait a moment for Tasmota to process
+                        await asyncio.sleep(1)
+                        # Verify the change was successful
+                        verified_status = await self._query_setoption157()
+                        if verified_status != new_setoption157:
+                            _LOGGER.warning(
+                                "SetOption157 change not confirmed. Expected %s, got %s",
+                                new_setoption157,
+                                verified_status,
+                            )
+                            errors["base"] = "setoption157_change_failed"
+                        else:
+                            _LOGGER.info(
+                                "SetOption157 successfully changed to %s", new_setoption157
+                            )
+                            self._setoption157_status = verified_status
+                    else:
+                        errors["base"] = "setoption157_change_failed"
+
+            # If there are errors, show the form again
+            if errors:
+                return await self._show_options_form(errors)
+
+            # Remove setoption157 from options (it's not stored, just sent to device)
+            options_to_save = {k: v for k, v in user_input.items() if k != CONF_SETOPTION157}
+
             _LOGGER.debug(
                 "Options updated: enable_repair=%s, failures_threshold=%s, "
-                "offline_timeout=%s, recovery_script=%s",
+                "offline_timeout=%s, recovery_script=%s, setoption157=%s",
                 user_input.get(CONF_ENABLE_REPAIR_NOTIFICATION),
                 user_input.get(CONF_FAILURES_THRESHOLD),
                 user_input.get(CONF_OFFLINE_TIMEOUT),
                 user_input.get(CONF_RECOVERY_SCRIPT),
+                new_setoption157,
             )
-            return self.async_create_entry(data=user_input)
+            return self.async_create_entry(data=options_to_save)
 
+        # Query current SetOption157 status from device
+        self._setoption157_status = await self._query_setoption157()
+
+        return await self._show_options_form()
+
+    async def _show_options_form(self, errors: dict[str, str] | None = None) -> ConfigFlowResult:
+        """Show the options form."""
         # Get current options with defaults
         current_options = self.config_entry.options
 
@@ -1188,23 +1288,46 @@ class NeoPoolOptionsFlow(OptionsFlowWithReload):
         recovery_script = current_options.get(CONF_RECOVERY_SCRIPT, DEFAULT_RECOVERY_SCRIPT)
         offline_timeout = current_options.get(CONF_OFFLINE_TIMEOUT, DEFAULT_OFFLINE_TIMEOUT)
 
+        # Build description placeholders for warning
+        description_placeholders: dict[str, str] = {}
+        if self._setoption157_status is False:
+            description_placeholders["setoption157_warning"] = (
+                "\n\n⚠️ **Warning**: SetOption157 is currently **disabled** on your "
+                "Tasmota device. This integration requires it to be enabled for proper "
+                "NodeID detection. Enable the checkbox below to fix this."
+            )
+        elif self._setoption157_status is None:
+            description_placeholders["setoption157_warning"] = (
+                "\n\n⚠️ **Warning**: Could not query SetOption157 status from the device. "
+                "The device may be offline."
+            )
+        else:
+            description_placeholders["setoption157_warning"] = ""
+
         return self.async_show_form(
             step_id="init",
             data_schema=vol.Schema(
                 {
-                    # 1. Recovery script (runs when device goes offline after threshold)
+                    # 1. SetOption157 (Tasmota setting for NodeID visibility)
+                    vol.Required(
+                        CONF_SETOPTION157,
+                        default=self._setoption157_status
+                        if self._setoption157_status is not None
+                        else False,
+                    ): cv.boolean,
+                    # 2. Recovery script (runs when device goes offline after threshold)
                     vol.Optional(
                         CONF_RECOVERY_SCRIPT,
                         default=recovery_script,
                     ): EntitySelector(
                         EntitySelectorConfig(domain="script"),
                     ),
-                    # 2. Enable repair notifications checkbox
+                    # 3. Enable repair notifications checkbox
                     vol.Required(
                         CONF_ENABLE_REPAIR_NOTIFICATION,
                         default=enable_repair,
                     ): cv.boolean,
-                    # 3. Failures threshold as input box (not slider)
+                    # 4. Failures threshold as input box (not slider)
                     vol.Required(
                         CONF_FAILURES_THRESHOLD,
                         default=failures_threshold,
@@ -1215,7 +1338,7 @@ class NeoPoolOptionsFlow(OptionsFlowWithReload):
                             mode=NumberSelectorMode.BOX,
                         )
                     ),
-                    # 4. Offline timeout (how long device must be offline before notification)
+                    # 5. Offline timeout (how long device must be offline before notification)
                     vol.Required(
                         CONF_OFFLINE_TIMEOUT,
                         default=offline_timeout,
@@ -1229,4 +1352,6 @@ class NeoPoolOptionsFlow(OptionsFlowWithReload):
                     ),
                 },
             ),
+            errors=errors or {},
+            description_placeholders=description_placeholders,
         )

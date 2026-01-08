@@ -2,12 +2,15 @@
 
 from __future__ import annotations
 
+import asyncio
 from dataclasses import dataclass, field
+import json
 import logging
 from typing import TYPE_CHECKING, Any
 
 from homeassistant.components import mqtt
 from homeassistant.config_entries import ConfigEntry
+from homeassistant.core import callback
 from homeassistant.exceptions import ConfigEntryNotReady
 from homeassistant.helpers import device_registry as dr, entity_registry as er
 
@@ -29,6 +32,15 @@ from .const import (
     PLATFORMS,
     VERSION,
     YAML_TO_INTEGRATION_KEY_MAP,
+)
+from .helpers import (
+    async_query_setoption157,
+    async_set_setoption157,
+    extract_entity_key_from_masked_unique_id,
+    get_nested_value,
+    is_masked_unique_id,
+    normalize_nodeid,
+    validate_nodeid,
 )
 
 if TYPE_CHECKING:
@@ -83,6 +95,17 @@ async def async_setup_entry(hass: HomeAssistant, entry: NeoPoolConfigEntry) -> b
 
     # Register device in device registry and store device_id for triggers
     await async_register_device(hass, entry)
+
+    # Run sanity check for masked unique_ids and migrate if needed
+    # This must happen before platform setup to fix NodeID before entities are created
+    migration_success = await async_migrate_masked_unique_ids(hass, entry)
+    if not migration_success:
+        _LOGGER.warning(
+            "Masked unique_id migration failed - entities may have incorrect unique_ids. "
+            "Check that SetOption157 is enabled on the Tasmota device."
+        )
+        # Don't fail setup - let integration continue with potentially masked IDs
+        # User can fix via Options flow
 
     # Forward setup to platforms
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
@@ -359,3 +382,296 @@ def get_device_info(entry: NeoPoolConfigEntry) -> dr.DeviceInfo:
         sw_version=VERSION,
         configuration_url="https://tasmota.github.io/docs/NeoPool/",
     )
+
+
+async def async_migrate_masked_unique_ids(
+    hass: HomeAssistant,
+    entry: NeoPoolConfigEntry,
+) -> bool:
+    """Migrate entities with masked unique_ids to use the real NodeID.
+
+    This sanity check runs on every startup to detect and fix entities that were
+    created with masked NodeIDs (when Tasmota SetOption157 was disabled).
+
+    The migration process:
+    1. Find entities belonging to this config entry with masked unique_ids
+    2. Check SetOption157 status - enable it if disabled
+    3. Wait for real NodeID from telemetry
+    4. Update entity unique_ids with real NodeID
+    5. Update config entry data with real NodeID
+
+    Args:
+        hass: Home Assistant instance
+        entry: Config entry to check/migrate
+
+    Returns:
+        True if migration was successful or not needed, False if migration failed.
+    """
+    entity_registry = er.async_get(hass)
+    mqtt_topic = entry.data.get(CONF_DISCOVERY_PREFIX, "")
+    current_nodeid = entry.data.get(CONF_NODEID, "")
+
+    _LOGGER.debug(
+        "Starting masked unique_id sanity check for entry %s (topic: %s, nodeid: %s)",
+        entry.entry_id,
+        mqtt_topic,
+        current_nodeid,
+    )
+
+    # Step 1: Find entities with masked unique_ids for this config entry
+    all_entry_entities = [
+        entity
+        for entity in entity_registry.entities.values()
+        if entity.config_entry_id == entry.entry_id
+    ]
+    _LOGGER.debug(
+        "Found %d total entities for config entry %s",
+        len(all_entry_entities),
+        entry.entry_id,
+    )
+
+    masked_entities = [
+        entity
+        for entity in all_entry_entities
+        if entity.unique_id and is_masked_unique_id(entity.unique_id)
+    ]
+
+    if masked_entities:
+        _LOGGER.debug(
+            "Found %d entities with masked unique_ids:",
+            len(masked_entities),
+        )
+        for entity in masked_entities[:5]:  # Log first 5
+            _LOGGER.debug("  - %s (unique_id: %s)", entity.entity_id, entity.unique_id)
+        if len(masked_entities) > 5:
+            _LOGGER.debug("  ... and %d more", len(masked_entities) - 5)
+
+    if not masked_entities:
+        # Also check if stored nodeid is masked
+        nodeid_is_masked = is_masked_unique_id(current_nodeid)
+        _LOGGER.debug(
+            "No masked entity unique_ids found. Config entry NodeID masked: %s (%s)",
+            nodeid_is_masked,
+            current_nodeid,
+        )
+        if not nodeid_is_masked:
+            _LOGGER.debug("No masked unique_ids found, migration not needed")
+            return True
+        _LOGGER.info(
+            "Config entry NodeID is masked (%s), will attempt to get real NodeID",
+            current_nodeid,
+        )
+
+    _LOGGER.warning(
+        "Found %d entities with masked unique_ids, starting migration",
+        len(masked_entities),
+    )
+
+    # Step 2: Check SetOption157 status
+    _LOGGER.debug("Querying SetOption157 status from %s", mqtt_topic)
+    setoption157_status = await async_query_setoption157(hass, mqtt_topic)
+    _LOGGER.debug("SetOption157 status: %s", setoption157_status)
+
+    if setoption157_status is None:
+        _LOGGER.error(
+            "Could not query SetOption157 status from %s, migration aborted",
+            mqtt_topic,
+        )
+        return False
+
+    # Step 3: Enable SetOption157 if disabled
+    if not setoption157_status:
+        _LOGGER.info("SetOption157 is disabled, enabling it to get real NodeID")
+
+        if not await async_set_setoption157(hass, mqtt_topic, enable=True):
+            _LOGGER.error("Failed to enable SetOption157, migration aborted")
+            return False
+
+        # Wait for Tasmota to process the command
+        await asyncio.sleep(1)
+
+        # Verify SetOption157 is now enabled
+        verified_status = await async_query_setoption157(hass, mqtt_topic)
+        if not verified_status:
+            _LOGGER.error("SetOption157 verification failed after enabling, migration aborted")
+            return False
+
+        _LOGGER.info("SetOption157 successfully enabled")
+
+    # Step 4: Trigger telemetry and wait for real NodeID
+    _LOGGER.debug("Waiting for real NodeID from telemetry on %s", mqtt_topic)
+    raw_nodeid = await _wait_for_real_nodeid(hass, mqtt_topic)
+    _LOGGER.debug("Raw NodeID from telemetry: %s", raw_nodeid)
+
+    if not raw_nodeid:
+        _LOGGER.error("Could not get real NodeID from telemetry, migration aborted")
+        return False
+
+    # Normalize NodeID (remove spaces, uppercase) for clean unique_ids
+    real_nodeid = normalize_nodeid(raw_nodeid)
+    _LOGGER.debug(
+        "NodeID normalization: '%s' -> '%s'",
+        raw_nodeid,
+        real_nodeid,
+    )
+    _LOGGER.info("Got real NodeID: %s", real_nodeid)
+
+    # Step 5: Update entity unique_ids
+    _LOGGER.debug("Starting entity unique_id migration for %d entities", len(masked_entities))
+    migrated_count = 0
+    for entity in masked_entities:
+        entity_key = extract_entity_key_from_masked_unique_id(entity.unique_id)
+        _LOGGER.debug(
+            "Extracting entity_key from '%s' -> '%s'",
+            entity.unique_id,
+            entity_key,
+        )
+        if not entity_key:
+            _LOGGER.warning(
+                "Could not extract entity_key from unique_id: %s",
+                entity.unique_id,
+            )
+            continue
+
+        new_unique_id = f"neopool_mqtt_{real_nodeid}_{entity_key}"
+        _LOGGER.debug(
+            "Entity %s: old unique_id='%s' -> new unique_id='%s'",
+            entity.entity_id,
+            entity.unique_id,
+            new_unique_id,
+        )
+
+        # Check if new unique_id already exists
+        existing = entity_registry.async_get_entity_id(entity.domain, DOMAIN, new_unique_id)
+        if existing and existing != entity.entity_id:
+            _LOGGER.warning(
+                "Cannot migrate %s: new unique_id %s already exists for %s",
+                entity.entity_id,
+                new_unique_id,
+                existing,
+            )
+            continue
+
+        try:
+            entity_registry.async_update_entity(
+                entity.entity_id,
+                new_unique_id=new_unique_id,
+            )
+            migrated_count += 1
+            _LOGGER.info(
+                "Migrated entity %s: %s -> %s",
+                entity.entity_id,
+                entity.unique_id,
+                new_unique_id,
+            )
+        except ValueError as err:
+            _LOGGER.error(
+                "Failed to migrate entity %s: %s",
+                entity.entity_id,
+                err,
+            )
+
+    # Step 6: Update config entry data with real NodeID
+    if current_nodeid != real_nodeid:
+        new_data = {**entry.data, CONF_NODEID: real_nodeid}
+        hass.config_entries.async_update_entry(entry, data=new_data)
+        # Also update runtime_data
+        entry.runtime_data.nodeid = real_nodeid
+        _LOGGER.info(
+            "Updated config entry NodeID: %s -> %s",
+            current_nodeid,
+            real_nodeid,
+        )
+
+    # Step 7: Update device registry identifier
+    device_registry = dr.async_get(hass)
+    old_device = device_registry.async_get_device(identifiers={(DOMAIN, current_nodeid)})
+    if old_device and current_nodeid != real_nodeid:
+        # Update device identifiers to use real NodeID
+        device_registry.async_update_device(
+            old_device.id,
+            new_identifiers={(DOMAIN, real_nodeid)},
+        )
+        _LOGGER.info(
+            "Updated device identifier: %s -> %s",
+            current_nodeid,
+            real_nodeid,
+        )
+
+    _LOGGER.info(
+        "Migration complete: %d/%d entities migrated to use NodeID %s",
+        migrated_count,
+        len(masked_entities),
+        real_nodeid,
+    )
+    return True
+
+
+async def _wait_for_real_nodeid(
+    hass: HomeAssistant,
+    mqtt_topic: str,
+    wait_timeout: float = 10.0,
+) -> str | None:
+    """Wait for real NodeID from telemetry message.
+
+    Triggers TelePeriod command to get immediate telemetry response,
+    then extracts and validates the NodeID.
+
+    Args:
+        hass: Home Assistant instance
+        mqtt_topic: MQTT topic prefix for the device
+        wait_timeout: Maximum time to wait for telemetry (seconds)
+
+    Returns:
+        Real NodeID string if found and valid, None otherwise.
+    """
+    real_nodeid: str | None = None
+    event = asyncio.Event()
+
+    @callback
+    def message_received(msg: mqtt.ReceiveMessage) -> None:
+        """Handle telemetry message and extract NodeID."""
+        nonlocal real_nodeid
+        try:
+            if isinstance(msg.payload, (bytes, bytearray)):
+                payload_str = msg.payload.decode("utf-8")
+            else:
+                payload_str = msg.payload
+
+            payload = json.loads(payload_str)
+            nodeid = get_nested_value(payload, "NeoPool.Powerunit.NodeID")
+
+            if nodeid and validate_nodeid(str(nodeid)):
+                real_nodeid = str(nodeid)
+                _LOGGER.debug("Received real NodeID from telemetry: %s", real_nodeid)
+                event.set()
+        except (json.JSONDecodeError, UnicodeDecodeError) as err:
+            _LOGGER.debug("Failed to parse telemetry payload: %s", err)
+
+    # Subscribe to sensor topic
+    sensor_topic = f"tele/{mqtt_topic}/SENSOR"
+    unsubscribe = await mqtt.async_subscribe(hass, sensor_topic, message_received, qos=1)
+
+    try:
+        # Trigger immediate telemetry by sending TelePeriod command
+        await mqtt.async_publish(
+            hass,
+            f"cmnd/{mqtt_topic}/TelePeriod",
+            "",  # Empty payload queries current period and triggers immediate telemetry
+            qos=1,
+            retain=False,
+        )
+
+        # Wait for telemetry with timeout
+        try:
+            await asyncio.wait_for(event.wait(), timeout=wait_timeout)
+        except TimeoutError:
+            _LOGGER.warning(
+                "Timeout waiting for telemetry from %s after %.1f seconds",
+                mqtt_topic,
+                wait_timeout,
+            )
+    finally:
+        unsubscribe()
+
+    return real_nodeid

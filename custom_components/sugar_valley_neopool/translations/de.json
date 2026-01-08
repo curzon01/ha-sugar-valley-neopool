@@ -102,20 +102,25 @@
     "step": {
       "init": {
         "title": "NeoPool Optionen",
-        "description": "Konfigurieren Sie Laufzeitoptionen für Offline-Erkennung und Wiederherstellung.\n\n**Wiederherstellungsskript-Variablen:**\nWenn konfiguriert, erhält das Wiederherstellungsskript diese Variablen:\n\n- `device_name` : Gerätename\n- `mqtt_topic` : MQTT-Topic\n- `nodeid` : Geräte-NodeID\n- `failures_count` : Anzahl aufeinanderfolgender Fehler",
+        "description": "Konfigurieren Sie Tasmota-Geräteeinstellungen und Laufzeitoptionen.{setoption157_warning}\n\n**Wiederherstellungsskript-Variablen:**\nWenn konfiguriert, erhält das Wiederherstellungsskript diese Variablen:\n\n- `device_name` : Gerätename\n- `mqtt_topic` : MQTT-Topic\n- `nodeid` : Geräte-NodeID\n- `failures_count` : Anzahl aufeinanderfolgender Fehler",
         "data": {
+          "setoption157": "NeoPool sensible Daten anzeigen (SetOption157)",
           "recovery_script": "Wiederherstellungsskript (optional)",
           "enable_repair_notification": "Reparaturbenachrichtigungen aktivieren",
           "failures_threshold": "Fehler vor Benachrichtigung (1-10)",
           "offline_timeout": "Offline-Timeout (Sekunden)"
         },
         "data_description": {
+          "setoption157": "Aktivieren Sie Tasmota SetOption157, um die vollständige NodeID anzuzeigen. Erforderlich für die korrekte Funktion dieser Integration.",
           "recovery_script": "Skript, das ausgeführt wird, wenn das Gerät zu lange offline ist",
           "enable_repair_notification": "Erstellt ein Reparaturproblem, wenn das Gerät offline geht",
           "failures_threshold": "Anzahl aufeinanderfolgender LWT-Offline-Nachrichten vor Auslösung der Benachrichtigungen",
           "offline_timeout": "Wie lange das Gerät offline sein muss, bevor Benachrichtigungen ausgelöst werden"
         }
       }
+    },
+    "error": {
+      "setoption157_change_failed": "SetOption157 konnte nicht geändert werden. Das Gerät ist möglicherweise offline oder antwortet nicht."
     }
   },
   "issues": {
