@@ -151,7 +151,7 @@ def validate_nodeid(nodeid: str | None) -> bool:
     return True
 
 
-def normalize_nodeid(nodeid: str) -> str:
+def normalize_nodeid(nodeid: str | None) -> str:
     """Normalize NodeID for use in unique_ids and identifiers.
 
     The real NodeID from Tasmota is a hex string like '4C7525BFB344'.
@@ -159,13 +159,13 @@ def normalize_nodeid(nodeid: str) -> str:
     This function removes spaces and ensures a clean identifier.
 
     Args:
-        nodeid: The NodeID value to normalize.
+        nodeid: The NodeID value to normalize, or None.
 
     Returns:
-        Normalized NodeID string (uppercase, no spaces).
+        Normalized NodeID string (uppercase, no spaces), or empty string if None.
     """
     if not nodeid:
-        return nodeid
+        return ""
     # Remove spaces and convert to uppercase for consistency
     return nodeid.replace(" ", "").upper()
 

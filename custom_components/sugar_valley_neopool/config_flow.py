@@ -1189,10 +1189,7 @@ class NeoPoolConfigFlow(ConfigFlow, domain=DOMAIN):
 class NeoPoolOptionsFlow(OptionsFlowWithReload):
     """Config flow options handler with auto-reload."""
 
-    def __init__(self, config_entry: ConfigEntry) -> None:
-        """Initialize options flow."""
-        super().__init__(config_entry)
-        self._setoption157_status: bool | None = None
+    _setoption157_status: bool | None = None
 
     async def _query_setoption157(self) -> bool | None:
         """Query SetOption157 status from Tasmota via MQTT."""
