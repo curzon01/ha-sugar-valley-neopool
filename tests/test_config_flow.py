@@ -778,7 +778,7 @@ class TestAutoConfigureNodeid:
                 new_callable=AsyncMock,
             ) as mock_publish,
             patch(
-                "custom_components.sugar_valley_neopool.config_flow.async_query_setoption157",
+                "custom_components.sugar_valley_neopool.config_flow.async_ensure_setoption157_enabled",
                 new_callable=AsyncMock,
                 return_value=True,
             ),
@@ -809,7 +809,7 @@ class TestAutoConfigureNodeid:
                 new_callable=AsyncMock,
             ),
             patch(
-                "custom_components.sugar_valley_neopool.config_flow.async_query_setoption157",
+                "custom_components.sugar_valley_neopool.config_flow.async_ensure_setoption157_enabled",
                 new_callable=AsyncMock,
                 return_value=True,
             ),
@@ -833,7 +833,7 @@ class TestAutoConfigureNodeid:
                 new_callable=AsyncMock,
             ),
             patch(
-                "custom_components.sugar_valley_neopool.config_flow.async_query_setoption157",
+                "custom_components.sugar_valley_neopool.config_flow.async_ensure_setoption157_enabled",
                 new_callable=AsyncMock,
                 return_value=True,
             ),

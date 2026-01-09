@@ -671,7 +671,7 @@ class TestAutoConfigureNodeid:
     """Tests for _auto_configure_nodeid method."""
 
     async def test_auto_configure_publishes_setoption(self, hass: HomeAssistant) -> None:
-        """Test auto-configure publishes SetOption157 command."""
+        """Test auto-configure publishes TelePeriod command after SO157 enabled."""
         flow = NeoPoolConfigFlow()
         flow.hass = hass
 
@@ -679,18 +679,18 @@ class TestAutoConfigureNodeid:
             patch("homeassistant.components.mqtt.async_publish") as mock_publish,
             patch.object(flow, "_wait_for_nodeid", return_value="NEW123"),
             patch(
-                "custom_components.sugar_valley_neopool.config_flow.async_query_setoption157",
+                "custom_components.sugar_valley_neopool.config_flow.async_ensure_setoption157_enabled",
                 new_callable=AsyncMock,
                 return_value=True,
             ),
         ):
             result = await flow._auto_configure_nodeid("SmartPool")
 
-        # _auto_configure_nodeid publishes 2 commands: SetOption157 and TelePeriod
-        assert mock_publish.call_count == 2
-        # Verify SetOption157 command was published
+        # _auto_configure_nodeid publishes TelePeriod command (SO157 is mocked)
+        assert mock_publish.call_count == 1
+        # Verify TelePeriod command was published
         all_calls = str(mock_publish.call_args_list)
-        assert "cmnd/SmartPool/SetOption157" in all_calls
+        assert "cmnd/SmartPool/TelePeriod" in all_calls
         assert result["success"] is True
         assert result["nodeid"] == "NEW123"
 
@@ -703,7 +703,7 @@ class TestAutoConfigureNodeid:
             patch("homeassistant.components.mqtt.async_publish"),
             patch.object(flow, "_wait_for_nodeid", return_value=None),
             patch(
-                "custom_components.sugar_valley_neopool.config_flow.async_query_setoption157",
+                "custom_components.sugar_valley_neopool.config_flow.async_ensure_setoption157_enabled",
                 new_callable=AsyncMock,
                 return_value=True,
             ),
@@ -1077,7 +1077,7 @@ class TestAutoConfigureNodeidSetOptionVerificationFailed:
         with (
             patch("homeassistant.components.mqtt.async_publish", new_callable=AsyncMock),
             patch(
-                "custom_components.sugar_valley_neopool.config_flow.async_query_setoption157",
+                "custom_components.sugar_valley_neopool.config_flow.async_ensure_setoption157_enabled",
                 new_callable=AsyncMock,
                 return_value=False,  # Verification returns False
             ),
