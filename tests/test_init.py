@@ -31,7 +31,6 @@ from custom_components.sugar_valley_neopool.const import (
     DEFAULT_OFFLINE_TIMEOUT,
     DEFAULT_RECOVERY_SCRIPT,
     DOMAIN,
-    VERSION,
 )
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryNotReady
@@ -60,6 +59,10 @@ class TestAsyncSetupEntry:
                 return_value=True,
             ),
             patch.object(hass.config_entries, "async_forward_entry_setups", return_value=True),
+            patch(
+                "custom_components.sugar_valley_neopool.async_fetch_device_metadata",
+                return_value=None,
+            ),
         ):
             result = await async_setup_entry(hass, entry)
 
@@ -109,6 +112,10 @@ class TestAsyncSetupEntry:
                 return_value=True,
             ),
             patch.object(hass.config_entries, "async_forward_entry_setups", return_value=True),
+            patch(
+                "custom_components.sugar_valley_neopool.async_fetch_device_metadata",
+                return_value=None,
+            ),
         ):
             await async_setup_entry(hass, entry)
 
@@ -311,7 +318,7 @@ class TestGetDeviceInfo:
     """Tests for get_device_info function."""
 
     def test_get_device_info(self) -> None:
-        """Test getting device info."""
+        """Test getting device info without runtime_data."""
         entry = MockConfigEntry(
             domain=DOMAIN,
             data={
@@ -324,7 +331,33 @@ class TestGetDeviceInfo:
 
         assert device_info["identifiers"] == {(DOMAIN, "ABC123")}
         assert device_info["name"] == "Test Pool"
-        assert device_info["sw_version"] == VERSION
+        # sw_version is None when no runtime_data with fw_version
+        assert device_info["sw_version"] is None
+
+    def test_get_device_info_with_runtime_data(self) -> None:
+        """Test getting device info with runtime_data containing fw_version."""
+        entry = MockConfigEntry(
+            domain=DOMAIN,
+            data={
+                CONF_DEVICE_NAME: "Test Pool",
+                CONF_NODEID: "ABC123",
+            },
+        )
+        # Set up runtime_data with manufacturer and fw_version
+        entry.runtime_data = NeoPoolData(
+            device_name="Test Pool",
+            mqtt_topic="SmartPool",
+            nodeid="ABC123",
+            manufacturer="Bayrol",
+            fw_version="V6.0.0",
+        )
+
+        device_info = get_device_info(entry)
+
+        assert device_info["identifiers"] == {(DOMAIN, "ABC123")}
+        assert device_info["name"] == "Test Pool"
+        assert device_info["manufacturer"] == "Bayrol"
+        assert device_info["sw_version"] == "V6.0.0 (Powerunit)"
 
     def test_get_device_info_default_name(self) -> None:
         """Test device info uses default name."""

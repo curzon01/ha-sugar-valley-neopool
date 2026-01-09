@@ -880,6 +880,11 @@ class TestSetupEntryWithEntityIdMapping:
             ),
             patch.object(hass.config_entries, "async_forward_entry_setups", return_value=True),
             patch(
+                "custom_components.sugar_valley_neopool.async_fetch_device_metadata",
+                new_callable=AsyncMock,
+                return_value=None,
+            ),
+            patch(
                 "custom_components.sugar_valley_neopool.async_migrate_masked_unique_ids",
                 new_callable=AsyncMock,
                 return_value=True,
@@ -916,6 +921,11 @@ class TestSetupEntryWithEntityIdMapping:
                 return_value=True,
             ),
             patch.object(hass.config_entries, "async_forward_entry_setups", return_value=True),
+            patch(
+                "custom_components.sugar_valley_neopool.async_fetch_device_metadata",
+                new_callable=AsyncMock,
+                return_value=None,
+            ),
             patch(
                 "custom_components.sugar_valley_neopool.async_migrate_masked_unique_ids",
                 new_callable=AsyncMock,
