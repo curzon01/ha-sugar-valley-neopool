@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from unittest.mock import patch
+from unittest.mock import AsyncMock, patch
 
 import pytest
 from pytest_homeassistant_custom_component.common import MockConfigEntry
@@ -49,13 +49,18 @@ class TestAsyncSetupEntryExtended:
             patch.object(hass.config_entries, "async_forward_entry_setups", return_value=True),
             patch(
                 "custom_components.sugar_valley_neopool.async_fetch_device_metadata",
+                new_callable=AsyncMock,
                 return_value=None,
             ),
             patch(
                 "custom_components.sugar_valley_neopool.async_migrate_masked_unique_ids",
+                new_callable=AsyncMock,
                 return_value=True,
             ),
-            patch("custom_components.sugar_valley_neopool.async_register_device") as mock_register,
+            patch(
+                "custom_components.sugar_valley_neopool.async_register_device",
+                new_callable=AsyncMock,
+            ) as mock_register,
         ):
             await async_setup_entry(hass, entry)
 
@@ -106,11 +111,17 @@ class TestAsyncSetupEntryExtended:
             patch.object(hass.config_entries, "async_forward_entry_setups", return_value=True),
             patch(
                 "custom_components.sugar_valley_neopool.async_fetch_device_metadata",
+                new_callable=AsyncMock,
                 return_value=None,
             ),
             patch(
                 "custom_components.sugar_valley_neopool.async_migrate_masked_unique_ids",
+                new_callable=AsyncMock,
                 return_value=True,
+            ),
+            patch(
+                "custom_components.sugar_valley_neopool.async_register_device",
+                new_callable=AsyncMock,
             ),
             patch(
                 "custom_components.sugar_valley_neopool._apply_entity_id_mapping"

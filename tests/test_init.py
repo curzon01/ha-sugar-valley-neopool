@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from unittest.mock import MagicMock, patch
+from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 from pytest_homeassistant_custom_component.common import MockConfigEntry
@@ -61,10 +61,12 @@ class TestAsyncSetupEntry:
             patch.object(hass.config_entries, "async_forward_entry_setups", return_value=True),
             patch(
                 "custom_components.sugar_valley_neopool.async_fetch_device_metadata",
+                new_callable=AsyncMock,
                 return_value=None,
             ),
             patch(
                 "custom_components.sugar_valley_neopool.async_migrate_masked_unique_ids",
+                new_callable=AsyncMock,
                 return_value=True,
             ),
         ):
@@ -118,10 +120,12 @@ class TestAsyncSetupEntry:
             patch.object(hass.config_entries, "async_forward_entry_setups", return_value=True),
             patch(
                 "custom_components.sugar_valley_neopool.async_fetch_device_metadata",
+                new_callable=AsyncMock,
                 return_value=None,
             ),
             patch(
                 "custom_components.sugar_valley_neopool.async_migrate_masked_unique_ids",
+                new_callable=AsyncMock,
                 return_value=True,
             ),
         ):
