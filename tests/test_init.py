@@ -69,6 +69,11 @@ class TestAsyncSetupEntry:
                 new_callable=AsyncMock,
                 return_value=True,
             ),
+            patch(
+                "custom_components.sugar_valley_neopool._setup_setoption157_enforcement",
+                new_callable=AsyncMock,
+                return_value=None,
+            ),
         ):
             result = await async_setup_entry(hass, entry)
 
@@ -127,6 +132,11 @@ class TestAsyncSetupEntry:
                 "custom_components.sugar_valley_neopool.async_migrate_masked_unique_ids",
                 new_callable=AsyncMock,
                 return_value=True,
+            ),
+            patch(
+                "custom_components.sugar_valley_neopool._setup_setoption157_enforcement",
+                new_callable=AsyncMock,
+                return_value=None,
             ),
         ):
             await async_setup_entry(hass, entry)

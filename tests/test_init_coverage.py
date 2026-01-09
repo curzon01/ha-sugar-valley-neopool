@@ -784,6 +784,11 @@ class TestSetupEntryWithEntityIdMapping:
                 return_value=True,
             ),
             patch(
+                "custom_components.sugar_valley_neopool._setup_setoption157_enforcement",
+                new_callable=AsyncMock,
+                return_value=None,
+            ),
+            patch(
                 "custom_components.sugar_valley_neopool._apply_entity_id_mapping",
                 new_callable=AsyncMock,
             ) as mock_apply,
@@ -824,6 +829,11 @@ class TestSetupEntryWithEntityIdMapping:
                 "custom_components.sugar_valley_neopool.async_migrate_masked_unique_ids",
                 new_callable=AsyncMock,
                 return_value=False,  # Migration failed
+            ),
+            patch(
+                "custom_components.sugar_valley_neopool._setup_setoption157_enforcement",
+                new_callable=AsyncMock,
+                return_value=None,
             ),
         ):
             result = await async_setup_entry(hass, entry)
