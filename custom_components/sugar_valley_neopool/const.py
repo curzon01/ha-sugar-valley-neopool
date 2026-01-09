@@ -41,6 +41,10 @@ CONF_OFFLINE_TIMEOUT: Final = "offline_timeout"
 CONF_REGENERATE_ENTITY_IDS: Final = "regenerate_entity_ids"
 CONF_SETOPTION157: Final = "setoption157"
 
+# Device metadata keys (stored in runtime_data, updated from MQTT)
+CONF_MANUFACTURER: Final = "manufacturer"
+CONF_FW_VERSION: Final = "fw_version"
+
 # Default values
 DEFAULT_DEVICE_NAME: Final = "NeoPool"
 DEFAULT_DISCOVERY_PREFIX: Final = "tele/"

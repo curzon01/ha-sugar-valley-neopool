@@ -28,9 +28,11 @@ from .const import (
     DEFAULT_OFFLINE_TIMEOUT,
     DEFAULT_RECOVERY_SCRIPT,
     DOMAIN,
+    JSON_PATH_POWERUNIT_VERSION,
+    JSON_PATH_TYPE,
     MANUFACTURER,
+    MODEL,
     PLATFORMS,
-    VERSION,
     YAML_TO_INTEGRATION_KEY_MAP,
 )
 from .helpers import (
@@ -63,6 +65,9 @@ class NeoPoolData:
     available: bool = False
     device_id: str | None = None  # For device triggers
     entity_id_mapping: dict[str, str] = field(default_factory=dict)  # For YAML migration
+    # Device metadata from MQTT (updated dynamically)
+    manufacturer: str | None = None  # From NeoPool.Type
+    fw_version: str | None = None  # From NeoPool.Powerunit.Version
 
 
 type NeoPoolConfigEntry = ConfigEntry[NeoPoolData]
@@ -95,6 +100,10 @@ async def async_setup_entry(hass: HomeAssistant, entry: NeoPoolConfigEntry) -> b
 
     # Register device in device registry and store device_id for triggers
     await async_register_device(hass, entry)
+
+    # Fetch device metadata (manufacturer, firmware version) from MQTT
+    # This updates the device registry with actual device info
+    await async_fetch_device_metadata(hass, entry)
 
     # Run sanity check for masked unique_ids and migrate if needed
     # This must happen before platform setup to fix NodeID before entities are created
@@ -331,7 +340,12 @@ async def _apply_entity_id_mapping(
 
 
 async def async_register_device(hass: HomeAssistant, entry: NeoPoolConfigEntry) -> None:
-    """Register the NeoPool device in the device registry."""
+    """Register the NeoPool device in the device registry.
+
+    Initial registration uses default manufacturer. Device metadata (actual manufacturer
+    from NeoPool.Type and firmware from NeoPool.Powerunit.Version) is fetched separately
+    via async_fetch_device_metadata() and updates the registry dynamically.
+    """
     device_registry = dr.async_get(hass)
 
     device_name = entry.data.get(CONF_DEVICE_NAME, DEFAULT_DEVICE_NAME)
@@ -342,8 +356,7 @@ async def async_register_device(hass: HomeAssistant, entry: NeoPoolConfigEntry) 
         identifiers={(DOMAIN, nodeid)},
         manufacturer=MANUFACTURER,
         name=device_name,
-        model="NeoPool Controller",
-        sw_version=VERSION,
+        model=MODEL,
         configuration_url="https://tasmota.github.io/docs/NeoPool/",
     )
 
@@ -370,16 +383,30 @@ async def async_remove_config_entry_device(
 
 
 def get_device_info(entry: NeoPoolConfigEntry) -> dr.DeviceInfo:
-    """Get device info for NeoPool entities."""
+    """Get device info for NeoPool entities.
+
+    Uses dynamic manufacturer and firmware version from runtime_data if available,
+    otherwise falls back to defaults.
+    """
     device_name = entry.data.get(CONF_DEVICE_NAME, DEFAULT_DEVICE_NAME)
     nodeid = entry.data.get(CONF_NODEID, "")
 
+    # Use dynamic metadata from runtime_data if available
+    manufacturer = MANUFACTURER
+    sw_version: str | None = None
+
+    if hasattr(entry, "runtime_data") and entry.runtime_data:
+        if entry.runtime_data.manufacturer:
+            manufacturer = entry.runtime_data.manufacturer
+        if entry.runtime_data.fw_version:
+            sw_version = f"{entry.runtime_data.fw_version} (Powerunit)"
+
     return dr.DeviceInfo(
         identifiers={(DOMAIN, nodeid)},
-        manufacturer=MANUFACTURER,
+        manufacturer=manufacturer,
         name=device_name,
-        model="NeoPool Controller",
-        sw_version=VERSION,
+        model=MODEL,
+        sw_version=sw_version,
         configuration_url="https://tasmota.github.io/docs/NeoPool/",
     )
 
@@ -605,6 +632,136 @@ async def async_migrate_masked_unique_ids(
         real_nodeid,
     )
     return True
+
+
+async def async_fetch_device_metadata(
+    hass: HomeAssistant,
+    entry: NeoPoolConfigEntry,
+    wait_timeout: float = 10.0,
+) -> None:
+    """Fetch device metadata (manufacturer, firmware version) from MQTT telemetry.
+
+    Triggers TelePeriod command to get immediate telemetry response,
+    then extracts Type (manufacturer) and Powerunit.Version (firmware).
+    Updates runtime_data and device registry with the fetched values.
+
+    Args:
+        hass: Home Assistant instance
+        entry: Config entry with runtime_data
+        wait_timeout: Maximum time to wait for telemetry (seconds)
+    """
+    mqtt_topic = entry.runtime_data.mqtt_topic
+    manufacturer: str | None = None
+    fw_version: str | None = None
+    event = asyncio.Event()
+
+    @callback
+    def message_received(msg: mqtt.ReceiveMessage) -> None:
+        """Handle telemetry message and extract device metadata."""
+        nonlocal manufacturer, fw_version
+        try:
+            if isinstance(msg.payload, (bytes, bytearray)):
+                payload_str = msg.payload.decode("utf-8")
+            else:
+                payload_str = msg.payload
+
+            payload = json.loads(payload_str)
+
+            # Extract manufacturer from NeoPool.Type
+            device_type = get_nested_value(payload, JSON_PATH_TYPE)
+            if device_type:
+                manufacturer = str(device_type)
+                _LOGGER.debug("Extracted manufacturer from telemetry: %s", manufacturer)
+
+            # Extract firmware version from NeoPool.Powerunit.Version
+            version = get_nested_value(payload, JSON_PATH_POWERUNIT_VERSION)
+            if version:
+                fw_version = str(version)
+                _LOGGER.debug("Extracted firmware version from telemetry: %s", fw_version)
+
+            # Signal completion if we got at least one value
+            if manufacturer or fw_version:
+                event.set()
+
+        except (json.JSONDecodeError, UnicodeDecodeError) as err:
+            _LOGGER.debug("Failed to parse telemetry payload for metadata: %s", err)
+
+    # Subscribe to sensor topic
+    sensor_topic = f"tele/{mqtt_topic}/SENSOR"
+    unsubscribe = await mqtt.async_subscribe(hass, sensor_topic, message_received, qos=1)
+
+    try:
+        # Trigger immediate telemetry by sending TelePeriod command
+        await mqtt.async_publish(
+            hass,
+            f"cmnd/{mqtt_topic}/TelePeriod",
+            "",  # Empty payload queries current period and triggers immediate telemetry
+            qos=1,
+            retain=False,
+        )
+
+        # Wait for telemetry with timeout
+        try:
+            await asyncio.wait_for(event.wait(), timeout=wait_timeout)
+        except TimeoutError:
+            _LOGGER.debug(
+                "Timeout waiting for device metadata from %s after %.1f seconds",
+                mqtt_topic,
+                wait_timeout,
+            )
+    finally:
+        unsubscribe()
+
+    # Update runtime_data with fetched metadata
+    if manufacturer:
+        entry.runtime_data.manufacturer = manufacturer
+    if fw_version:
+        entry.runtime_data.fw_version = fw_version
+
+    # Update device registry if we got any metadata
+    if manufacturer or fw_version:
+        await _update_device_registry_metadata(hass, entry)
+        _LOGGER.info(
+            "Device metadata updated - Manufacturer: %s, Firmware: %s",
+            manufacturer or "unknown",
+            fw_version or "unknown",
+        )
+
+
+async def _update_device_registry_metadata(
+    hass: HomeAssistant,
+    entry: NeoPoolConfigEntry,
+) -> None:
+    """Update device registry with metadata from runtime_data.
+
+    Args:
+        hass: Home Assistant instance
+        entry: Config entry with runtime_data containing metadata
+    """
+    device_registry = dr.async_get(hass)
+    nodeid = entry.runtime_data.nodeid
+
+    device = device_registry.async_get_device(identifiers={(DOMAIN, nodeid)})
+    if not device:
+        _LOGGER.debug("Device not found in registry for NodeID: %s", nodeid)
+        return
+
+    # Build sw_version string: "Vx.y.z (Powerunit)" if we have firmware version
+    sw_version: str | None = None
+    if entry.runtime_data.fw_version:
+        sw_version = f"{entry.runtime_data.fw_version} (Powerunit)"
+
+    # Update device with new metadata
+    device_registry.async_update_device(
+        device.id,
+        manufacturer=entry.runtime_data.manufacturer or MANUFACTURER,
+        sw_version=sw_version,
+    )
+    _LOGGER.debug(
+        "Updated device registry - manufacturer: %s, sw_version: %s",
+        entry.runtime_data.manufacturer or MANUFACTURER,
+        sw_version,
+    )
 
 
 async def _wait_for_real_nodeid(

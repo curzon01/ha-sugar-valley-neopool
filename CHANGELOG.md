@@ -7,6 +7,38 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.11] - 2026-01-09
+
+### Added
+
+- **Dynamic device info from MQTT**: Device registry now shows actual device
+  metadata fetched from MQTT telemetry:
+  - **Manufacturer**: Shows actual brand from `NeoPool.Type` (e.g., "Bayrol",
+    "Hidrolife", "Aquascenic") instead of static "Sugar Valley"
+  - **Firmware version**: Shows actual firmware from `NeoPool.Powerunit.Version`
+    (e.g., "V3.45 (Powerunit)") instead of integration version
+- **SetOption157 checkbox in Options flow**: View and control Tasmota's
+  SetOption157 setting directly from the integration options. Shows current
+  status with warning if disabled.
+- **Automatic masked NodeID migration**: On startup, the integration detects
+  and automatically migrates entities created with masked NodeIDs (containing
+  "XXXX"). The migration:
+  - Enables SetOption157 on Tasmota if disabled
+  - Fetches the real NodeID from telemetry
+  - Updates all entity unique_ids
+  - Updates config entry and device registry identifiers
+  - Preserves all historical data and customizations
+
+### Fixed
+
+- Fixed entity key extraction from masked unique_ids during migration
+- Fixed test mocks for SetOption157 MQTT operations
+
+### Changed
+
+- Device info no longer shows integration version as `sw_version` - now shows
+  actual device firmware or nothing if unavailable
+
 ## [0.2.10] - 2026-01-07
 
 ### Fixed

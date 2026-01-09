@@ -49,6 +49,12 @@ NeoPool system:
 
 ### Additional Features
 
+- **Dynamic device info**: Device registry shows actual device metadata from
+  MQTT telemetry:
+  - **Manufacturer**: Actual brand from `NeoPool.Type` (e.g., "Bayrol",
+    "Hidrolife", "Aquascenic") instead of generic "Sugar Valley"
+  - **Firmware version**: Actual firmware from `NeoPool.Powerunit.Version`
+    (e.g., "V3.45 (Powerunit)")
 - **Translated sensor names**: Sensor names displayed in your Home Assistant
   language (supports German, English, Spanish, Estonian, Finnish, French,
   Italian, Norwegian, Portuguese, and Swedish)
