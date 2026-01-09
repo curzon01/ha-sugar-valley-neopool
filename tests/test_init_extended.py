@@ -51,6 +51,10 @@ class TestAsyncSetupEntryExtended:
                 "custom_components.sugar_valley_neopool.async_fetch_device_metadata",
                 return_value=None,
             ),
+            patch(
+                "custom_components.sugar_valley_neopool.async_migrate_masked_unique_ids",
+                return_value=True,
+            ),
             patch("custom_components.sugar_valley_neopool.async_register_device") as mock_register,
         ):
             await async_setup_entry(hass, entry)
@@ -103,6 +107,10 @@ class TestAsyncSetupEntryExtended:
             patch(
                 "custom_components.sugar_valley_neopool.async_fetch_device_metadata",
                 return_value=None,
+            ),
+            patch(
+                "custom_components.sugar_valley_neopool.async_migrate_masked_unique_ids",
+                return_value=True,
             ),
             patch(
                 "custom_components.sugar_valley_neopool._apply_entity_id_mapping"
