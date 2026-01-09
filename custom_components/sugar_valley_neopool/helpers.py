@@ -281,23 +281,37 @@ async def async_query_setoption157(hass: HomeAssistant, mqtt_topic: str) -> bool
         """Handle SetOption157 response."""
         nonlocal result
         try:
-            payload = json.loads(msg.payload)
+            # Handle bytes/bytearray payload
+            if isinstance(msg.payload, (bytes, bytearray)):
+                payload_str = msg.payload.decode("utf-8")
+            else:
+                payload_str = msg.payload
+
+            payload = json.loads(payload_str)
+            _LOGGER.debug("Received MQTT message on %s: %s", msg.topic, payload)
             # Response format: {"SetOption157":"ON"} or {"SetOption157":"OFF"}
             so157_value = payload.get("SetOption157")
             if so157_value is not None:
-                result = so157_value.upper() == "ON"
+                result = str(so157_value).upper() == "ON"
                 _LOGGER.debug("SetOption157 status for %s: %s", mqtt_topic, result)
                 event.set()
-        except (json.JSONDecodeError, AttributeError) as err:
+        except (json.JSONDecodeError, AttributeError, UnicodeDecodeError) as err:
             _LOGGER.debug("Failed to parse SetOption157 response: %s", err)
 
     # Subscribe to result topic
     result_topic = f"stat/{mqtt_topic}/RESULT"
+    _LOGGER.debug("Subscribing to %s for SetOption157 response", result_topic)
     unsubscribe = await mqtt.async_subscribe(hass, result_topic, message_received, qos=1)
 
     try:
+        # Small delay to ensure subscription is established before publishing
+        # This addresses a race condition where the response arrives before
+        # the subscription is fully ready
+        await asyncio.sleep(0.2)
+
         # Send query command (empty payload queries current value)
         command_topic = f"cmnd/{mqtt_topic}/SetOption157"
+        _LOGGER.debug("Publishing SetOption157 query to %s", command_topic)
         await mqtt.async_publish(hass, command_topic, "", qos=1, retain=False)
 
         # Wait for response with timeout
