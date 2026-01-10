@@ -247,7 +247,14 @@ async def _apply_entity_id_mapping(
     # Entity domains to search - integration creates entities across these platforms
     all_domains = ["sensor", "binary_sensor", "switch", "select", "number", "button"]
 
+    # Build set of entity keys that should be deleted (not mapped)
+    # These are YAML entities replaced by different entity types in the integration
+    keys_to_skip = {entity_key for _, entity_key in YAML_ENTITIES_TO_DELETE}
+
     for yaml_entity_key, target_value in entity_id_mapping.items():
+        # Skip entities that are marked for deletion (replaced by different entity types)
+        if yaml_entity_key in keys_to_skip:
+            continue
         # Determine if target_value is full entity_id or just object_id
         # Full entity_id format: "domain.object_id" (contains a dot)
         if "." in target_value:
