@@ -913,7 +913,7 @@ class TestConfigFlowExtractDeviceName:
 
         result = flow._extract_device_name_from_migration()
 
-        assert result == "NeoPool MQTT"
+        assert result == "NeoPool"
 
     def test_extract_device_name_no_result(self) -> None:
         """Test extraction with no migration result returns default."""
@@ -922,7 +922,7 @@ class TestConfigFlowExtractDeviceName:
 
         result = flow._extract_device_name_from_migration()
 
-        assert result == "NeoPool MQTT"
+        assert result == "NeoPool"
 
     def test_extract_device_name_custom_prefix(self) -> None:
         """Test extraction with custom prefix."""
