@@ -102,25 +102,20 @@
     "step": {
       "init": {
         "title": "NeoPool-alternativ",
-        "description": "Konfigurera Tasmota-enhetsinställningar och körtidsalternativ.{setoption157_warning}\n\n**Återställningsskriptvariabler:**\nNär det är konfigurerat får återställningsskriptet dessa variabler:\n\n- `device_name` : Enhetsnamn\n- `mqtt_topic` : MQTT-ämne\n- `nodeid` : Enhetens NodeID\n- `failures_count` : Antal på varandra följande fel",
+        "description": "Konfigurera körtidsalternativ för din NeoPool-enhet.\n\n{setoption157_status}\n\n**Återställningsskriptvariabler:**\nNär det är konfigurerat får återställningsskriptet dessa variabler:\n\n- `device_name` : Enhetsnamn\n- `mqtt_topic` : MQTT-ämne\n- `nodeid` : Enhetens NodeID\n- `failures_count` : Antal på varandra följande fel",
         "data": {
-          "setoption157": "Visa känsliga NeoPool-data (SetOption157)",
           "recovery_script": "Återställningsskript (valfritt)",
           "enable_repair_notification": "Aktivera reparationsaviseringar",
           "failures_threshold": "Fel innan avisering (1-10)",
           "offline_timeout": "Offline-timeout (sekunder)"
         },
         "data_description": {
-          "setoption157": "Aktivera Tasmota SetOption157 för att visa fullständigt NodeID. Krävs för att denna integration ska fungera korrekt.",
           "recovery_script": "Skript att köra när enheten är offline för länge",
           "enable_repair_notification": "Skapa ett reparationsproblem när enheten går offline",
           "failures_threshold": "Antal på varandra följande LWT offline-meddelanden innan aviseringar utlöses",
           "offline_timeout": "Hur länge enheten måste vara offline innan aviseringar utlöses"
         }
       }
-    },
-    "error": {
-      "setoption157_change_failed": "Kunde inte ändra SetOption157. Enheten kan vara offline eller svarar inte."
     }
   },
   "issues": {

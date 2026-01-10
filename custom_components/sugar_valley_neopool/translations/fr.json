@@ -102,25 +102,20 @@
     "step": {
       "init": {
         "title": "Options NeoPool",
-        "description": "Configurez les paramètres de l'appareil Tasmota et les options d'exécution.{setoption157_warning}\n\n**Variables du script de récupération :**\nLorsqu'il est configuré, le script de récupération reçoit ces variables :\n\n- `device_name` : Nom de l'appareil\n- `mqtt_topic` : Sujet MQTT\n- `nodeid` : NodeID de l'appareil\n- `failures_count` : Nombre d'échecs consécutifs",
+        "description": "Configurez les options d'exécution pour votre appareil NeoPool.\n\n{setoption157_status}\n\n**Variables du script de récupération :**\nLorsqu'il est configuré, le script de récupération reçoit ces variables :\n\n- `device_name` : Nom de l'appareil\n- `mqtt_topic` : Sujet MQTT\n- `nodeid` : NodeID de l'appareil\n- `failures_count` : Nombre d'échecs consécutifs",
         "data": {
-          "setoption157": "Afficher les données sensibles NeoPool (SetOption157)",
           "recovery_script": "Script de récupération (optionnel)",
           "enable_repair_notification": "Activer les notifications de réparation",
           "failures_threshold": "Échecs avant notification (1-10)",
           "offline_timeout": "Délai d'expiration hors ligne (secondes)"
         },
         "data_description": {
-          "setoption157": "Activer Tasmota SetOption157 pour afficher le NodeID complet. Requis pour le bon fonctionnement de cette intégration.",
           "recovery_script": "Script à exécuter lorsque l'appareil est hors ligne trop longtemps",
           "enable_repair_notification": "Créer un problème de réparation lorsque l'appareil passe hors ligne",
           "failures_threshold": "Nombre de messages LWT hors ligne consécutifs avant de déclencher les notifications",
           "offline_timeout": "Durée pendant laquelle l'appareil doit être hors ligne avant de déclencher les notifications"
         }
       }
-    },
-    "error": {
-      "setoption157_change_failed": "Impossible de modifier SetOption157. L'appareil est peut-être hors ligne ou ne répond pas."
     }
   },
   "issues": {

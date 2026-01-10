@@ -102,25 +102,20 @@
     "step": {
       "init": {
         "title": "NeoPool-alternativer",
-        "description": "Konfigurer Tasmota-enhetsinnstillinger og kjøretidsalternativer.{setoption157_warning}\n\n**Gjenopprettingsskriptvariabler:**\nNår konfigurert, mottar gjenopprettingsskriptet disse variablene:\n\n- `device_name` : Enhetsnavn\n- `mqtt_topic` : MQTT-emne\n- `nodeid` : Enhetens NodeID\n- `failures_count` : Antall påfølgende feil",
+        "description": "Konfigurer kjøretidsalternativer for NeoPool-enheten din.\n\n{setoption157_status}\n\n**Gjenopprettingsskriptvariabler:**\nNår konfigurert, mottar gjenopprettingsskriptet disse variablene:\n\n- `device_name` : Enhetsnavn\n- `mqtt_topic` : MQTT-emne\n- `nodeid` : Enhetens NodeID\n- `failures_count` : Antall påfølgende feil",
         "data": {
-          "setoption157": "Vis sensitive NeoPool-data (SetOption157)",
           "recovery_script": "Gjenopprettingsskript (valgfritt)",
           "enable_repair_notification": "Aktiver reparasjonsvarsler",
           "failures_threshold": "Feil før varsling (1-10)",
           "offline_timeout": "Frakoblet tidsavbrudd (sekunder)"
         },
         "data_description": {
-          "setoption157": "Aktiver Tasmota SetOption157 for å vise fullstendig NodeID. Nødvendig for at denne integrasjonen skal fungere riktig.",
           "recovery_script": "Skript som skal kjøres når enheten er frakoblet for lenge",
           "enable_repair_notification": "Opprett et reparasjonsproblem når enheten går frakoblet",
           "failures_threshold": "Antall påfølgende LWT frakoblede meldinger før varsling utløses",
           "offline_timeout": "Hvor lenge enheten må være frakoblet før varsling utløses"
         }
       }
-    },
-    "error": {
-      "setoption157_change_failed": "Kunne ikke endre SetOption157. Enheten kan være frakoblet eller svarer ikke."
     }
   },
   "issues": {

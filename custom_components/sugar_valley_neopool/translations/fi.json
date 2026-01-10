@@ -102,25 +102,20 @@
     "step": {
       "init": {
         "title": "NeoPool-asetukset",
-        "description": "Määritä Tasmota-laitteen asetukset ja ajonaikaiset asetukset.{setoption157_warning}\n\n**Palautusskriptin muuttujat:**\nKun määritetty, palautusskripti saa nämä muuttujat:\n\n- `device_name` : Laitteen nimi\n- `mqtt_topic` : MQTT-aihe\n- `nodeid` : Laitteen NodeID\n- `failures_count` : Peräkkäisten virheiden määrä",
+        "description": "Määritä NeoPool-laitteesi ajonaikaiset asetukset.\n\n{setoption157_status}\n\n**Palautusskriptin muuttujat:**\nKun määritetty, palautusskripti saa nämä muuttujat:\n\n- `device_name` : Laitteen nimi\n- `mqtt_topic` : MQTT-aihe\n- `nodeid` : Laitteen NodeID\n- `failures_count` : Peräkkäisten virheiden määrä",
         "data": {
-          "setoption157": "Näytä NeoPool-arkaluonteiset tiedot (SetOption157)",
           "recovery_script": "Palautusskripti (valinnainen)",
           "enable_repair_notification": "Ota korjausilmoitukset käyttöön",
           "failures_threshold": "Virheet ennen ilmoitusta (1-10)",
           "offline_timeout": "Offline-aikakatkaisu (sekuntia)"
         },
         "data_description": {
-          "setoption157": "Ota Tasmota SetOption157 käyttöön näyttääksesi täydellisen NodeID:n. Vaaditaan tämän integraation oikeaan toimintaan.",
           "recovery_script": "Skripti, joka suoritetaan kun laite on ollut liian kauan offline-tilassa",
           "enable_repair_notification": "Luo korjausongelma kun laite menee offline-tilaan",
           "failures_threshold": "Peräkkäisten LWT offline-viestien määrä ennen ilmoitusten laukaisua",
           "offline_timeout": "Kuinka kauan laitteen on oltava offline-tilassa ennen ilmoitusten laukaisua"
         }
       }
-    },
-    "error": {
-      "setoption157_change_failed": "SetOption157 muuttaminen epäonnistui. Laite voi olla offline-tilassa tai ei vastaa."
     }
   },
   "issues": {

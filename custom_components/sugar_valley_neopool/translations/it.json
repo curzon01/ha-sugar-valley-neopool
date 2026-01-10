@@ -102,25 +102,20 @@
     "step": {
       "init": {
         "title": "Opzioni NeoPool",
-        "description": "Configura le impostazioni del dispositivo Tasmota e le opzioni runtime.{setoption157_warning}\n\n**Variabili script di ripristino:**\nQuando configurato, lo script di ripristino riceve queste variabili:\n\n- `device_name` : Nome dispositivo\n- `mqtt_topic` : Topic MQTT\n- `nodeid` : NodeID dispositivo\n- `failures_count` : Numero di fallimenti consecutivi",
+        "description": "Configura le opzioni runtime per il tuo dispositivo NeoPool.\n\n{setoption157_status}\n\n**Variabili script di ripristino:**\nQuando configurato, lo script di ripristino riceve queste variabili:\n\n- `device_name` : Nome dispositivo\n- `mqtt_topic` : Topic MQTT\n- `nodeid` : NodeID dispositivo\n- `failures_count` : Numero di fallimenti consecutivi",
         "data": {
-          "setoption157": "Mostra dati sensibili NeoPool (SetOption157)",
           "recovery_script": "Script di ripristino (opzionale)",
           "enable_repair_notification": "Abilita notifiche di riparazione",
           "failures_threshold": "Fallimenti prima della notifica (1-10)",
           "offline_timeout": "Timeout offline (secondi)"
         },
         "data_description": {
-          "setoption157": "Abilita SetOption157 di Tasmota per mostrare il NodeID completo. Richiesto per il corretto funzionamento di questa integrazione.",
           "recovery_script": "Script da eseguire quando il dispositivo è offline troppo a lungo",
           "enable_repair_notification": "Crea un problema di riparazione quando il dispositivo va offline",
           "failures_threshold": "Numero di messaggi LWT offline consecutivi prima di attivare le notifiche",
           "offline_timeout": "Quanto tempo il dispositivo deve essere offline prima di attivare le notifiche"
         }
       }
-    },
-    "error": {
-      "setoption157_change_failed": "Impossibile modificare SetOption157. Il dispositivo potrebbe essere offline o non rispondere."
     }
   },
   "issues": {
