@@ -33,6 +33,7 @@ from .const import (
     MANUFACTURER,
     MODEL,
     PLATFORMS,
+    YAML_ENTITIES_TO_DELETE,
     YAML_TO_INTEGRATION_KEY_MAP,
 )
 from .helpers import (
@@ -139,6 +140,10 @@ async def async_setup_entry(hass: HomeAssistant, entry: NeoPoolConfigEntry) -> b
             _LOGGER.debug("  ... and %d more", len(integration_entities) - 10)
 
         await _apply_entity_id_mapping(hass, entry, entity_id_mapping)
+
+        # Clean up orphaned YAML entities that can't be migrated (e.g., binary sensors
+        # replaced by switches). This runs only when entity_id_mapping exists (YAML migration).
+        await _cleanup_orphaned_yaml_entities(hass, entry)
 
     # Set up runtime enforcement of SetOption157
     # This monitors SENSOR data and enforces SO157=ON if NodeID becomes masked
@@ -342,6 +347,65 @@ async def _apply_entity_id_mapping(
             "Applied entity_id_mapping: %d entities renamed to preserve YAML IDs",
             updated_count,
         )
+
+
+async def _cleanup_orphaned_yaml_entities(
+    hass: HomeAssistant,
+    entry: NeoPoolConfigEntry,
+) -> None:
+    """Delete orphaned YAML entities that have no equivalent in the integration.
+
+    Some YAML package entities (e.g., relay state binary sensors) were replaced
+    by different entity types in the integration (e.g., switches). Since Home
+    Assistant doesn't allow cross-domain entity renames, these orphaned entities
+    are deleted during migration to keep the entity registry clean.
+
+    Args:
+        hass: Home Assistant instance
+        entry: Config entry
+    """
+    entity_registry = er.async_get(hass)
+    nodeid = entry.runtime_data.nodeid
+    deleted_count = 0
+
+    _LOGGER.debug("Checking for orphaned YAML entities to clean up")
+
+    for domain, entity_key in YAML_ENTITIES_TO_DELETE:
+        # Build the unique_id pattern for YAML entities
+        # YAML entities use: neopool_mqtt_{entity_key} (without NodeID)
+        yaml_unique_id = f"neopool_mqtt_{entity_key}"
+
+        # Find entity by unique_id in the specified domain
+        # Check both with and without NodeID in unique_id (different YAML versions)
+        unique_ids_to_check = [
+            yaml_unique_id,  # Old YAML format: neopool_mqtt_{entity_key}
+            f"neopool_mqtt_{nodeid}_{entity_key}",  # If somehow migrated with NodeID
+        ]
+
+        for unique_id in unique_ids_to_check:
+            entity_id = entity_registry.async_get_entity_id(domain, "mqtt", unique_id)
+            if entity_id:
+                entity_entry = entity_registry.async_get(entity_id)
+                # Only delete if it's an orphaned MQTT entity (no config_entry or orphaned)
+                if entity_entry and (
+                    entity_entry.config_entry_id is None or entity_entry.platform == "mqtt"
+                ):
+                    entity_registry.async_remove(entity_id)
+                    deleted_count += 1
+                    _LOGGER.info(
+                        "Deleted orphaned YAML entity %s (unique_id=%s) - "
+                        "replaced by integration switch entity",
+                        entity_id,
+                        unique_id,
+                    )
+
+    if deleted_count > 0:
+        _LOGGER.info(
+            "Cleaned up %d orphaned YAML entities that were replaced by integration entities",
+            deleted_count,
+        )
+    else:
+        _LOGGER.debug("No orphaned YAML entities found to clean up")
 
 
 async def async_register_device(hass: HomeAssistant, entry: NeoPoolConfigEntry) -> None:

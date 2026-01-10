@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **Orphaned YAML entity cleanup**: During YAML migration, the integration now
+  automatically deletes orphaned binary sensor entities that were replaced by
+  switch entities (relay_aux1-4_state, relay_filtration_state, relay_light_state).
+  These entities cannot be migrated cross-domain but are no longer needed since
+  the integration's switch entities provide both state and control.
+
 ## [0.2.13] - 2026-01-10
 
 ### Fixed

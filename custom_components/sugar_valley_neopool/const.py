@@ -237,9 +237,9 @@ YAML_TO_INTEGRATION_KEY_MAP: Final[dict[str, str]] = {
     # Binary sensors - pH FL1 naming (YAML: ph_ctrl_fl1, Integration: ph_fl1)
     "ph_ctrl_fl1": "ph_fl1",
     # NOTE: YAML relay_aux*_state binary sensors CANNOT be mapped to integration switch entities
-    # because Home Assistant doesn't allow cross-domain entity renames. These mappings are
-    # intentionally removed. Users migrating from YAML will have separate binary_sensor and
-    # switch entities for AUX relays.
+    # because Home Assistant doesn't allow cross-domain entity renames. These entities are
+    # cleaned up during migration (deleted from entity registry) since the integration uses
+    # switches for AUX relay control instead of separate binary sensors.
     # Binary sensors - modules naming (YAML: modules_*, Integration: modules_*)
     "modules_ph": "modules_ph",
     "modules_redox": "modules_redox",
@@ -267,3 +267,20 @@ YAML_TO_INTEGRATION_KEY_MAP: Final[dict[str, str]] = {
     "connection_missed_system_responses": "connection_no_response",
     "connection_out_of_range_system_responses": "connection_out_of_range",
 }
+
+# YAML entities to delete during migration
+# These are YAML package entities that have no equivalent in the integration
+# (e.g., binary sensors replaced by switches) or were removed.
+# Format: (domain, entity_key) tuples
+YAML_ENTITIES_TO_DELETE: Final[list[tuple[str, str]]] = [
+    # Relay AUX state binary sensors - replaced by switch entities (aux1-aux4)
+    # The integration uses switches which have both state AND control
+    ("binary_sensor", "relay_aux1_state"),
+    ("binary_sensor", "relay_aux2_state"),
+    ("binary_sensor", "relay_aux3_state"),
+    ("binary_sensor", "relay_aux4_state"),
+    # Relay filtration state - replaced by switch entity (filtration)
+    ("binary_sensor", "relay_filtration_state"),
+    # Relay light state - replaced by switch entity (light)
+    ("binary_sensor", "relay_light_state"),
+]
