@@ -129,14 +129,37 @@ def clamp(value: float, min_val: float, max_val: float) -> float:
     return max(min_val, min(max_val, value))
 
 
+def is_nodeid_masked(nodeid: str | None) -> bool:
+    """Check if a NodeID is masked (SetOption157 disabled).
+
+    When SetOption157 is OFF, NodeID appears as 'XXXX XXXX XXXX XXXX XXXX 3435'.
+    When SetOption157 is ON, NodeID appears as '0026 0051 5443 5016 2036 3435'.
+
+    Note: Valid unmasked NodeIDs from Tasmota contain spaces between hex groups.
+    Only the 'XXXX XXXX' pattern indicates masking.
+
+    Args:
+        nodeid: The NodeID value from NeoPool.Powerunit.NodeID.
+
+    Returns:
+        True if masked (contains 'XXXX XXXX' pattern), False otherwise.
+    """
+    if not nodeid:
+        return True  # No NodeID = treat as masked
+    return "xxxx xxxx" in nodeid.lower()
+
+
 def validate_nodeid(nodeid: str | None) -> bool:
-    """Validate NodeID is present and not 'hidden' or masked.
+    """Validate NodeID is present, not 'hidden', and not masked.
+
+    This is the single source of truth for NodeID validation.
+    Uses is_nodeid_masked() internally for mask detection.
 
     Args:
         nodeid: The NodeID value to validate.
 
     Returns:
-        True if NodeID is valid (present, not hidden, and not masked), False otherwise.
+        True if NodeID is valid (present, not hidden, not masked), False otherwise.
     """
     if nodeid is None or nodeid == "":
         return False
@@ -145,8 +168,8 @@ def validate_nodeid(nodeid: str | None) -> bool:
         # Check for literal hidden values
         if nodeid_lower in ["hidden", "hidden_by_default"]:
             return False
-        # Check for masked NodeID pattern (contains XXXX when SetOption157 is 0)
-        if "xxxx" in nodeid_lower:
+        # Check for masked NodeID pattern using single source of truth
+        if is_nodeid_masked(nodeid):
             return False
     return True
 
@@ -154,9 +177,8 @@ def validate_nodeid(nodeid: str | None) -> bool:
 def normalize_nodeid(nodeid: str | None) -> str:
     """Normalize NodeID for use in unique_ids and identifiers.
 
-    The real NodeID from Tasmota is a hex string like '4C7525BFB344'.
-    Masked NodeIDs have spaces like 'XXXX XXXX XXXX XXXX XXXX 3435'.
-    This function removes spaces and ensures a clean identifier.
+    Tasmota NodeIDs have spaces between hex groups: '0026 0051 5443 5016 2036 3435'.
+    This function removes spaces for clean identifiers: '002600515443501620363435'.
 
     Args:
         nodeid: The NodeID value to normalize, or None.
@@ -168,23 +190,6 @@ def normalize_nodeid(nodeid: str | None) -> str:
         return ""
     # Remove spaces and convert to uppercase for consistency
     return nodeid.replace(" ", "").upper()
-
-
-def is_nodeid_masked(nodeid: str | None) -> bool:
-    """Check if a NodeID from SENSOR data is masked (SetOption157 disabled).
-
-    When SetOption157 is OFF, NodeID appears as 'XXXX XXXX XXXX XXXX XXXX 3435'.
-    When SetOption157 is ON, NodeID appears as '4C7525BFB344' (clean hex).
-
-    Args:
-        nodeid: The NodeID value from NeoPool.Powerunit.NodeID.
-
-    Returns:
-        True if masked (contains XXXX or spaces), False if clean hex.
-    """
-    if not nodeid:
-        return True  # No NodeID = treat as masked
-    return "xxxx xxxx" in nodeid.lower()
 
 
 def is_masked_unique_id(unique_id: str) -> bool:
