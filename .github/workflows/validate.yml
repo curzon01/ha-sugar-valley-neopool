@@ -35,5 +35,3 @@ jobs:
         uses: "hacs/action@main"
         with:
           category: "integration"
-          # Remove 'ignore' when brand images are added to home-assistant/brands
-          ignore: "brands"
